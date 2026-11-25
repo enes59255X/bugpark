@@ -1,17 +1,17 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="tr" data-theme="light">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>BugPark — Kodun çıktısını tahmin et, hatayı düzelt</title>
-  <meta name="description" content="Beş kısa görevde JavaScript'in yaygın hatalarını tahmin et, düzelt ve nedenini öğren.">
+  <title>BugPark â€” Kodun Ã§Ä±ktÄ±sÄ±nÄ± tahmin et, hatayÄ± dÃ¼zelt</title>
+  <meta name="description" content="BeÅŸ kÄ±sa gÃ¶revde JavaScript'in yaygÄ±n hatalarÄ±nÄ± tahmin et, dÃ¼zelt ve nedenini Ã¶ÄŸren.">
   <meta name="color-scheme" content="light dark">
   <meta name="theme-color" content="#F5F2EA">
-  <meta property="og:title" content="BugPark — JavaScript hata avı">
-  <meta property="og:description" content="Kodu oku, çıktısını tahmin et, hatayı düzelt. 5 görev, süre yok, puan yok.">
+  <meta property="og:title" content="BugPark â€” JavaScript hata avÄ±">
+  <meta property="og:description" content="Kodu oku, Ã§Ä±ktÄ±sÄ±nÄ± tahmin et, hatayÄ± dÃ¼zelt. 5 gÃ¶rev, sÃ¼re yok, puan yok.">
   <meta property="og:type" content="website">
-  <meta property="og:url" content="https://enes59255X.github.io/bugpark/">
-  <meta property="og:image" content="https://enes59255X.github.io/bugpark/assets/og.png">
+  <meta property="og:url" content="https://enes59255x.github.io/bugpark/">
+  <meta property="og:image" content="https://enes59255x.github.io/bugpark/assets/og.png">
   <meta property="og:image:width" content="1200">
   <meta property="og:image:height" content="630">
   <meta name="twitter:card" content="summary_large_image">
@@ -19,7 +19,7 @@
   <link rel="stylesheet" href="./styles.css">
 </head>
 <body>
-  <a class="skip-link" href="#main">İçeriğe geç</a>
+  <a class="skip-link" href="#main">Ä°Ã§eriÄŸe geÃ§</a>
 
   <svg class="sprite" aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg">
     <symbol id="i-loop" viewBox="0 0 24 24"><path d="M20 12a8 8 0 1 1-2.4-5.7"/><path d="M20 4.5V9h-4.5"/></symbol>
@@ -56,14 +56,14 @@
 
       <div class="topbar__status" id="topbarStatus" hidden>
         <ol class="rail" id="rail" aria-hidden="true"></ol>
-        <span class="rail__label" id="railLabel">Bölüm 1/5</span>
+        <span class="rail__label" id="railLabel">BÃ¶lÃ¼m 1/5</span>
       </div>
 
       <div class="topbar__tools">
-        <button class="icon-btn" type="button" id="soundBtn" data-action="toggle-sound" aria-pressed="false" aria-label="Ses kapalı" title="Ses">
+        <button class="icon-btn" type="button" id="soundBtn" data-action="toggle-sound" aria-pressed="false" aria-label="Ses kapalÄ±" title="Ses">
           <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><use href="#i-mute" id="soundIcon"></use></svg>
         </button>
-        <button class="icon-btn" type="button" id="themeBtn" data-action="toggle-theme" aria-pressed="false" aria-label="Karanlık temaya geç" title="Tema">
+        <button class="icon-btn" type="button" id="themeBtn" data-action="toggle-theme" aria-pressed="false" aria-label="KaranlÄ±k temaya geÃ§" title="Tema">
           <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><use href="#i-moon" id="themeIcon"></use></svg>
         </button>
       </div>
@@ -75,36 +75,36 @@
     <section class="screen screen--intro" id="screenIntro" hidden aria-labelledby="introTitle">
       <div class="intro-grid">
         <div class="intro-main">
-          <p class="eyebrow">JavaScript · 5 görev</p>
+          <p class="eyebrow">JavaScript Â· 5 gÃ¶rev</p>
           <h1 class="display" id="introTitle" tabindex="-1">
             <span class="display__line">Kodu oku.</span>
-            <span class="display__line">Çıktıyı tahmin et.</span>
-            <span class="display__line">Hatayı düzelt.</span>
+            <span class="display__line">Ã‡Ä±ktÄ±yÄ± tahmin et.</span>
+            <span class="display__line">HatayÄ± dÃ¼zelt.</span>
           </h1>
-          <p class="lede">Her görevde bozuk bir kod parçası var. Önce ne yazdırdığını tahmin et, sonra tek bir değişiklikle düzelt.</p>
-          <p class="meta-line">5 kısa görev · süre yok · puan yok</p>
+          <p class="lede">Her gÃ¶revde bozuk bir kod parÃ§asÄ± var. Ã–nce ne yazdÄ±rdÄ±ÄŸÄ±nÄ± tahmin et, sonra tek bir deÄŸiÅŸiklikle dÃ¼zelt.</p>
+          <p class="meta-line">5 kÄ±sa gÃ¶rev Â· sÃ¼re yok Â· puan yok</p>
           <ol class="steps">
             <li><span class="steps__n" aria-hidden="true">1</span> Oku</li>
             <li><span class="steps__n" aria-hidden="true">2</span> Tahmin et</li>
-            <li><span class="steps__n" aria-hidden="true">3</span> Düzelt</li>
+            <li><span class="steps__n" aria-hidden="true">3</span> DÃ¼zelt</li>
           </ol>
 
           <div class="start-block" id="startBlock">
-            <button class="btn btn--primary btn--lg" type="button" data-action="start">Başla</button>
+            <button class="btn btn--primary btn--lg" type="button" data-action="start">BaÅŸla</button>
           </div>
 
           <div class="resume" id="resumeBlock" hidden>
             <p class="resume__text" id="resumeText"></p>
             <div class="resume__actions">
               <button class="btn btn--primary btn--lg" type="button" data-action="resume">Devam et</button>
-              <button class="btn btn--ghost btn--lg" type="button" data-action="start">Baştan başla</button>
+              <button class="btn btn--ghost btn--lg" type="button" data-action="start">BaÅŸtan baÅŸla</button>
             </div>
           </div>
         </div>
 
         <div class="intro-side">
           <figure class="hero">
-            <svg class="hero__art" viewBox="0 0 320 240" role="img" aria-label="Bir kod penceresinin üstünde duran kırmızı hata böceği">
+            <svg class="hero__art" viewBox="0 0 320 240" role="img" aria-label="Bir kod penceresinin Ã¼stÃ¼nde duran kÄ±rmÄ±zÄ± hata bÃ¶ceÄŸi">
               <circle cx="164" cy="104" r="88" fill="var(--warn-soft)" opacity=".5"></circle>
               <g transform="rotate(-4 160 158)">
                 <rect x="46" y="130" width="216" height="88" rx="10" fill="#14161A" stroke="var(--line-ui)" stroke-width="2"></rect>
@@ -139,19 +139,19 @@
 
           <div class="pass">
             <div class="pass__head">
-              <span class="eyebrow">Giriş bileti</span>
-              <span class="pass__no" id="passCount">5 görev</span>
+              <span class="eyebrow">GiriÅŸ bileti</span>
+              <span class="pass__no" id="passCount">5 gÃ¶rev</span>
             </div>
             <ol class="pass__list" id="passList"></ol>
-            <p class="pass__foot">Süre yok · puan yok</p>
+            <p class="pass__foot">SÃ¼re yok Â· puan yok</p>
           </div>
         </div>
       </div>
     </section>
 
     <section class="screen" id="screenLoading" hidden aria-labelledby="loadingTitle">
-      <p class="eyebrow">Yükleniyor</p>
-      <h1 class="title" id="loadingTitle" tabindex="-1">Görevler hazırlanıyor</h1>
+      <p class="eyebrow">YÃ¼kleniyor</p>
+      <h1 class="title" id="loadingTitle" tabindex="-1">GÃ¶revler hazÄ±rlanÄ±yor</h1>
       <div class="editor editor--skeleton" aria-hidden="true">
         <div class="editor__bar">
           <span class="skeleton skeleton--short"></span>
@@ -168,11 +168,11 @@
     <section class="screen" id="screenLevel" hidden aria-labelledby="levelTitle">
       <div class="level-head">
         <p class="eyebrow">
-          <span id="levelPos">Bölüm 1/5</span>
-          <span class="dot" aria-hidden="true">·</span>
+          <span id="levelPos">BÃ¶lÃ¼m 1/5</span>
+          <span class="dot" aria-hidden="true">Â·</span>
           <button class="chip-btn" type="button" id="conceptBtn" data-action="glossary">
             <svg class="icon icon--sm" viewBox="0 0 24 24" aria-hidden="true"><use href="#i-loop" id="conceptIcon"></use></svg>
-            <span id="concept">Döngü koşulu</span>
+            <span id="concept">DÃ¶ngÃ¼ koÅŸulu</span>
             <span class="chip-btn__more" aria-hidden="true">?</span>
           </button>
         </p>
@@ -182,83 +182,83 @@
       <div class="brief">
         <p class="eyebrow">Hedef</p>
         <p class="brief__text" id="goal"></p>
-        <span class="stamp" id="stamp" aria-hidden="true">Düzeltildi</span>
+        <span class="stamp" id="stamp" aria-hidden="true">DÃ¼zeltildi</span>
       </div>
 
       <div class="grid">
         <article class="editor">
           <div class="editor__bar">
             <span class="editor__file">main.js</span>
-            <span class="editor__meta" id="codeMeta">JavaScript · 3 satır</span>
+            <span class="editor__meta" id="codeMeta">JavaScript Â· 3 satÄ±r</span>
           </div>
           <div class="editor__code" id="codeList" role="group" aria-label="Kod, main.js"></div>
           <p class="editor__divider" id="consoleLabel">Konsol</p>
-          <div class="editor__console" id="consoleList" role="group" aria-label="Konsol çıktısı"></div>
+          <div class="editor__console" id="consoleList" role="group" aria-label="Konsol Ã§Ä±ktÄ±sÄ±"></div>
         </article>
 
         <div class="pane">
           <fieldset class="q" id="predictField">
-            <legend class="q__legend" id="predictQuestion">Bu kod şu anda ne yazdırır?</legend>
+            <legend class="q__legend" id="predictQuestion">Bu kod ÅŸu anda ne yazdÄ±rÄ±r?</legend>
             <div class="options" id="predictOptions"></div>
-            <p class="q__hint" id="predictHint" hidden>Bir seçenek seç.</p>
+            <p class="q__hint" id="predictHint" hidden>Bir seÃ§enek seÃ§.</p>
           </fieldset>
 
           <div class="banner" id="predictBanner" hidden></div>
 
           <fieldset class="q" id="fixField" hidden>
-            <legend class="q__legend" id="fixQuestion">Hedefe ulaşmak için hangi değişiklik gerekli?</legend>
+            <legend class="q__legend" id="fixQuestion">Hedefe ulaÅŸmak iÃ§in hangi deÄŸiÅŸiklik gerekli?</legend>
             <p class="patch">
               <span class="patch__line" id="patchLine" aria-hidden="true">1</span>
               <code class="patch__code" id="patchCode"></code>
             </p>
             <div class="options" id="fixOptions"></div>
-            <p class="q__hint" id="fixHint" hidden>Bir seçenek seç.</p>
+            <p class="q__hint" id="fixHint" hidden>Bir seÃ§enek seÃ§.</p>
           </fieldset>
 
           <div class="hint" id="hintBox" hidden>
             <svg class="icon icon--sm" viewBox="0 0 24 24" aria-hidden="true"><use href="#i-hint"></use></svg>
-            <p><span class="hint__label">İpucu</span> <span id="hintText"></span></p>
+            <p><span class="hint__label">Ä°pucu</span> <span id="hintText"></span></p>
           </div>
 
           <div class="banner" id="fixBanner" hidden></div>
 
           <div class="actionbar">
             <button class="btn btn--primary" type="button" id="primaryBtn" data-action="predict-submit">Tahminimi kontrol et</button>
-            <button class="btn btn--ghost" type="button" id="hintBtn" data-action="hint" hidden>İpucu</button>
-            <button class="btn btn--ghost" type="button" id="solutionBtn" data-action="solution" hidden>Çözümü göster</button>
+            <button class="btn btn--ghost" type="button" id="hintBtn" data-action="hint" hidden>Ä°pucu</button>
+            <button class="btn btn--ghost" type="button" id="solutionBtn" data-action="solution" hidden>Ã‡Ã¶zÃ¼mÃ¼ gÃ¶ster</button>
           </div>
 
           <p class="keys" aria-hidden="true">
-            <kbd>1</kbd><kbd>2</kbd><kbd>3</kbd> seç · <kbd>Enter</kbd> gönder · <kbd>N</kbd> sonraki
+            <kbd>1</kbd><kbd>2</kbd><kbd>3</kbd> seÃ§ Â· <kbd>Enter</kbd> gÃ¶nder Â· <kbd>N</kbd> sonraki
           </p>
         </div>
       </div>
     </section>
 
     <section class="screen" id="screenSummary" hidden aria-labelledby="summaryTitle">
-      <p class="eyebrow">Özet</p>
+      <p class="eyebrow">Ã–zet</p>
       <h1 class="title" id="summaryTitle" tabindex="-1">Park turu tamam</h1>
       <p class="lede" id="summaryMeta"></p>
 
-      <ul class="badges" id="badges" aria-label="Kazanılan rozetler"></ul>
+      <ul class="badges" id="badges" aria-label="KazanÄ±lan rozetler"></ul>
 
       <h2 class="section-title">Karnem</h2>
       <ul class="takeaways" id="takeaways"></ul>
 
-      <h2 class="section-title">Görevler</h2>
+      <h2 class="section-title">GÃ¶revler</h2>
       <ol class="results" id="results"></ol>
 
       <div class="actionbar actionbar--plain">
         <button class="btn btn--primary" type="button" data-action="restart">Yeniden oyna</button>
-        <button class="btn btn--ghost" type="button" data-action="share">Sonucu paylaş</button>
+        <button class="btn btn--ghost" type="button" data-action="share">Sonucu paylaÅŸ</button>
         <span class="share-note" id="shareNote" role="status"></span>
       </div>
     </section>
 
     <section class="screen" id="screenError" hidden aria-labelledby="errorTitle">
       <p class="eyebrow">Hata</p>
-      <h1 class="title" id="errorTitle" tabindex="-1">Görevler yüklenemedi</h1>
-      <p class="lede">Görev dosyası okunamadı. Dosyayı yerel sunucu üzerinden açtığından emin ol; çift tıklama JSON yüklemeyi engeller.</p>
+      <h1 class="title" id="errorTitle" tabindex="-1">GÃ¶revler yÃ¼klenemedi</h1>
+      <p class="lede">GÃ¶rev dosyasÄ± okunamadÄ±. DosyayÄ± yerel sunucu Ã¼zerinden aÃ§tÄ±ÄŸÄ±ndan emin ol; Ã§ift tÄ±klama JSON yÃ¼klemeyi engeller.</p>
       <p class="code-hint"><code>python -m http.server 8000</code></p>
       <p class="detail" id="errorDetail"></p>
       <div class="actionbar actionbar--plain">
@@ -270,7 +270,7 @@
 
   <dialog class="sheet" id="glossary" aria-labelledby="glossaryTitle">
     <div class="sheet__head">
-      <h2 class="sheet__title" id="glossaryTitle">Kavram sözlüğü</h2>
+      <h2 class="sheet__title" id="glossaryTitle">Kavram sÃ¶zlÃ¼ÄŸÃ¼</h2>
       <button class="icon-btn" type="button" data-action="glossary-close" aria-label="Kapat">
         <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><use href="#i-close"></use></svg>
       </button>
@@ -283,3 +283,4 @@
   <script type="module" src="./js/app.js"></script>
 </body>
 </html>
+
