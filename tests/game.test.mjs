@@ -7,6 +7,7 @@ import {
   fixedCode,
   hasProgress,
   LEVEL_COUNT,
+  matchesPrediction,
   progressSnapshot,
   reduce,
   validateLevels,
@@ -268,4 +269,78 @@ test('progressSnapshot yalnızca kalıcı alanları taşır', () => {
   assert.deepEqual(Object.keys(snapshot).sort(), ['achievements', 'completed', 'hintUsedEver', 'predictionsCorrect']);
   assert.equal(hasProgress(snapshot), false);
   assert.equal(hasProgress({ completed: [{ id: 'x', outcome: 'solved' }] }), true);
+});
+
+test('START: serbest modda verilen karışık sıra kullanılır', () => {
+  const shuffled = [...levels].reverse();
+  const state = reduce(loaded(), { type: 'START', levels: shuffled, mode: 'free' });
+
+  assert.equal(state.mode, 'free');
+  assert.equal(state.levels[0].id, levels.at(-1).id);
+  assert.equal(state.phase, 'predict');
+});
+
+test('START: eksik sıra ve bilinmeyen mod yok sayılır', () => {
+  const state = reduce(loaded(), { type: 'START', levels: levels.slice(0, 3), mode: 'bilinmez' });
+
+  assert.equal(state.levels.length, levels.length);
+  assert.equal(state.mode, 'guided');
+});
+
+test('matchesPrediction boşlukları ve virgüllü çok satırı tolere eder', () => {
+  const multi = { prediction: { output: 'Ece\n17' } };
+  assert.equal(matchesPrediction(multi, 'Ece\n17'), true);
+  assert.equal(matchesPrediction(multi, ' Ece , 17 '), true);
+  assert.equal(matchesPrediction(multi, 'Ece 17'), false);
+  assert.equal(matchesPrediction({ prediction: { output: '4' } }, ' 4 '), true);
+  assert.equal(matchesPrediction({ prediction: { output: '4' } }, '41'), false);
+  assert.equal(matchesPrediction({ prediction: { output: '4' } }, '   '), false);
+  assert.equal(matchesPrediction(null, '4'), false);
+});
+
+test('Doğru yazılı tahmin fix fazına geçer ve sayılır', () => {
+  const state = started();
+  const level = state.levels[0];
+  const next = reduce(state, { type: 'SUBMIT_TYPED_PREDICTION', text: ` ${level.prediction.output} ` });
+
+  assert.equal(next.phase, 'fix');
+  assert.equal(next.predictionCorrect, true);
+  assert.equal(next.predictionTyped, level.prediction.output.trim());
+  assert.equal(next.predictionsCorrect, 1);
+});
+
+test('Yanlış yazılı tahmin akışı kilitlemez, sayacı artırmaz', () => {
+  const state = started();
+  const next = reduce(state, { type: 'SUBMIT_TYPED_PREDICTION', text: 'kesinlikle yanlış' });
+
+  assert.equal(next.phase, 'fix');
+  assert.equal(next.predictionCorrect, false);
+  assert.equal(next.predictionsCorrect, 0);
+  assert.equal(next.predictionTyped, 'kesinlikle yanlış');
+});
+
+test('Boş yazılı tahmin yok sayılır', () => {
+  const state = started();
+  assert.equal(reduce(state, { type: 'SUBMIT_TYPED_PREDICTION', text: '   ' }), state);
+  assert.equal(reduce(state, { type: 'SUBMIT_TYPED_PREDICTION', text: null }), state);
+});
+
+test('HOME özetten girişe döner, sırayı ve ilerlemeyi sıfırlar', () => {
+  const state = reduce(loaded(), { type: 'START', levels: [...levels].reverse(), mode: 'free' });
+  const solved = reduce(state, { type: 'SUBMIT_TYPED_PREDICTION', text: state.levels[0].prediction.output });
+  const home = reduce(solved, { type: 'HOME' });
+
+  assert.equal(home.phase, 'intro');
+  assert.equal(home.completed.length, 0);
+  assert.deepEqual(home.levels.map((level) => level.order), levels.map((level) => level.order));
+  assert.equal(reduce(home, { type: 'HOME' }), home);
+});
+
+test('RESTART verilen yeni sırayı kullanır', () => {
+  const state = started();
+  const next = reduce(state, { type: 'RESTART', levels: [...levels].reverse() });
+
+  assert.equal(next.phase, 'predict');
+  assert.equal(next.completed.length, 0);
+  assert.equal(next.levels[0].id, levels.at(-1).id);
 });

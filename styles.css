@@ -474,6 +474,12 @@ main { padding-block: var(--s6) var(--s8); }
   scrollbar-color: #3A4048 transparent;
 }
 
+.editor__code:focus-visible {
+  outline: 2px solid var(--focus);
+  outline-offset: -2px;
+  border-radius: var(--r-sm);
+}
+
 .editor__code.is-scrollable:not(.is-end) {
   -webkit-mask-image: linear-gradient(to right, #000 calc(100% - 32px), transparent);
   mask-image: linear-gradient(to right, #000 calc(100% - 32px), transparent);
@@ -1364,3 +1370,146 @@ kbd {
 @media (max-width: 900px) {
   .intro-grid { grid-template-columns: minmax(0, 1fr); }
 }
+
+/* 20 bölüm: bilet iki sütun, on satır */
+.pass__list { grid-template-rows: repeat(10, auto); }
+
+/* Mod seçimi */
+.steps { margin-block: var(--s7) var(--s5); }
+
+.mode {
+  display: inline-flex;
+  gap: 2px;
+  padding: 3px;
+  background: var(--surface-2);
+  border: 1px solid var(--line);
+  border-radius: var(--r-pill);
+}
+
+.mode__btn {
+  min-height: 36px;
+  padding: 0 16px;
+  border: 0;
+  border-radius: var(--r-pill);
+  background: transparent;
+  color: var(--ink-soft);
+  font-size: .875rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.mode__btn[aria-pressed="true"] {
+  background: var(--surface);
+  color: var(--ink);
+  box-shadow: var(--shadow-1);
+}
+
+.mode__note {
+  margin-top: var(--s2);
+  max-width: 46ch;
+  font-size: .8125rem;
+  color: var(--ink-mute);
+}
+
+.start-block { margin-top: var(--s5); }
+
+/* Serbest mod: yazılı tahmin */
+.typed { display: grid; gap: 6px; }
+
+.typed__label {
+  font-size: .75rem;
+  font-weight: 600;
+  letter-spacing: .06em;
+  text-transform: uppercase;
+  color: var(--ink-mute);
+}
+
+.typed__input {
+  width: 100%;
+  min-height: 48px;
+  padding: 10px 12px;
+  background: var(--surface);
+  border: 1px solid var(--line-ui);
+  border-radius: var(--r-md);
+  color: var(--ink);
+  font-family: var(--font-mono);
+  font-size: 1rem;
+}
+
+.typed__input::placeholder { color: var(--ink-mute); }
+
+.typed__input:disabled {
+  background: var(--surface-2);
+  color: var(--ink-soft);
+  cursor: default;
+}
+
+.typed__note { font-size: .8125rem; color: var(--ink-mute); }
+
+/* Öğretmen raporu */
+.report-box {
+  display: grid;
+  gap: var(--s3);
+  margin-top: var(--s6);
+  padding: var(--s4);
+  background: var(--surface);
+  border: 1px dashed var(--line-ui);
+  border-radius: var(--r-md);
+}
+
+.report-box__row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--s2);
+}
+
+.report-box__row .typed__input {
+  flex: 1 1 200px;
+  font-family: var(--font-ui);
+}
+
+.report-box__note {
+  font-size: .8125rem;
+  color: var(--ink-mute);
+  overflow-wrap: anywhere;
+}
+
+.report-stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: var(--s3);
+  margin-top: var(--s5);
+}
+
+.report-stats li {
+  padding: var(--s3) var(--s4);
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--r-md);
+}
+
+.report-stats__label {
+  display: block;
+  min-height: 2.4em;
+  font-size: .75rem;
+  font-weight: 600;
+  line-height: 1.2;
+  letter-spacing: .06em;
+  text-transform: uppercase;
+  color: var(--ink-mute);
+}
+
+.report-stats__value {
+  display: block;
+  font-size: 1.5rem;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+.report-stats li.is-text .report-stats__value {
+  font-size: 1rem;
+  font-weight: 500;
+  line-height: 1.4;
+}
+
+.chip--none { background: var(--surface-2); color: var(--ink-mute); }

@@ -3,7 +3,7 @@
  * Fazlar: loading | error | intro | predict | fix | solved | summary
  */
 
-export const LEVEL_COUNT = 15;
+export const LEVEL_COUNT = 20;
 
 export const ACHIEVEMENTS = [
   { id: 'ilk-adim', title: 'İlk adım', description: 'İlk hatayı düzelttin.', icon: 'bolt' },
@@ -16,6 +16,30 @@ const LEVEL_TEXT_FIELDS = ['id', 'title', 'concept', 'goal', 'code', 'explain', 
 const CHOICE_TEXT_FIELDS = ['id', 'label', 'feedback'];
 
 const isText = (value) => typeof value === 'string' && value.trim().length > 0;
+
+/**
+ * Serbest modda yazılan çıktıyı beklenen çıktıyla karşılaştırır.
+ * Boşluklar ve satır sonları normalize edilir; çok satırlı çıktı virgülle de yazılabilir.
+ */
+export function matchesPrediction(level, text) {
+  if (!level || !isText(text)) return false;
+
+  const normalize = (value) => value
+    .replace(/\r/g, '')
+    .split('\n')
+    .map((line) => line.trim())
+    .filter((line) => line.length > 0)
+    .join('\n');
+
+  const expected = normalize(level.prediction.output);
+  const given = normalize(text);
+
+  if (expected === given) return true;
+  if (!expected.includes('\n')) return false;
+
+  const asComma = expected.split('\n').join(', ');
+  return given.replace(/\s*,\s*/g, ', ') === asComma;
+}
 
 /**
  * levels.json dosyasını doğrular. Uygulama açılışta bunu çağırır,
@@ -122,7 +146,9 @@ export function createGame() {
     levels: [],
     levelIndex: 0,
     phase: 'loading',
+    mode: 'guided',
     predictionChoiceId: null,
+    predictionTyped: null,
     predictionCorrect: null,
     fixChoiceId: null,
     fixAttempts: 0,
@@ -141,6 +167,7 @@ function resetLevel(state) {
   return {
     ...state,
     predictionChoiceId: null,
+    predictionTyped: null,
     predictionCorrect: null,
     fixChoiceId: null,
     fixAttempts: 0,
@@ -177,10 +204,15 @@ function nextState(state, action) {
     case 'LOAD_FAILED':
       return { ...createGame(), phase: 'error', error: String(action.error ?? 'Bilinmeyen hata') };
 
-    case 'START':
+    case 'START': {
       if (state.phase !== 'intro' || state.levels.length === 0) return state;
+      const levels = Array.isArray(action.levels) && action.levels.length === state.levels.length
+        ? action.levels
+        : state.levels;
       return {
         ...resetLevel(state),
+        levels,
+        mode: action.mode === 'free' ? 'free' : 'guided',
         phase: 'predict',
         levelIndex: 0,
         completed: [],
@@ -188,6 +220,7 @@ function nextState(state, action) {
         predictionsCorrect: 0,
         hintUsedEver: false,
       };
+    }
 
     case 'RESUME': {
       if (state.phase !== 'intro' || state.levels.length === 0) return state;
@@ -219,6 +252,19 @@ function nextState(state, action) {
         ...state,
         phase: 'fix',
         predictionChoiceId: choice.id,
+        predictionCorrect: correct,
+        predictionsCorrect: state.predictionsCorrect + (correct ? 1 : 0),
+      };
+    }
+
+    case 'SUBMIT_TYPED_PREDICTION': {
+      if (state.phase !== 'predict' || !level) return state;
+      if (!isText(action.text)) return state;
+      const correct = matchesPrediction(level, action.text);
+      return {
+        ...state,
+        phase: 'fix',
+        predictionTyped: action.text.trim(),
         predictionCorrect: correct,
         predictionsCorrect: state.predictionsCorrect + (correct ? 1 : 0),
       };
@@ -272,10 +318,28 @@ function nextState(state, action) {
       return { ...resetLevel(state), phase: 'predict', levelIndex: nextIndex };
     }
 
-    case 'RESTART': {
-      if (state.levels.length === 0) return state;
+    case 'HOME': {
+      if (state.phase === 'intro' || state.phase === 'loading') return state;
       return {
         ...resetLevel(state),
+        phase: 'intro',
+        levelIndex: 0,
+        levels: [...state.levels].sort((a, b) => a.order - b.order),
+        completed: [],
+        achievements: [],
+        predictionsCorrect: 0,
+        hintUsedEver: false,
+      };
+    }
+
+    case 'RESTART': {
+      if (state.levels.length === 0) return state;
+      const levels = Array.isArray(action.levels) && action.levels.length === state.levels.length
+        ? action.levels
+        : state.levels;
+      return {
+        ...resetLevel(state),
+        levels,
         phase: 'predict',
         levelIndex: 0,
         completed: [],

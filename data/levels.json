@@ -495,6 +495,171 @@
           { "id": "f3", "label": "deger.toString", "feedback": "Parantez olmadan da null üzerinde özellik okunamaz: TypeError." }
         ]
       }
+    },
+    {
+      "id": "await-missing",
+      "order": 16,
+      "title": "Beklemeden okuma",
+      "concept": "await",
+      "goal": "Konsola hazır yazdır.",
+      "code": "async function veri() {\n  return 'hazır';\n}\n\nasync function calistir() {\n  const sonuc = veri();\n  console.log(sonuc);\n}\n\ncalistir();",
+      "explain": "async fonksiyon Promise döndürür; await olmadan değer değil, Promise yazdırılır.",
+      "hint": "Promise'in içindeki değeri almak için hangi anahtar kelime gerekir?",
+      "takeaway": "async fonksiyonun değerini await ile al; yoksa Promise yazdırılır.",
+      "prediction": {
+        "question": "Bu kod şu anda ne yazdırır?",
+        "answerId": "p1",
+        "output": "Promise { <pending> }",
+        "choices": [
+          { "id": "p1", "label": "Promise { <pending> }", "feedback": "veri() bir Promise döndürür; sonuç beklenmeden yazdırılıyor." },
+          { "id": "p2", "label": "hazır", "feedback": "Bunun için await gerekir." },
+          { "id": "p3", "label": "undefined", "feedback": "Fonksiyon bir değer döndürüyor; eksik olan bekleme." }
+        ]
+      },
+      "fix": {
+        "question": "Hedefe ulaşmak için hangi değişiklik gerekli?",
+        "answerId": "f1",
+        "target": { "line": 6, "snippet": "veri()" },
+        "solution": "await veri()",
+        "output": "hazır",
+        "choices": [
+          { "id": "f1", "label": "await veri()", "feedback": "await Promise çözülene kadar bekler, sonra hazır yazdırılır." },
+          { "id": "f2", "label": "veri().then(v => v)", "feedback": "then yeni bir Promise döndürür; yine Promise yazdırılır." },
+          { "id": "f3", "label": "Promise.resolve(veri())", "feedback": "Promise'i Promise'e sarar; değer yine dışarı çıkmaz." }
+        ]
+      }
+    },
+    {
+      "id": "reduce-start",
+      "order": 17,
+      "title": "Fazla başlangıç",
+      "concept": "reduce",
+      "goal": "Konsola 6 yazdır.",
+      "code": "const sayilar = [1, 2, 3];\nconst toplam = sayilar.reduce((acc, n) => acc + n, 10);\nconsole.log(toplam);",
+      "explain": "reduce'un ikinci argümanı başlangıç değeridir; toplam 10'dan başlıyor.",
+      "hint": "Toplam hangi değerden başlıyor? Başlangıç değeri gerekli mi?",
+      "takeaway": "reduce(fn, başlangıç) toplamı başlangıçtan başlatır; boş dizi için de gerekir.",
+      "prediction": {
+        "question": "Bu kod şu anda ne yazdırır?",
+        "answerId": "p1",
+        "output": "16",
+        "choices": [
+          { "id": "p1", "label": "16", "feedback": "10 + 1 + 2 + 3: toplam verilen başlangıç değerinden başlıyor." },
+          { "id": "p2", "label": "6", "feedback": "Bu, başlangıç değeri verilmezse çıkar." },
+          { "id": "p3", "label": "60", "feedback": "Bu, toplama yerine çarpma yapılırsa çıkar." }
+        ]
+      },
+      "fix": {
+        "question": "Hedefe ulaşmak için hangi değişiklik gerekli?",
+        "answerId": "f1",
+        "target": { "line": 2, "snippet": "acc + n, 10" },
+        "solution": "acc + n",
+        "output": "6",
+        "choices": [
+          { "id": "f1", "label": "acc + n", "feedback": "Başlangıç değeri kalkınca toplam 1 + 2 + 3 = 6 olur." },
+          { "id": "f2", "label": "acc + n, 1", "feedback": "Başlangıç bu kez 1: sonuç 7." },
+          { "id": "f3", "label": "acc * n", "feedback": "Çarpım yapılıyor: 10 × 1 × 2 × 3 = 60." }
+        ]
+      }
+    },
+    {
+      "id": "object-entries",
+      "order": 18,
+      "title": "Nesne döngüsü",
+      "concept": "Object.entries",
+      "goal": "Konsola önce Ece, sonra 17 yazdır (iki satır).",
+      "code": "const kullanici = { ad: 'Ece', yas: 17 };\nfor (const [anahtar, deger] of kullanici) {\n  console.log(deger);\n}",
+      "explain": "Nesne doğrudan yinelenemez; anahtar-değer çiftleri Object.entries ile alınır.",
+      "hint": "Nesnenin anahtar-değer çiftlerini diziye çeviren metot hangisi?",
+      "takeaway": "Nesneler için Object.entries, anahtarlar için Object.keys kullan.",
+      "prediction": {
+        "question": "Bu kod şu anda ne yazdırır?",
+        "answerId": "p1",
+        "output": "TypeError: kullanici is not iterable",
+        "choices": [
+          { "id": "p1", "label": "TypeError: kullanici is not iterable", "feedback": "Düz nesneler yinelenebilir değildir; for...of hata verir." },
+          { "id": "p2", "label": "Ece\n17", "feedback": "Bunun için çiftleri Object.entries ile almak gerekir." },
+          { "id": "p3", "label": "ad\nyas", "feedback": "Bu, anahtarlar üzerinde dönülürse çıkar." }
+        ]
+      },
+      "fix": {
+        "question": "Hedefe ulaşmak için hangi değişiklik gerekli?",
+        "answerId": "f1",
+        "target": { "line": 2, "snippet": "of kullanici" },
+        "solution": "of Object.entries(kullanici)",
+        "output": "Ece\n17",
+        "choices": [
+          { "id": "f1", "label": "of Object.entries(kullanici)", "feedback": "Her turda [anahtar, değer] gelir; değerler yazdırılır." },
+          { "id": "f2", "label": "of Object.keys(kullanici)", "feedback": "Yalnızca anahtarlar gelir: ad, yas. İkinci eleman tanımsız olur." },
+          { "id": "f3", "label": "of kullanici.entries()", "feedback": "Nesnelerde entries metodu yoktur; TypeError sürer." }
+        ]
+      }
+    },
+    {
+      "id": "month-index",
+      "order": 19,
+      "title": "Ay numarası",
+      "concept": "Date",
+      "goal": "Konsola 5 yazdır.",
+      "code": "const tarih = new Date('2024-05-01');\nconsole.log(tarih.getMonth());",
+      "explain": "getMonth Ocak için 0 döner; Mayıs bu yüzden 4.",
+      "hint": "Aylar hangi sayıdan başlıyor?",
+      "takeaway": "getMonth 0 tabanlıdır; insan ayı için +1 ekle, gün için getDate kullan.",
+      "prediction": {
+        "question": "Bu kod şu anda ne yazdırır?",
+        "answerId": "p1",
+        "output": "4",
+        "choices": [
+          { "id": "p1", "label": "4", "feedback": "Ocak 0 olduğu için Mayıs 4'e denk gelir." },
+          { "id": "p2", "label": "5", "feedback": "Bu, 1 tabanlı ay numarası; getMonth böyle çalışmaz." },
+          { "id": "p3", "label": "1", "feedback": "1, getDate'in bu tarih için döndürdüğü gün." }
+        ]
+      },
+      "fix": {
+        "question": "Hedefe ulaşmak için hangi değişiklik gerekli?",
+        "answerId": "f1",
+        "target": { "line": 2, "snippet": "tarih.getMonth()" },
+        "solution": "tarih.getMonth() + 1",
+        "output": "5",
+        "choices": [
+          { "id": "f1", "label": "tarih.getMonth() + 1", "feedback": "0 tabanlı değere 1 eklenince Mayıs 5 olur." },
+          { "id": "f2", "label": "tarih.getDate()", "feedback": "Bu ayı değil, ayın gününü verir: 1." },
+          { "id": "f3", "label": "tarih.getDay()", "feedback": "Bu haftanın gününü verir: 3 (Çarşamba)." }
+        ]
+      }
+    },
+    {
+      "id": "throw-or-return",
+      "order": 20,
+      "title": "Sıfıra bölme",
+      "concept": "try/catch",
+      "goal": "Konsola 0 yazdır.",
+      "code": "function bol(a, b) {\n  if (b === 0) {\n    throw new Error('sıfıra bölme');\n  }\n  return a / b;\n}\n\ntry {\n  console.log(bol(6, 0));\n} catch (hata) {\n  console.log(hata);\n}",
+      "explain": "Hata fırlatmak akışı catch'e atar; varsayılan değer döndürmek için return gerekir.",
+      "hint": "Hata fırlatmak yerine güvenli bir değer döndürebilir misin?",
+      "takeaway": "throw akışı catch'e atar; beklenen durumlarda varsayılan değer döndürmek daha sade.",
+      "prediction": {
+        "question": "Bu kod şu anda ne yazdırır?",
+        "answerId": "p1",
+        "output": "Error: sıfıra bölme",
+        "choices": [
+          { "id": "p1", "label": "Error: sıfıra bölme", "feedback": "Hata fırlatılıyor, catch yakalıyor ve hatayı yazdırıyor." },
+          { "id": "p2", "label": "0", "feedback": "Bunun için hata yerine varsayılan değer döndürülmeli." },
+          { "id": "p3", "label": "Infinity", "feedback": "Infinity, sıfıra bölme koruması olmasaydı çıkardı." }
+        ]
+      },
+      "fix": {
+        "question": "Hedefe ulaşmak için hangi değişiklik gerekli?",
+        "answerId": "f1",
+        "target": { "line": 3, "snippet": "throw new Error('sıfıra bölme')" },
+        "solution": "return 0",
+        "output": "0",
+        "choices": [
+          { "id": "f1", "label": "return 0", "feedback": "Hata yerine 0 dönünce catch devreye girmez, konsola 0 yazılır." },
+          { "id": "f2", "label": "return null", "feedback": "Akış düzelir ama yazdırılan değer null olur." },
+          { "id": "f3", "label": "console.log('sıfıra bölme')", "feedback": "İçeride metin yazdırılır, sonra a / b çalışır: Infinity." }
+        ]
+      }
     }
   ]
 }

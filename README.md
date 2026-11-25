@@ -6,10 +6,10 @@
 
 **Kodu oku, çıktısını tahmin et, hatayı düzelt.**
 
-JavaScript'e yeni başlayanlar için on beş kısa görevden oluşan, tarayıcıda çalışan bir hata avı oyunu.
+JavaScript'e yeni başlayanlar için yirmi kısa görevden oluşan, tarayıcıda çalışan bir hata avı oyunu.
 Süre yok, puan yok, üyelik yok — sadece kod, çıktı ve neden.
 
-[![testler](https://img.shields.io/badge/testler-30%20ge%C3%A7ti-0F6B45?style=flat-square&labelColor=14161A)](tests/)
+[![testler](https://img.shields.io/badge/testler-43%20ge%C3%A7ti-0F6B45?style=flat-square&labelColor=14161A)](tests/)
 [![bağımlılık](https://img.shields.io/badge/ba%C4%9F%C4%B1ml%C4%B1l%C4%B1k-0-0F6B45?style=flat-square&labelColor=14161A)](package.json)
 [![erişilebilirlik](https://img.shields.io/badge/axe-0%20ihlal-0F6B45?style=flat-square&labelColor=14161A)](#erişilebilirlik)
 [![lisans](https://img.shields.io/badge/lisans-MIT-14161A?style=flat-square)](LICENSE)
@@ -26,7 +26,7 @@ Her bölümde kasıtlı olarak bozuk bir kod parçası var. Oyuncu önce **bu ko
 sonra tek bir değişiklikle hedefe ulaştırır. Tahmin yanlış olsa da akış kilitlenmez: gerçek çıktı, seçilen
 seçeneğin neden yanlış olduğu ve hatanın nedeni birlikte gösterilir.
 
-On beş görev, JavaScript'te en sık yapılan on beş hatayı hedefler:
+Yirmi görev, JavaScript'te en sık yapılan yirmi hatayı hedefler:
 
 | # | Görev | Kavram | Hatalı çıktı → hedef |
 | :--: | --- | --- | --- |
@@ -45,6 +45,11 @@ On beş görev, JavaScript'te en sık yapılan on beş hatayı hedefler:
 | 13 | Piksel değeri | `parseInt` | `NaN` → `12` |
 | 14 | Sıfır indirim | `??` operatörü | `90` → `100` |
 | 15 | Boş değer | `String()` | `TypeError` → `null` |
+| 16 | Beklemeden okuma | `await` | `Promise` → `hazır` |
+| 17 | Fazla başlangıç | `reduce` | `16` → `6` |
+| 18 | Nesne döngüsü | `Object.entries` | `TypeError` → `Ece, 17` |
+| 19 | Ay numarası | `Date` | `4` → `5` |
+| 20 | Sıfıra bölme | `try/catch` | `Error` → `0` |
 
 ## Neden böyle
 
@@ -77,7 +82,7 @@ Tarayıcıda <http://localhost:8000> adresini aç.
 Testler ve şema doğrulaması:
 
 ```bash
-npm test                          # 30 birim testi (game.js + tokenize.js)
+npm test                          # 43 birim testi (game.js + tokenize.js + report.js)
 node tests/validate-levels.mjs    # levels.json şema kontrolü
 ```
 
@@ -93,11 +98,19 @@ node tests/validate-levels.mjs    # levels.json şema kontrolü
 - **Karanlık tema** ve **isteğe bağlı ses** (WebAudio, varsayılan kapalı).
 - **Klavye:** `1`–`3` seç, `Enter` gönder, `N` sonraki bölüm.
 - **Sonucu paylaş:** özet ekranı tek tuşla panoya kopyalanabilir bir metin üretir.
+- **Serbest mod:** görevler karışık sırada gelir ve tahmin çoktan seçmeli değildir — çıktıyı kendin
+  yazarsın. Boşluklar ve satır sonları tolere edilir, çok satırlı çıktı virgülle de yazılabilir.
+- **Öğretmen raporu:** özet ekranındaki düğme, sonucu bir bağlantının içine kodlar. Öğretmen bağlantıyı
+  açtığında görev görev raporu görür — sunucu, hesap veya veri toplama yok.
 - **Sözdizimi renklendirme** `innerHTML` kullanmadan, kendi tokenizer'ı ile yapılır.
 
 | Karanlık tema | Özet ve rozetler |
 | :--: | :--: |
 | ![Karanlık tema](docs/screenshots/05-dark.png) | ![Özet ekranı](docs/screenshots/06-summary.png) |
+
+| Serbest mod: çıktıyı kendin yaz | Öğretmen raporu (bağlantıyla) |
+| :--: | :--: |
+| ![Serbest mod](docs/screenshots/09-free-mode.png) | ![Öğretmen raporu](docs/screenshots/10-report.png) |
 
 <p align="center">
   <img src="docs/screenshots/07-mobile-intro.png" width="46%" alt="Mobil giriş ekranı">
@@ -113,6 +126,7 @@ index.html ──▶ js/app.js ──▶ fetch('./data/levels.json')
                   ├─▶ js/game.js     saf durum makinesi (DOM yok, test edilebilir)
                   ├─▶ js/ui.js       DOM yazımı, odak yönetimi, canlı bölge
                   ├─▶ js/tokenize.js güvenli sözdizimi renklendirme
+                  ├─▶ js/report.js   rapor bağlantısı kodlama/çözme (base64url)
                   └─▶ js/storage.js  ilerleme ve tercihler (localStorage)
 ```
 
@@ -147,9 +161,9 @@ tek ihlal oyunu sessizce bozmak yerine açıklayıcı hata ekranına düşürür
 
 | Kontrol | Sonuç |
 | --- | --- |
-| Birim testleri (`node --test`) | 30/30 |
-| `levels.json` şema doğrulaması | 15 bölüm · 90 seçenek geçerli |
-| axe-core 4.10 (WCAG 2.1 A/AA + best-practice) | 7 ekran durumunda 0 ihlal |
+| Birim testleri (`node --test`) | 43/43 |
+| `levels.json` şema doğrulaması | 20 bölüm · 120 seçenek geçerli |
+| axe-core 4.10 (WCAG 2.1 A/AA + best-practice) | 9 ekran durumunda 0 ihlal |
 | Elle test matrisi | 16 senaryo (klavye, mobil, %200 yakınlaştırma, ağ hatası, çift tıklama) |
 | Tarayıcılar | Chrome, Edge, Firefox, Safari son iki sürüm · iOS Safari 16+ |
 
@@ -162,19 +176,37 @@ tek ihlal oyunu sessizce bozmak yerine açıklayıcı hata ekranına düşürür
 - `prefers-reduced-motion` açıkken tüm hareket kapanır.
 - Ölçülen kontrastlar: gövde 16.19:1, kontrol sınırı 3.50:1, kod tokenları 5.85–10.58:1.
 
+## Öğretmen raporu
+
+Özet ekranında bir ad yazıp **Rapor bağlantısı oluştur** düğmesine bas. Sonuç, bağlantının `#rapor=…`
+kısmına sıkıştırılır:
+
+```text
+https://…/bugpark/#rapor=djF8RWNlIFkufDE2fDB8aWxrLWFkaW0…
+```
+
+Bağlantıyı açan kişi (öğretmen) görev görev raporu görür: hangi görev çözüldü, hangisinde çözüm
+gösterildi, kaç tahmin doğru, hangi rozetler kazanıldı. Veri yalnızca bağlantının içinde taşınır;
+sunucuya hiçbir şey gönderilmez, hesap gerekmez. Ad isteğe bağlıdır ve bağlantıyı üreten kişi
+tarafından seçilir.
+
 ## Bilinen davranışlar
 
 - İlerleme bu tarayıcıya özeldir; hesaplar arasında taşınmaz. "Baştan başla" kaydı siler.
+- Serbest modda ilerleme kaydedilmez; sıralı moda dönünce kaldığın yerden devam edersin.
 - Tarayıcı geri tuşu oyun içi geri sayılmaz.
 - Kod asla çalıştırılmaz; çıktılar önceden yazılmış metinlerdir.
 - Mobilde uzun kod satırları alt satıra sarılır; masaüstünde yatay kaydırılır.
 
 ## Yol haritası
 
+- [x] Bölüm 6–10 (nesne, ok fonksiyonu, metot, iç içe dizi, `sort`)
 - [x] Bölüm 11–15 (şablon metni, `filter`, `parseInt`, `??`, `String()`)
-- [ ] Bölüm 16–20 (asenkron/sıra, `try/catch`, `reduce`, `Object` döngüsü, `Date`)
-- [ ] Serbest mod: rastgele sıra, hatalı çıktıyı kendin yaz
-- [ ] Öğretmen görünümü: sınıf için bağlantı ile paylaşılan ilerleme raporu
+- [x] Bölüm 16–20 (`await`, `reduce`, `Object.entries`, `Date`, `try/catch`)
+- [x] Serbest mod: karışık sıra, çıktıyı kendin yaz
+- [x] Öğretmen görünümü: bağlantıyla paylaşılan ilerleme raporu
+- [ ] Bölüm 21–25 (sınıf, `Map`/`Set`, modüller, `localStorage` kullanımı)
+- [ ] Sınıf modu: öğretmen bağlantı üretip öğrencilere dağıtır, raporlar aynı ekranda toplanır
 
 ## Lisans
 

@@ -68,8 +68,20 @@ const dom = {
   errorDetail: byId('errorDetail'),
   glossary: byId('glossary'),
   glossaryList: byId('glossaryList'),
+  typedBlock: byId('typedBlock'),
+  typedInput: byId('typedInput'),
+  modeNote: byId('modeNote'),
+  reportName: byId('reportName'),
+  reportLinkNote: byId('reportLinkNote'),
+  report: byId('screenReport'),
+  reportMeta: byId('reportMeta'),
+  reportStats: byId('reportStats'),
+  reportResults: byId('reportResults'),
+  keys: null,
   status: byId('status'),
 };
+
+dom.keys = document.querySelector('.keys');
 
 dom.brief = dom.goal.closest('.brief');
 
@@ -78,6 +90,7 @@ const screens = {
   loading: dom.loading,
   level: dom.level,
   summary: dom.summary,
+  report: dom.report,
   error: dom.error,
 };
 
@@ -86,6 +99,7 @@ const HEADING = {
   loading: byId('loadingTitle'),
   level: dom.levelTitle,
   summary: byId('summaryTitle'),
+  report: byId('reportTitle'),
   error: byId('errorTitle'),
 };
 
@@ -131,6 +145,18 @@ function screenNameFor(state) {
 /* ---------------------------------------------------------------- genel */
 
 export function render(state, view = {}) {
+  if (view.report && state.levels.length > 0) {
+    for (const [name, node] of Object.entries(screens)) node.hidden = name !== 'report';
+    renderTools(view);
+    dom.topbarStatus.hidden = true;
+    renderReport(view.report, state.levels);
+    const heading = HEADING.report;
+    if (heading && (firstRender || lastScreen !== 'report')) heading.focus();
+    firstRender = false;
+    lastScreen = 'report';
+    return;
+  }
+
   const screen = screenNameFor(state);
 
   for (const [name, node] of Object.entries(screens)) {
@@ -163,7 +189,9 @@ export function announce(text) {
   }, 60);
 }
 
-export function showHint(which) {
+export function showHint(which, message) {
+  const hint = which === 'predict' ? dom.predictHint : dom.fixHint;
+  if (message) hint.textContent = message;
   if (which === 'predict') {
     dom.predictHint.hidden = false;
     dom.predictField.setAttribute('aria-describedby', 'predictHint');
@@ -221,6 +249,22 @@ export function setShareNote(text) {
   dom.shareNote.textContent = text;
 }
 
+export function setReportNote(text) {
+  dom.reportLinkNote.textContent = text;
+}
+
+export function typedAnswer() {
+  return dom.typedInput.value;
+}
+
+export function isTypedInput(node) {
+  return node === dom.typedInput;
+}
+
+export function reportNameValue() {
+  return dom.reportName.value;
+}
+
 export function revealHint() {
   if (dom.hintBox.hidden) return;
   const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -276,7 +320,16 @@ function renderIntro(state, view) {
     dom.passList.append(row);
   });
 
-  const hasResume = Boolean(view.hasResume);
+  const free = view.mode === 'free';
+  for (const button of document.querySelectorAll('[data-action^="mode-"]')) {
+    const isFree = button.dataset.action === 'mode-free';
+    button.setAttribute('aria-pressed', String(isFree === free));
+  }
+  dom.modeNote.textContent = free
+    ? 'Serbest mod: görevler karışık sırada, tahminleri kendin yazarsın. İlerleme kaydedilmez.'
+    : 'Sıralı mod: görevler sırayla, tahminler çoktan seçmeli. İlerlemen kaydedilir.';
+
+  const hasResume = Boolean(view.hasResume) && !free;
   dom.startBlock.hidden = hasResume;
   dom.resumeBlock.hidden = !hasResume;
   if (hasResume) {
@@ -317,7 +370,8 @@ function renderLevel(state) {
   renderCode(code, changedLine, lineCount);
 
   /* Konsol */
-  const answered = state.predictionChoiceId !== null;
+  const typedMode = state.mode === 'free';
+  const answered = state.predictionChoiceId !== null || state.predictionTyped !== null;
   if (!answered) {
     dom.consoleLabel.textContent = 'Konsol';
     dom.consoleList.classList.remove('console--good', 'console--bad');
@@ -332,28 +386,44 @@ function renderLevel(state) {
   /* Tahmin */
   dom.predictQuestion.textContent = level.prediction.question;
 
+  dom.typedBlock.hidden = !typedMode;
+  dom.predictOptions.hidden = typedMode;
+  dom.keys.hidden = typedMode;
+  if (typedMode) {
+    dom.typedInput.value = state.predictionTyped ?? '';
+    dom.typedInput.disabled = answered;
+  }
+
   const predictionMarks = {};
-  if (answered) {
+  if (answered && !typedMode) {
     predictionMarks[level.prediction.answerId] = 'good';
     if (!state.predictionCorrect) predictionMarks[state.predictionChoiceId] = 'bad';
   }
 
-  renderOptions(dom.predictOptions, level.prediction.choices, {
-    name: 'prediction',
-    selectedId: state.predictionChoiceId,
-    marks: predictionMarks,
-    allLocked: answered,
-  });
+  if (!typedMode) {
+    renderOptions(dom.predictOptions, level.prediction.choices, {
+      name: 'prediction',
+      selectedId: state.predictionChoiceId,
+      marks: predictionMarks,
+      allLocked: answered,
+    });
+  } else {
+    dom.predictOptions.textContent = '';
+  }
 
   if (answered) {
     const chosen = level.prediction.choices.find((item) => item.id === state.predictionChoiceId);
+    const body = typedMode
+      ? `Senin cevabın: ${state.predictionTyped ?? ''}`
+      : (chosen ? chosen.feedback : '');
+
     dom.predictBanner.hidden = solved;
     if (!solved) {
       showBanner(
         dom.predictBanner,
         state.predictionCorrect ? 'good' : 'bad',
         state.predictionCorrect ? 'Doğru tahmin' : 'Tahmin tutmadı',
-        chosen ? chosen.feedback : '',
+        body,
         level.explain,
       );
     }
@@ -566,7 +636,8 @@ function renderSummary(state, view) {
   const revealedCount = state.completed.length - solvedCount;
 
   dom.summaryMeta.textContent = `${state.completed.length}/${total} görev tamamlandı`
-    + (revealedCount > 0 ? ` · ${revealedCount} görevde çözüm gösterildi` : '');
+    + (revealedCount > 0 ? ` · ${revealedCount} görevde çözüm gösterildi` : '')
+    + (state.mode === 'free' ? ' · Serbest mod' : '');
 
   /* Rozetler */
   dom.badges.textContent = '';
@@ -590,9 +661,10 @@ function renderSummary(state, view) {
   }
 
   /* Karne */
+  const doneById = new Map(state.completed.map((item) => [item.id, item.outcome]));
   dom.takeaways.textContent = '';
   state.levels.forEach((level, index) => {
-    const done = state.completed[index];
+    const done = doneById.get(level.id);
     const row = document.createElement('li');
     const glyph = icon(CONCEPT_ICONS[index] || 'i-loop', 'icon icon--sm');
     if (!done) glyph.style.color = 'var(--ink-mute)';
@@ -603,7 +675,7 @@ function renderSummary(state, view) {
   /* Görev listesi */
   dom.results.textContent = '';
   state.levels.forEach((level, index) => {
-    const done = state.completed[index];
+    const done = doneById.get(level.id);
     const row = document.createElement('li');
 
     const num = el('span', 'results__n', String(index + 1));
@@ -615,7 +687,7 @@ function renderSummary(state, view) {
       el('span', 'results__concept', level.concept),
     );
 
-    const revealed = done && done.outcome === 'revealed';
+    const revealed = done === 'revealed';
     const chip = el(
       'span',
       `chip chip--${revealed ? 'revealed' : 'solved'}`,
@@ -631,4 +703,64 @@ function renderSummary(state, view) {
 
 function renderError(state) {
   dom.errorDetail.textContent = state.error ? `Teknik ayrıntı: ${state.error}` : '';
+}
+
+/* -------------------------------------------------------- öğretmen raporu */
+
+function renderReport(report, levels) {
+  const total = levels.length;
+  const doneById = new Map(report.completed.map((item) => [item.id, item.outcome]));
+  const solved = report.completed.filter((item) => item.outcome === 'solved').length;
+  const revealed = report.completed.length - solved;
+
+  dom.reportMeta.textContent = [
+    report.name || 'İsimsiz öğrenci',
+    report.date || 'tarih yok',
+    report.mode === 'free' ? 'Serbest mod' : 'Sıralı mod',
+  ].join(' · ');
+
+  const stats = [
+    ['Tamamlanan', `${report.completed.length}/${total}`],
+    ['Çözüldü', String(solved)],
+    ['Çözüm gösterildi', String(revealed)],
+    ['Doğru tahmin', `${report.predictionsCorrect}/${total}`],
+    ['Rozet', `${report.achievements.length}/${ACHIEVEMENTS.length}`],
+    ['İpucu', report.hintUsedEver ? 'Kullanıldı' : 'Kullanılmadı'],
+  ];
+
+  dom.reportStats.textContent = '';
+  for (const [label, value] of stats) {
+    const item = document.createElement('li');
+    if (!/^[\d/]+$/.test(value)) item.classList.add('is-text');
+    item.append(
+      el('span', 'report-stats__label', label),
+      el('span', 'report-stats__value', value),
+    );
+    dom.reportStats.append(item);
+  }
+
+  dom.reportResults.textContent = '';
+  levels.forEach((level, index) => {
+    const outcome = doneById.get(level.id);
+    const row = document.createElement('li');
+
+    const num = el('span', 'results__n', String(index + 1));
+    num.setAttribute('aria-hidden', 'true');
+
+    const main = el('span', 'results__main');
+    main.append(
+      el('span', 'results__title', level.title),
+      el('span', 'results__concept', level.concept),
+    );
+
+    const chipClass = outcome === 'solved' ? 'solved' : outcome === 'revealed' ? 'revealed' : 'none';
+    const chipText = outcome === 'solved'
+      ? '✓ Çözüldü'
+      : outcome === 'revealed'
+        ? '! Çözüm gösterildi'
+        : '— Yapılmadı';
+
+    row.append(num, main, el('span', `chip chip--${chipClass}`, chipText));
+    dom.reportResults.append(row);
+  });
 }

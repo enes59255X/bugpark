@@ -4,11 +4,11 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>BugPark — Kodun çıktısını tahmin et, hatayı düzelt</title>
-  <meta name="description" content="On beş kısa görevde JavaScript'in yaygın hatalarını tahmin et, düzelt ve nedenini öğren.">
+  <meta name="description" content="Yirmi kısa görevde JavaScript'in yaygın hatalarını tahmin et, düzelt ve nedenini öğren.">
   <meta name="color-scheme" content="light dark">
   <meta name="theme-color" content="#F5F2EA">
   <meta property="og:title" content="BugPark — JavaScript hata avı">
-  <meta property="og:description" content="Kodu oku, çıktısını tahmin et, hatayı düzelt. 15 görev, süre yok, puan yok.">
+  <meta property="og:description" content="Kodu oku, çıktısını tahmin et, hatayı düzelt. 20 görev, süre yok, puan yok.">
   <meta property="og:type" content="website">
   <meta property="og:url" content="https://enes59255x.github.io/bugpark/">
   <meta property="og:image" content="https://enes59255x.github.io/bugpark/assets/og.png">
@@ -85,19 +85,25 @@
     <section class="screen screen--intro" id="screenIntro" hidden aria-labelledby="introTitle">
       <div class="intro-grid">
         <div class="intro-main">
-          <p class="eyebrow">JavaScript · 15 görev</p>
+          <p class="eyebrow">JavaScript · 20 görev</p>
           <h1 class="display" id="introTitle" tabindex="-1">
             <span class="display__line">Kodu oku.</span>
             <span class="display__line">Çıktıyı tahmin et.</span>
             <span class="display__line">Hatayı düzelt.</span>
           </h1>
           <p class="lede">Her görevde bozuk bir kod parçası var. Önce ne yazdırdığını tahmin et, sonra tek bir değişiklikle düzelt.</p>
-          <p class="meta-line">15 kısa görev · süre yok · puan yok</p>
+          <p class="meta-line">20 kısa görev · süre yok · puan yok</p>
           <ol class="steps">
             <li><span class="steps__n" aria-hidden="true">1</span> Oku</li>
             <li><span class="steps__n" aria-hidden="true">2</span> Tahmin et</li>
             <li><span class="steps__n" aria-hidden="true">3</span> Düzelt</li>
           </ol>
+
+          <div class="mode" role="group" aria-label="Oyun modu">
+            <button class="mode__btn" type="button" data-action="mode-guided" aria-pressed="true">Sıralı</button>
+            <button class="mode__btn" type="button" data-action="mode-free" aria-pressed="false">Serbest</button>
+          </div>
+          <p class="mode__note" id="modeNote">Sıralı mod: görevler sırayla, tahminler çoktan seçmeli.</p>
 
           <div class="start-block" id="startBlock">
             <button class="btn btn--primary btn--lg" type="button" data-action="start">Başla</button>
@@ -150,7 +156,7 @@
           <div class="pass">
             <div class="pass__head">
               <span class="eyebrow">Giriş bileti</span>
-              <span class="pass__no" id="passCount">5 görev</span>
+              <span class="pass__no" id="passCount">20 görev</span>
             </div>
             <ol class="pass__list" id="passList"></ol>
             <p class="pass__foot">Süre yok · puan yok</p>
@@ -201,7 +207,7 @@
             <span class="editor__file">main.js</span>
             <span class="editor__meta" id="codeMeta">JavaScript · 3 satır</span>
           </div>
-          <div class="editor__code" id="codeList" role="group" aria-label="Kod, main.js"></div>
+          <div class="editor__code" id="codeList" role="group" aria-label="Kod, main.js" tabindex="0"></div>
           <p class="editor__divider" id="consoleLabel">Konsol</p>
           <div class="editor__console" id="consoleList" role="group" aria-label="Konsol çıktısı"></div>
         </article>
@@ -209,6 +215,11 @@
         <div class="pane">
           <fieldset class="q" id="predictField">
             <legend class="q__legend" id="predictQuestion">Bu kod şu anda ne yazdırır?</legend>
+            <div class="typed" id="typedBlock" hidden>
+              <label class="typed__label" for="typedInput">Çıktıyı yaz</label>
+              <input class="typed__input" id="typedInput" type="text" autocomplete="off" spellcheck="false" aria-describedby="typedNote">
+              <p class="typed__note" id="typedNote">Çok satırlı çıktıyı virgülle ayırabilirsin.</p>
+            </div>
             <div class="options" id="predictOptions"></div>
             <p class="q__hint" id="predictHint" hidden>Bir seçenek seç.</p>
           </fieldset>
@@ -258,10 +269,34 @@
       <h2 class="section-title">Görevler</h2>
       <ol class="results" id="results"></ol>
 
+      <div class="report-box">
+        <p class="eyebrow">Öğretmen için</p>
+        <div class="report-box__row">
+          <label class="sr-only" for="reportName">Adın (isteğe bağlı)</label>
+          <input class="typed__input" id="reportName" type="text" maxlength="24" autocomplete="off" placeholder="Adın (isteğe bağlı)">
+          <button class="btn btn--ghost" type="button" data-action="report-link">Rapor bağlantısı oluştur</button>
+        </div>
+        <p class="report-box__note" id="reportLinkNote">Bağlantı yalnızca sonuçları taşır; sunucuya hiçbir şey gönderilmez.</p>
+      </div>
+
       <div class="actionbar actionbar--plain">
         <button class="btn btn--primary" type="button" data-action="restart">Yeniden oyna</button>
         <button class="btn btn--ghost" type="button" data-action="share">Sonucu paylaş</button>
+        <button class="btn btn--ghost" type="button" data-action="home">Giriş ekranı</button>
         <span class="share-note" id="shareNote" role="status"></span>
+      </div>
+    </section>
+
+    <section class="screen" id="screenReport" hidden aria-labelledby="reportTitle">
+      <p class="eyebrow">Öğretmen görünümü</p>
+      <h1 class="title" id="reportTitle" tabindex="-1">İlerleme raporu</h1>
+      <p class="lede" id="reportMeta"></p>
+      <ul class="report-stats" id="reportStats"></ul>
+      <h2 class="section-title">Görevler</h2>
+      <ol class="results" id="reportResults"></ol>
+      <p class="detail" id="reportNote">Bu rapor öğrencinin tarayıcısında oluşturuldu; sunucuya hiçbir veri gönderilmedi.</p>
+      <div class="actionbar actionbar--plain">
+        <button class="btn btn--primary" type="button" data-action="report-close">Oyunu aç</button>
       </div>
     </section>
 

@@ -9,17 +9,22 @@ import {
   reduce,
   validateLevels,
 } from './game.js';
+import { decodeReport, encodeReport, readReportCode, reportLink } from './report.js';
 import {
   announce,
   checkedChoice,
   clearHints,
   closeGlossary,
   isGlossaryOpen,
+  isTypedInput,
   openGlossary,
   render,
+  reportNameValue,
   revealHint,
+  setReportNote,
   setShareNote,
   showHint,
+  typedAnswer,
 } from './ui.js';
 import {
   clearProgress,
@@ -34,13 +39,16 @@ const THEME_COLOR = { light: '#F5F2EA', dark: '#12141A' };
 
 let state = createGame();
 let savedProgress = null;
+let baseLevels = [];
 
 const view = {
   theme: 'light',
   sound: false,
+  mode: 'guided',
   hasResume: false,
   resumeLabel: '',
   shareNote: '',
+  report: null,
 };
 
 let audioContext = null;
@@ -54,6 +62,10 @@ function applyTheme(theme) {
   document.documentElement.style.colorScheme = view.theme;
   const meta = document.querySelector('meta[name="theme-color"]');
   if (meta) meta.setAttribute('content', THEME_COLOR[view.theme]);
+}
+
+function savePrefsNow() {
+  savePrefs({ theme: view.theme, sound: view.sound, mode: view.mode });
 }
 
 function refreshResume() {
@@ -70,12 +82,22 @@ function refreshResume() {
 
 function persist() {
   if (state.phase === 'intro' || state.phase === 'loading' || state.phase === 'error') return;
+  if (state.mode === 'free') return;
   saveProgress(state);
   savedProgress = loadProgress();
 }
 
 function renderAll() {
   render(state, view);
+}
+
+function shuffled(list) {
+  const copy = [...list];
+  for (let index = copy.length - 1; index > 0; index -= 1) {
+    const pick = Math.floor(Math.random() * (index + 1));
+    [copy[index], copy[pick]] = [copy[pick], copy[index]];
+  }
+  return copy;
 }
 
 function beep(kind) {
@@ -109,55 +131,54 @@ function beep(kind) {
   }
 }
 
+async function copyText(text) {
+  try {
+    if (navigator.clipboard && window.isSecureContext) {
+      await navigator.clipboard.writeText(text);
+      return true;
+    }
+  } catch {
+    /* aşağıdaki yedeğe geç */
+  }
+
+  try {
+    const field = document.createElement('textarea');
+    field.value = text;
+    field.setAttribute('readonly', '');
+    field.style.position = 'fixed';
+    field.style.top = '-1000px';
+    document.body.append(field);
+    field.select();
+    const copied = document.execCommand('copy');
+    field.remove();
+    return copied;
+  } catch {
+    return false;
+  }
+}
+
 function shareText() {
   const total = state.levels.length;
   const solved = state.completed.filter((item) => item.outcome === 'solved').length;
   const url = `${window.location.origin}${window.location.pathname}`;
   const earned = state.achievements.length;
+  const mode = state.mode === 'free' ? ' · serbest mod' : '';
 
   return [
     `BugPark — ${total} görevden ${solved} tanesini çözüm göstermeden bitirdim.`,
-    `${state.predictionsCorrect}/${total} tahmin doğru · ${earned}/${ACHIEVEMENTS.length} rozet`,
+    `${state.predictionsCorrect}/${total} tahmin doğru · ${earned}/${ACHIEVEMENTS.length} rozet${mode}`,
     url,
   ].join('\n');
 }
 
 async function copyShare() {
   const text = shareText();
-  let copied = false;
+  const copied = await copyText(text);
 
-  try {
-    if (navigator.clipboard && window.isSecureContext) {
-      await navigator.clipboard.writeText(text);
-      copied = true;
-    }
-  } catch {
-    copied = false;
-  }
-
-  if (!copied) {
-    try {
-      const field = document.createElement('textarea');
-      field.value = text;
-      field.setAttribute('readonly', '');
-      field.style.position = 'fixed';
-      field.style.top = '-1000px';
-      document.body.append(field);
-      field.select();
-      copied = document.execCommand('copy');
-      field.remove();
-    } catch {
-      copied = false;
-    }
-  }
-
-  if (copied) {
-    view.shareNote = 'Sonuç panoya kopyalandı.';
-    announce('Sonuç panoya kopyalandı.');
-  } else {
-    view.shareNote = 'Kopyalanamadı; metni seçip elle kopyalayabilirsin.';
-    announce('Sonuç kopyalanamadı.');
-  }
+  view.shareNote = copied
+    ? 'Sonuç panoya kopyalandı.'
+    : 'Kopyalanamadı; metni seçip elle kopyalayabilirsin.';
+  announce(copied ? 'Sonuç panoya kopyalandı.' : 'Sonuç kopyalanamadı.');
 
   setShareNote(view.shareNote);
   window.clearTimeout(shareTimer);
@@ -165,6 +186,25 @@ async function copyShare() {
     view.shareNote = '';
     setShareNote('');
   }, 4000);
+}
+
+async function makeReportLink() {
+  const code = encodeReport({
+    name: reportNameValue(),
+    completed: state.completed,
+    predictionsCorrect: state.predictionsCorrect,
+    hintUsedEver: state.hintUsedEver,
+    achievements: state.achievements,
+    mode: state.mode,
+  });
+
+  const link = reportLink(`${window.location.origin}${window.location.pathname}`, code);
+  const copied = await copyText(link);
+
+  setReportNote(copied
+    ? `Bağlantı kopyalandı: ${link}`
+    : `Bağlantı hazır (kopyalanamadı, elle seç): ${link}`);
+  announce(copied ? 'Rapor bağlantısı kopyalandı.' : 'Rapor bağlantısı hazırlandı.');
 }
 
 /* ---------------------------------------------------------------- yükleme */
@@ -182,8 +222,10 @@ async function boot() {
     if (!check.ok) throw new Error(check.errors.join(' · '));
 
     state = reduce(state, { type: 'LOADED', levels: data.levels });
+    baseLevels = data.levels;
     refreshResume();
-    view.hasResume = Boolean(savedProgress && hasProgress(savedProgress)) && savedProgress.completed.length <= data.levels.length;
+    view.hasResume = Boolean(savedProgress && hasProgress(savedProgress))
+      && savedProgress.completed.length <= data.levels.length;
   } catch (error) {
     console.error('[BugPark]', error);
     state = reduce(state, { type: 'LOAD_FAILED', error: error.message || String(error) });
@@ -194,15 +236,49 @@ async function boot() {
 
 /* ---------------------------------------------------------------- eylemler */
 
+function submitPrediction() {
+  if (state.mode === 'free') {
+    const text = typedAnswer();
+    if (!text.trim()) {
+      showHint('predict', 'Çıktıyı yaz.');
+      announce('Önce çıktıyı yaz.');
+      return false;
+    }
+    const next = reduce(state, { type: 'SUBMIT_TYPED_PREDICTION', text });
+    if (next === state) return false;
+    state = next;
+  } else {
+    const choiceId = checkedChoice('predictOptions');
+    if (!choiceId) {
+      showHint('predict', 'Bir seçenek seç.');
+      announce('Bir seçenek seç.');
+      return false;
+    }
+    const next = reduce(state, { type: 'SUBMIT_PREDICTION', choiceId });
+    if (next === state) return false;
+    state = next;
+  }
+
+  clearHints();
+  beep(state.predictionCorrect ? 'good' : 'bad');
+  announce(state.predictionCorrect
+    ? 'Doğru tahmin. Şimdi kodu düzelt.'
+    : 'Tahmin tutmadı. Gerçek çıktı konsolda.');
+  return true;
+}
+
 function run(action) {
   switch (action) {
     case 'start': {
-      const next = reduce(state, { type: 'START' });
+      const source = baseLevels.length > 0 ? baseLevels : state.levels;
+      const levels = view.mode === 'free' ? shuffled(source) : source;
+      const next = reduce(state, { type: 'START', levels, mode: view.mode });
       if (next === state) return;
       state = next;
       view.hasResume = false;
       clearHints();
       clearProgress();
+      if (view.mode === 'free') announce('Serbest mod başladı. Görevler karışık.');
       break;
     }
 
@@ -216,28 +292,14 @@ function run(action) {
       break;
     }
 
-    case 'predict-submit': {
-      const choiceId = checkedChoice('predictOptions');
-      if (!choiceId) {
-        showHint('predict');
-        announce('Bir seçenek seç.');
-        return;
-      }
-      const next = reduce(state, { type: 'SUBMIT_PREDICTION', choiceId });
-      if (next === state) return;
-      state = next;
-      clearHints();
-      beep(state.predictionCorrect ? 'good' : 'bad');
-      announce(state.predictionCorrect
-        ? 'Doğru tahmin. Şimdi kodu düzelt.'
-        : 'Tahmin tutmadı. Gerçek çıktı konsolda.');
+    case 'predict-submit':
+      if (!submitPrediction()) return;
       break;
-    }
 
     case 'fix-submit': {
       const choiceId = checkedChoice('fixOptions');
       if (!choiceId) {
-        showHint('fix');
+        showHint('fix', 'Bir seçenek seç.');
         announce('Bir seçenek seç.');
         return;
       }
@@ -246,8 +308,7 @@ function run(action) {
       const solved = next.phase === 'solved';
       state = next;
       clearHints();
-      if (solved) beep('good');
-      else beep('bad');
+      beep(solved ? 'good' : 'bad');
       announce(solved ? 'Düzeltildi.' : 'Bu düzeltme hedefe ulaşmıyor.');
       break;
     }
@@ -278,13 +339,29 @@ function run(action) {
     }
 
     case 'restart': {
-      const next = reduce(state, { type: 'RESTART' });
+      const source = baseLevels.length > 0 ? baseLevels : state.levels;
+      const levels = state.mode === 'free' ? shuffled(source) : source;
+      const next = reduce(state, { type: 'RESTART', levels });
       if (next === state) return;
       state = next;
       view.shareNote = '';
       clearHints();
       clearProgress();
+      setReportNote('Bağlantı yalnızca sonuçları taşır; sunucuya hiçbir şey gönderilmez.');
       announce('Baştan başlıyorsun.');
+      break;
+    }
+
+    case 'home': {
+      const next = reduce(state, { type: 'HOME' });
+      if (next === state) return;
+      state = next;
+      view.shareNote = '';
+      setShareNote('');
+      clearHints();
+      savedProgress = loadProgress();
+      refreshResume();
+      announce('Giriş ekranındasın.');
       break;
     }
 
@@ -296,10 +373,33 @@ function run(action) {
       copyShare();
       return;
 
+    case 'report-link':
+      makeReportLink();
+      return;
+
+    case 'report-close': {
+      view.report = null;
+      if (window.location.hash) {
+        history.replaceState(null, '', window.location.pathname + window.location.search);
+      }
+      boot();
+      return;
+    }
+
+    case 'mode-guided':
+    case 'mode-free': {
+      view.mode = action === 'mode-free' ? 'free' : 'guided';
+      savePrefsNow();
+      savedProgress = loadProgress();
+      refreshResume();
+      announce(view.mode === 'free' ? 'Serbest mod seçildi.' : 'Sıralı mod seçildi.');
+      renderAll();
+      return;
+    }
+
     case 'toggle-theme': {
-      const theme = view.theme === 'dark' ? 'light' : 'dark';
-      applyTheme(theme);
-      savePrefs({ theme, sound: view.sound });
+      applyTheme(view.theme === 'dark' ? 'light' : 'dark');
+      savePrefsNow();
       announce(view.theme === 'dark' ? 'Karanlık tema açık.' : 'Aydınlık tema açık.');
       renderAll();
       return;
@@ -307,7 +407,7 @@ function run(action) {
 
     case 'toggle-sound': {
       view.sound = !view.sound;
-      savePrefs({ theme: view.theme, sound: view.sound });
+      savePrefsNow();
       announce(view.sound ? 'Ses açık.' : 'Ses kapalı.');
       renderAll();
       if (view.sound) beep('good');
@@ -345,6 +445,13 @@ document.addEventListener('click', (event) => {
 /* Radyo seçiminde Enter ile gönderim. */
 document.addEventListener('keydown', (event) => {
   if (event.key !== 'Enter') return;
+
+  if (isTypedInput(event.target)) {
+    event.preventDefault();
+    run('predict-submit');
+    return;
+  }
+
   const target = event.target;
   if (!(target instanceof HTMLInputElement) || target.type !== 'radio') return;
 
@@ -364,9 +471,11 @@ document.addEventListener('keydown', (event) => {
 document.addEventListener('keydown', (event) => {
   if (event.ctrlKey || event.altKey || event.metaKey) return;
   if (isGlossaryOpen()) return;
+  if (view.report) return;
   if (event.target instanceof HTMLButtonElement) return;
+  if (event.target instanceof HTMLInputElement && event.target.type === 'text') return;
 
-  if (['1', '2', '3'].includes(event.key) && ['predict', 'fix'].includes(state.phase)) {
+  if (['1', '2', '3'].includes(event.key) && state.mode !== 'free' && ['predict', 'fix'].includes(state.phase)) {
     const container = state.phase === 'predict' ? 'predictOptions' : 'fixOptions';
     const inputs = byIdList(container);
     const target = inputs[Number(event.key) - 1];
@@ -396,8 +505,39 @@ document.addEventListener('change', (event) => {
 
 /* ---------------------------------------------------------------- başlat */
 
-applyTheme(loadPrefs().theme);
-view.sound = loadPrefs().sound;
+const prefs = loadPrefs();
+applyTheme(prefs.theme);
+view.sound = prefs.sound;
+view.mode = prefs.mode;
 savedProgress = loadProgress();
+
+const reportCode = readReportCode(window.location.hash);
+if (reportCode) {
+  view.report = decodeReport(reportCode);
+  if (!view.report) {
+    console.warn('[BugPark] Rapor bağlantısı okunamadı, oyun açılıyor.');
+    history.replaceState(null, '', window.location.pathname + window.location.search);
+  }
+}
+
+/* Aynı sayfada farklı bir rapor bağlantısı açılırsa (hash değişimi) yeniden yükle. */
+window.addEventListener('hashchange', () => {
+  const code = readReportCode(window.location.hash);
+  if (code) {
+    const decoded = decodeReport(code);
+    if (!decoded) {
+      history.replaceState(null, '', window.location.pathname + window.location.search);
+      view.report = null;
+    } else {
+      view.report = decoded;
+    }
+  } else if (view.report) {
+    view.report = null;
+  } else {
+    return;
+  }
+  boot();
+});
+
 renderAll();
 boot();

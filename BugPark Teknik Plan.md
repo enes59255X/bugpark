@@ -288,10 +288,11 @@ bugpark/
 ├── styles.css            # tek dosya; bölüm sırası: tokens → base → layout → components → utilities → media
 ├── js/
 │   ├── app.js            # JSON yükleme, olaylar, game ↔ ui bağlantısı
-│   ├── game.js           # createGame, reduce, validateLevels (saf)
+│   ├── game.js           # createGame, reduce, validateLevels, matchesPrediction (saf)
 │   ├── ui.js             # render, odak yönetimi, canlı bölge
 │   ├── tokenize.js       # metin → {text,type}[] (DOM yazmaz)
-│   └── storage.js        # 7. adım: localStorage sarmalayıcı
+│   ├── report.js         # öğretmen raporu kodlama/çözme (base64url)
+│   └── storage.js        # localStorage sarmalayıcı
 ├── data/
 │   └── levels.json
 ├── tests/
@@ -417,6 +418,11 @@ bugpark/
 | 13 | Piksel değeri | `parseInt` | `NaN` → `12` |
 | 14 | Sıfır indirim | `??` operatörü | `90` → `100` |
 | 15 | Boş değer | `String()` | `TypeError` → `null` |
+| 16 | Beklemeden okuma | `await` | `Promise` → `hazır` |
+| 17 | Fazla başlangıç | `reduce` | `16` → `6` |
+| 18 | Nesne döngüsü | `Object.entries` | `TypeError` → `Ece, 17` |
+| 19 | Ay numarası | `Date` | `4` → `5` |
+| 20 | Sıfıra bölme | `try/catch` | `Error` → `0` |
 
 **2 — İlk meyve**
 ```js
@@ -556,6 +562,55 @@ console.log(deger.toString());
 - Hedef: "Konsola `null` yazdır." · Çıktı: `TypeError: Cannot read properties of null (reading 'toString')`
 - Düzeltme (satır 2, `deger.toString()`): `String(deger)` ✔ · `deger?.toString()` → undefined · `deger.toString` → TypeError
 
+**16 — Beklemeden okuma**
+```js
+async function veri() { return 'hazır'; }
+
+async function calistir() {
+  const sonuc = veri();
+  console.log(sonuc);
+}
+```
+- Hedef: "Konsola `hazır` yazdır." · Çıktı: `Promise { <pending> }`
+- Düzeltme (satır 6, `veri()`): `await veri()` ✔ · `veri().then(v => v)` → Promise · `Promise.resolve(veri())` → Promise
+
+**17 — Fazla başlangıç**
+```js
+const sayilar = [1, 2, 3];
+const toplam = sayilar.reduce((acc, n) => acc + n, 10);
+```
+- Hedef: "Konsola `6` yazdır." · Çıktı: `16`
+- Düzeltme (satır 2, `acc + n, 10`): `acc + n` ✔ · `acc + n, 1` → 7 · `acc * n` → 60
+
+**18 — Nesne döngüsü**
+```js
+const kullanici = { ad: 'Ece', yas: 17 };
+for (const [anahtar, deger] of kullanici) console.log(deger);
+```
+- Hedef: "İki satır: `Ece`, `17`" · Çıktı: `TypeError: kullanici is not iterable`
+- Düzeltme (satır 2, `of kullanici`): `of Object.entries(kullanici)` ✔ · `of Object.keys(kullanici)` → ad, yas · `of kullanici.entries()` → TypeError
+
+**19 — Ay numarası**
+```js
+const tarih = new Date('2024-05-01');
+console.log(tarih.getMonth());
+```
+- Hedef: "Konsola `5` yazdır." · Çıktı: `4`
+- Düzeltme (satır 2, `tarih.getMonth()`): `tarih.getMonth() + 1` ✔ · `tarih.getDate()` → 1 · `tarih.getDay()` → 3
+
+**20 — Sıfıra bölme** (`try/catch`)
+```js
+function bol(a, b) {
+  if (b === 0) {
+    throw new Error('sıfıra bölme');
+  }
+  return a / b;
+}
+try { console.log(bol(6, 0)); } catch (hata) { console.log(hata); }
+```
+- Hedef: "Konsola `0` yazdır." · Çıktı: `Error: sıfıra bölme`
+- Düzeltme (satır 3, `throw new Error('sıfıra bölme')`): `return 0` ✔ · `return null` → null · `console.log('sıfıra bölme')` → metin + Infinity
+
 ---
 
 ## 7. Erişilebilirlik sözleşmeleri
@@ -617,13 +672,15 @@ console.log(deger.toString());
 
 ## 9. İş sırası — 5 faz
 
-> **Durum (25.11.2026):** Faz 1 ✅ · Faz 2 ✅ · Faz 3 ✅ · Faz 4 ✅ (axe-core 4.10, WCAG 2.1 A/AA: 7 ekran durumunda 0 ihlal; klavye, odak, `forced-colors` doğrulandı) · Faz 5 ✅ (GitHub Pages yayını: <https://enes59255x.github.io/bugpark/> · build doğrulandı)
+> **Durum (25.11.2026):** Faz 1 ✅ · Faz 2 ✅ · Faz 3 ✅ · Faz 4 ✅ (axe-core 4.10, WCAG 2.1 A/AA: 9 ekran durumunda 0 ihlal; klavye, odak, `forced-colors` doğrulandı) · Faz 5 ✅ (GitHub Pages yayını: <https://enes59255x.github.io/bugpark/> · build doğrulandı)
 >
 > **GençTek sürümü (v3):** karanlık tema, ses, rozetler, karne, ipucu, kavram sözlüğü, kalıcı ilerleme, paylaşım, klavye kısayolları ve illüstrasyonlar eklendi. `js/storage.js` ve `SHOW_HINT` / `RESUME` eylemleri bu sürümle geldi; test sayısı 20 → 28.
 >
 > **v4:** bölüm sayısı 10'a çıktı (nesne alanı, ok fonksiyonu, metot çağrısı, iç içe indeks, `sort` karşılaştırıcısı). `LEVEL_COUNT` 10, "Keskin göz" eşiği 5 doğru tahmin; test sayısı 30. Girişteki bilet listesi ve ilerleme rayı veriye göre üretildiği için ek JS değişikliği gerekmedi.
 >
 > **v5:** bölüm sayısı 15 (şablon metni, `filter`, `parseInt`, `??`, `String()`). "Keskin göz" eşiği 8 doğru tahmin; bilet listesi masaüstünde iki sütuna geçti, ray 15 segmentte daralıyor.
+>
+> **v6 (bu sürüm):** bölüm sayısı 20 (`await`, `reduce`, `Object.entries`, `Date`, `try/catch`). İki yeni mod: **serbest mod** (karışık sıra + yazılı tahmin, `matchesPrediction` ile boşluk/virgül toleransı) ve **öğretmen görünümü** (`js/report.js`; sonuç `#rapor=…` bağlantısına kodlanır, sunucu yok). Test sayısı 43.
 
 Her faz tek başına çalışır bir çıktı bırakır; faz atlanmaz, faz içinde geri dönülür.
 

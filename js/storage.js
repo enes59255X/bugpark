@@ -49,9 +49,15 @@ export function loadPrefs() {
   return {
     theme: data && data.theme === 'dark' ? 'dark' : 'light',
     sound: Boolean(data && data.sound),
+    mode: data && data.mode === 'free' ? 'free' : 'guided',
   };
 }
 
 export function savePrefs(prefs) {
-  write(PREFS_KEY, { version: 1, theme: prefs.theme, sound: prefs.sound });
+  write(PREFS_KEY, {
+    version: 1,
+    theme: prefs.theme,
+    sound: prefs.sound,
+    mode: prefs.mode === 'free' ? 'free' : 'guided',
+  });
 }
