@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>BugPark — Kodun çıktısını tahmin et, hatayı düzelt</title>
+  <meta name="description" content="Beş kısa görevde JavaScript'in yaygın hatalarını tahmin et, düzelt ve nedenini öğren.">
+  <meta name="color-scheme" content="light">
+  <meta name="theme-color" content="#F5F2EA">
+  <link rel="icon" href="./assets/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="./styles.css">
+</head>
+<body>
+  <a class="skip-link" href="#main">İçeriğe geç</a>
+
+  <header class="topbar">
+    <div class="wrap topbar__inner">
+      <span class="brand">
+        <svg class="brand__mark" viewBox="0 0 32 32" aria-hidden="true" focusable="false">
+          <g fill="currentColor">
+            <circle cx="16" cy="9" r="3.4"></circle>
+            <ellipse cx="16" cy="19" rx="7" ry="8.5"></ellipse>
+          </g>
+          <g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+            <path d="M13.4 6.6 10.8 4M18.6 6.6 21.2 4"></path>
+            <path d="M9 14 5 12M9 19H4.6M9 24 5 26"></path>
+            <path d="M23 14 27 12M23 19h4.4M23 24 27 26"></path>
+          </g>
+        </svg>
+        BugPark
+      </span>
+
+      <div class="topbar__status" id="topbarStatus" hidden>
+        <ol class="rail" id="rail" aria-hidden="true"></ol>
+        <span class="rail__label" id="railLabel">Bölüm 1/5</span>
+      </div>
+    </div>
+  </header>
+
+  <main id="main" class="wrap">
+
+    <section class="screen screen--intro" id="screenIntro" hidden aria-labelledby="introTitle">
+      <div class="intro-grid">
+        <div class="intro-main">
+          <p class="eyebrow">JavaScript · 5 görev</p>
+          <h1 class="display" id="introTitle" tabindex="-1">
+            <span class="display__line">Kodu oku.</span>
+            <span class="display__line">Çıktıyı tahmin et.</span>
+            <span class="display__line">Hatayı düzelt.</span>
+          </h1>
+          <p class="lede">Her görevde bozuk bir kod parçası var. Önce ne yazdırdığını tahmin et, sonra tek bir değişiklikle düzelt.</p>
+          <p class="meta-line">5 kısa görev · süre yok · puan yok</p>
+          <ol class="steps">
+            <li><span class="steps__n" aria-hidden="true">1</span> Oku</li>
+            <li><span class="steps__n" aria-hidden="true">2</span> Tahmin et</li>
+            <li><span class="steps__n" aria-hidden="true">3</span> Düzelt</li>
+          </ol>
+          <button class="btn btn--primary btn--lg" type="button" id="startBtn" data-action="start">Başla</button>
+        </div>
+
+        <aside class="pass" aria-hidden="true">
+          <div class="pass__head">
+            <span class="eyebrow">Giriş bileti</span>
+            <span class="pass__no" id="passCount">5 görev</span>
+          </div>
+          <ol class="pass__list" id="passList"></ol>
+          <p class="pass__foot">Süre yok · puan yok</p>
+        </aside>
+      </div>
+    </section>
+
+    <section class="screen" id="screenLoading" hidden aria-labelledby="loadingTitle">
+      <p class="eyebrow">Yükleniyor</p>
+      <h1 class="title" id="loadingTitle" tabindex="-1">Görevler hazırlanıyor</h1>
+      <div class="editor editor--skeleton" aria-hidden="true">
+        <div class="editor__bar">
+          <span class="skeleton skeleton--short"></span>
+          <span class="skeleton skeleton--tiny"></span>
+        </div>
+        <div class="editor__code">
+          <span class="skeleton skeleton--long"></span>
+          <span class="skeleton skeleton--mid"></span>
+          <span class="skeleton skeleton--short"></span>
+        </div>
+      </div>
+    </section>
+
+    <section class="screen" id="screenLevel" hidden aria-labelledby="levelTitle">
+      <p class="eyebrow">
+        <span id="levelPos">Bölüm 1/5</span>
+        <span class="dot" aria-hidden="true">·</span>
+        <span id="concept">Döngü koşulu</span>
+      </p>
+      <h1 class="title" id="levelTitle" tabindex="-1"></h1>
+
+      <div class="brief">
+        <p class="eyebrow">Hedef</p>
+        <p class="brief__text" id="goal"></p>
+      </div>
+
+      <div class="grid">
+        <article class="editor">
+          <div class="editor__bar">
+            <span class="editor__file">main.js</span>
+            <span class="editor__meta" id="codeMeta">JavaScript · 3 satır</span>
+          </div>
+          <div class="editor__code" id="codeList" role="group" aria-label="Kod, main.js"></div>
+          <p class="editor__divider" id="consoleLabel">Konsol</p>
+          <div class="editor__console" id="consoleList" role="group" aria-label="Konsol çıktısı"></div>
+        </article>
+
+        <div class="pane">
+          <fieldset class="q" id="predictField">
+            <legend class="q__legend" id="predictQuestion">Bu kod şu anda ne yazdırır?</legend>
+            <div class="options" id="predictOptions"></div>
+            <p class="q__hint" id="predictHint" hidden>Bir seçenek seç.</p>
+          </fieldset>
+
+          <div class="banner" id="predictBanner" hidden></div>
+
+          <fieldset class="q" id="fixField" hidden>
+            <legend class="q__legend" id="fixQuestion">Hedefe ulaşmak için hangi değişiklik gerekli?</legend>
+            <p class="patch">
+              <span class="patch__line" id="patchLine" aria-hidden="true">1</span>
+              <code class="patch__code" id="patchCode"></code>
+            </p>
+            <div class="options" id="fixOptions"></div>
+            <p class="q__hint" id="fixHint" hidden>Bir seçenek seç.</p>
+          </fieldset>
+
+          <div class="banner" id="fixBanner" hidden></div>
+
+          <div class="actionbar">
+            <button class="btn btn--primary" type="button" id="primaryBtn" data-action="predict-submit">Tahminimi kontrol et</button>
+            <button class="btn btn--ghost" type="button" id="solutionBtn" data-action="solution" hidden>Çözümü göster</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="screen" id="screenSummary" hidden aria-labelledby="summaryTitle">
+      <p class="eyebrow">Özet</p>
+      <h1 class="title" id="summaryTitle" tabindex="-1">Park turu tamam</h1>
+      <p class="lede" id="summaryMeta"></p>
+      <ol class="results" id="results"></ol>
+      <div class="actionbar actionbar--plain">
+        <button class="btn btn--primary" type="button" id="restartBtn" data-action="restart">Yeniden oyna</button>
+      </div>
+    </section>
+
+    <section class="screen" id="screenError" hidden aria-labelledby="errorTitle">
+      <p class="eyebrow">Hata</p>
+      <h1 class="title" id="errorTitle" tabindex="-1">Görevler yüklenemedi</h1>
+      <p class="lede">Görev dosyası okunamadı. Dosyayı yerel sunucu üzerinden açtığından emin ol; çift tıklama JSON yüklemeyi engeller.</p>
+      <p class="code-hint"><code>python -m http.server 8000</code></p>
+      <p class="detail" id="errorDetail"></p>
+      <div class="actionbar actionbar--plain">
+        <button class="btn btn--primary" type="button" id="retryBtn" data-action="retry">Yeniden dene</button>
+      </div>
+    </section>
+
+  </main>
+
+  <p class="sr-only" id="status" role="status" aria-live="polite"></p>
+
+  <script type="module" src="./js/app.js"></script>
+</body>
+</html>

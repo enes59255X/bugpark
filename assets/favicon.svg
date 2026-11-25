@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="32" height="32" role="img" aria-label="BugPark">
+  <rect width="32" height="32" rx="7" fill="#F5F2EA"/>
+  <g fill="#14161A">
+    <circle cx="16" cy="9" r="3.4"/>
+    <ellipse cx="16" cy="19" rx="7" ry="8.5"/>
+  </g>
+  <g fill="none" stroke="#14161A" stroke-width="2" stroke-linecap="round">
+    <path d="M13.4 6.6 10.8 4M18.6 6.6 21.2 4"/>
+    <path d="M9 14 5 12M9 19H4.6M9 24 5 26"/>
+    <path d="M23 14 27 12M23 19h4.4M23 24 27 26"/>
+  </g>
+</svg>

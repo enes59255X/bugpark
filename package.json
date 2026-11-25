@@ -1,0 +1,12 @@
+{
+  "name": "bugpark",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "JavaScript'te yaygın 5 hatayı bulup düzeltme oyunu",
+  "scripts": {
+    "test": "node --test \"tests/**/*.test.mjs\"",
+    "check": "node tests/validate-levels.mjs",
+    "serve": "python -m http.server 8000"
+  }
+}

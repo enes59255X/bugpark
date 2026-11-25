@@ -1,0 +1,160 @@
+{
+  "version": 1,
+  "levels": [
+    {
+      "id": "loop-boundary",
+      "order": 1,
+      "title": "Eksik tur",
+      "concept": "Döngü koşulu",
+      "goal": "1, 2 ve 3 sayılarını ayrı satırlara yazdır.",
+      "code": "for (let i = 1; i < 3; i++) {\n  console.log(i);\n}",
+      "explain": "Koşul 3 < 3 olduğunda false döner, üçüncü tur hiç başlamaz.",
+      "prediction": {
+        "question": "Bu kod şu anda ne yazdırır?",
+        "answerId": "p1",
+        "output": "1\n2",
+        "choices": [
+          { "id": "p1", "label": "1\n2", "feedback": "Sayaç 1 ve 2'de çalışır, 3'te koşul false olur." },
+          { "id": "p2", "label": "1\n2\n3", "feedback": "3 < 3 yanlış olduğu için üçüncü tur başlamaz." },
+          { "id": "p3", "label": "0\n1\n2", "feedback": "Sayaç 0'dan değil, 1'den başlıyor." }
+        ]
+      },
+      "fix": {
+        "question": "Hedefe ulaşmak için hangi değişiklik gerekli?",
+        "answerId": "f2",
+        "target": { "line": 1, "snippet": "i < 3" },
+        "solution": "i <= 3",
+        "output": "1\n2\n3",
+        "choices": [
+          { "id": "f1", "label": "i < 2", "feedback": "Yalnızca 1 yazdırılır; aralık daha da daralır." },
+          { "id": "f2", "label": "i <= 3", "feedback": "Eşitlik de kabul edilir, üçüncü tur çalışır." },
+          { "id": "f3", "label": "i <= 4", "feedback": "4 de yazdırılır; hedefte fazladan bir sayı var." }
+        ]
+      }
+    },
+    {
+      "id": "first-fruit",
+      "order": 2,
+      "title": "İlk meyve",
+      "concept": "Dizi indeksi",
+      "goal": "Konsola elma yazdır.",
+      "code": "const meyveler = ['elma', 'armut', 'kiraz'];\nconsole.log(meyveler[1]);",
+      "explain": "Dizi indeksleri 0'dan başlar; [1] ikinci elemanı verir.",
+      "prediction": {
+        "question": "Bu kod şu anda ne yazdırır?",
+        "answerId": "p2",
+        "output": "armut",
+        "choices": [
+          { "id": "p1", "label": "elma", "feedback": "İndeks 1'den başlamaz; ilk elemanın indeksi 0'dır." },
+          { "id": "p2", "label": "armut", "feedback": "İndeks 1 ikinci elemanı verir: armut." },
+          { "id": "p3", "label": "kiraz", "feedback": "Kiraz üçüncü eleman, indeksi 2." }
+        ]
+      },
+      "fix": {
+        "question": "Hedefe ulaşmak için hangi değişiklik gerekli?",
+        "answerId": "f1",
+        "target": { "line": 2, "snippet": "meyveler[1]" },
+        "solution": "meyveler[0]",
+        "output": "elma",
+        "choices": [
+          { "id": "f1", "label": "meyveler[0]", "feedback": "İlk elemanın indeksi 0: elma." },
+          { "id": "f2", "label": "meyveler[2]", "feedback": "Bu kirazı yazdırır." },
+          { "id": "f3", "label": "meyveler[3]", "feedback": "Dizide dördüncü eleman yok; çıktı undefined olur." }
+        ]
+      }
+    },
+    {
+      "id": "string-plus-number",
+      "order": 3,
+      "title": "Yan yana sayılar",
+      "concept": "Tip dönüşümü",
+      "goal": "Konsola 7 yazdır.",
+      "code": "const metin = '5';\nconst sayi = 2;\nconsole.log(metin + sayi);",
+      "explain": "Bir tarafı string ise + işareti toplamaz, değerleri yan yana ekler.",
+      "prediction": {
+        "question": "Bu kod şu anda ne yazdırır?",
+        "answerId": "p1",
+        "output": "52",
+        "choices": [
+          { "id": "p1", "label": "52", "feedback": "5 ve 2 metin gibi birleşir, sayı toplanmaz." },
+          { "id": "p2", "label": "7", "feedback": "Toplama için iki tarafın da sayı olması gerekir." },
+          { "id": "p3", "label": "NaN", "feedback": "NaN, sayıya çevrilemeyen bir değerle işlem yapılırsa çıkar." }
+        ]
+      },
+      "fix": {
+        "question": "Hedefe ulaşmak için hangi değişiklik gerekli?",
+        "answerId": "f1",
+        "target": { "line": 3, "snippet": "metin + sayi" },
+        "solution": "Number(metin) + sayi",
+        "output": "7",
+        "choices": [
+          { "id": "f1", "label": "Number(metin) + sayi", "feedback": "metin önce sayıya çevrilir: 5 + 2 = 7." },
+          { "id": "f2", "label": "Number(sayi) + metin", "feedback": "İlk taraf sayı ama ikinci hâlâ string: 25." },
+          { "id": "f3", "label": "metin + Number(sayi)", "feedback": "İlk taraf string kaldığı için yine birleşir: 52." }
+        ]
+      }
+    },
+    {
+      "id": "club-gate",
+      "order": 4,
+      "title": "Kulüp kapısı",
+      "concept": "Mantık operatörü",
+      "goal": "Kural: girmek için 18 yaşından büyük ve veli izni olmalı. Bu kişi için konsola Giremez yazdır.",
+      "code": "const yas = 20;\nconst izinVar = false;\n\nif (yas >= 18 || izinVar) {\n  console.log('Girebilir');\n} else {\n  console.log('Giremez');\n}",
+      "explain": "|| iki şarttan birini yeterli sayar; izin yokken de içeri alıyor.",
+      "prediction": {
+        "question": "Bu kod şu anda ne yazdırır?",
+        "answerId": "p1",
+        "output": "Girebilir",
+        "choices": [
+          { "id": "p1", "label": "Girebilir", "feedback": "Yaş şartı tek başına yetti, izin hiç kontrol edilmedi." },
+          { "id": "p2", "label": "Giremez", "feedback": "|| bir şartın doğru olmasını yeterli görür; yaş şartı doğru." },
+          { "id": "p3", "label": "true", "feedback": "console.log ifadenin sonucunu değil, yazdırılan metni gösterir." }
+        ]
+      },
+      "fix": {
+        "question": "Hedefe ulaşmak için hangi değişiklik gerekli?",
+        "answerId": "f1",
+        "target": { "line": 4, "snippet": "yas >= 18 || izinVar" },
+        "solution": "yas >= 18 && izinVar",
+        "output": "Giremez",
+        "choices": [
+          { "id": "f1", "label": "yas >= 18 && izinVar", "feedback": "İki şart birlikte aranır; izin yok, çıktı Giremez." },
+          { "id": "f2", "label": "yas >= 18 || !izinVar", "feedback": "İzin tersine döndü ama bağlaç hâlâ veya: yine Girebilir." },
+          { "id": "f3", "label": "yas >= 18 && !izinVar", "feedback": "İzni tersine çeviriyor: izin yokken içeri alır." }
+        ]
+      }
+    },
+    {
+      "id": "missing-return",
+      "order": 5,
+      "title": "Kayıp sonuç",
+      "concept": "return",
+      "goal": "Konsola 6 yazdır.",
+      "code": "function ikiKat(n) {\n  n * 2;\n}\n\nconsole.log(ikiKat(3));",
+      "explain": "Fonksiyon 6 hesaplıyor ama return olmadığı için dışarı undefined çıkıyor.",
+      "prediction": {
+        "question": "Bu kod şu anda ne yazdırır?",
+        "answerId": "p1",
+        "output": "undefined",
+        "choices": [
+          { "id": "p1", "label": "undefined", "feedback": "Değer hesaplanıyor ama return olmadığı için dışarı çıkmıyor." },
+          { "id": "p2", "label": "6", "feedback": "6 ancak return ile dönerse konsola ulaşır." },
+          { "id": "p3", "label": "NaN", "feedback": "n * 2 geçerli bir sayı üretir: 6." }
+        ]
+      },
+      "fix": {
+        "question": "Hedefe ulaşmak için hangi değişiklik gerekli?",
+        "answerId": "f1",
+        "target": { "line": 2, "snippet": "n * 2" },
+        "solution": "return n * 2",
+        "output": "6",
+        "choices": [
+          { "id": "f1", "label": "return n * 2", "feedback": "Değer döndürülür ve console.log 6 yazdırır." },
+          { "id": "f2", "label": "console.log(n * 2)", "feedback": "Fonksiyon içinde 6 yazdırılır, dışarı yine undefined döner." },
+          { "id": "f3", "label": "return n + 2", "feedback": "Toplama yapıldığı için 5 döner." }
+        ]
+      }
+    }
+  ]
+}
