@@ -10,6 +10,7 @@ const byId = (id) => document.getElementById(id);
 const CONCEPT_ICONS = [
   'i-loop', 'i-array', 'i-type', 'i-logic', 'i-return',
   'i-object', 'i-arrow', 'i-case', 'i-nested', 'i-sort',
+  'i-template', 'i-filter', 'i-parse', 'i-nullish', 'i-empty',
 ];
 
 const dom = {

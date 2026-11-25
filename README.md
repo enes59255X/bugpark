@@ -6,7 +6,7 @@
 
 **Kodu oku, çıktısını tahmin et, hatayı düzelt.**
 
-JavaScript'e yeni başlayanlar için on kısa görevden oluşan, tarayıcıda çalışan bir hata avı oyunu.
+JavaScript'e yeni başlayanlar için on beş kısa görevden oluşan, tarayıcıda çalışan bir hata avı oyunu.
 Süre yok, puan yok, üyelik yok — sadece kod, çıktı ve neden.
 
 [![testler](https://img.shields.io/badge/testler-30%20ge%C3%A7ti-0F6B45?style=flat-square&labelColor=14161A)](tests/)
@@ -26,7 +26,7 @@ Her bölümde kasıtlı olarak bozuk bir kod parçası var. Oyuncu önce **bu ko
 sonra tek bir değişiklikle hedefe ulaştırır. Tahmin yanlış olsa da akış kilitlenmez: gerçek çıktı, seçilen
 seçeneğin neden yanlış olduğu ve hatanın nedeni birlikte gösterilir.
 
-On görev, JavaScript'te en sık yapılan on hatayı hedefler:
+On beş görev, JavaScript'te en sık yapılan on beş hatayı hedefler:
 
 | # | Görev | Kavram | Hatalı çıktı → hedef |
 | :--: | --- | --- | --- |
@@ -40,6 +40,11 @@ On görev, JavaScript'te en sık yapılan on hatayı hedefler:
 | 8 | Büyük harf | Metot çağrısı | `TypeError` → `ECE` |
 | 9 | İç içe dizi | İç içe indeks | `TypeError` → `3` |
 | 10 | Metin gibi sıralama | `sort` karşılaştırıcısı | `10, 100, 9` → `9, 10, 100` |
+| 11 | Düz metin | Şablon metni | `${ad}` → `Ece` |
+| 12 | Çift sayılar | `filter` | `1, 3` → `2, 4` |
+| 13 | Piksel değeri | `parseInt` | `NaN` → `12` |
+| 14 | Sıfır indirim | `??` operatörü | `90` → `100` |
+| 15 | Boş değer | `String()` | `TypeError` → `null` |
 
 ## Neden böyle
 
@@ -143,7 +148,7 @@ tek ihlal oyunu sessizce bozmak yerine açıklayıcı hata ekranına düşürür
 | Kontrol | Sonuç |
 | --- | --- |
 | Birim testleri (`node --test`) | 30/30 |
-| `levels.json` şema doğrulaması | 10 bölüm · 60 seçenek geçerli |
+| `levels.json` şema doğrulaması | 15 bölüm · 90 seçenek geçerli |
 | axe-core 4.10 (WCAG 2.1 A/AA + best-practice) | 7 ekran durumunda 0 ihlal |
 | Elle test matrisi | 16 senaryo (klavye, mobil, %200 yakınlaştırma, ağ hatası, çift tıklama) |
 | Tarayıcılar | Chrome, Edge, Firefox, Safari son iki sürüm · iOS Safari 16+ |
@@ -166,8 +171,8 @@ tek ihlal oyunu sessizce bozmak yerine açıklayıcı hata ekranına düşürür
 
 ## Yol haritası
 
-- [x] Bölüm 6–10 (nesne, ok fonksiyonu, metot, iç içe dizi, `sort`)
-- [ ] Bölüm 11–15 (asenkron işlemler, `try/catch`, `map`/`filter`)
+- [x] Bölüm 11–15 (şablon metni, `filter`, `parseInt`, `??`, `String()`)
+- [ ] Bölüm 16–20 (asenkron/sıra, `try/catch`, `reduce`, `Object` döngüsü, `Date`)
 - [ ] Serbest mod: rastgele sıra, hatalı çıktıyı kendin yaz
 - [ ] Öğretmen görünümü: sınıf için bağlantı ile paylaşılan ilerleme raporu
 

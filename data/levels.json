@@ -330,6 +330,171 @@
           { "id": "f3", "label": "sayilar.reverse()", "feedback": "reverse sıralamaz, diziyi olduğu gibi çevirir: 100, 9, 10." }
         ]
       }
+    },
+    {
+      "id": "template-literal",
+      "order": 11,
+      "title": "Düz metin",
+      "concept": "Şablon metni",
+      "goal": "Konsola Merhaba, Ece! yazdır.",
+      "code": "const ad = 'Ece';\nconsole.log('Merhaba, ${ad}!');",
+      "explain": "Tek tırnak içindeki ${} düz metindir; yerine değişken yerleştirilmez.",
+      "hint": "Değişkeni metnin içine hangi tırnak türü yerleştirir?",
+      "takeaway": "Değişken gömülecekse ters tırnak kullan; tek/çift tırnakta ${} düz metindir.",
+      "prediction": {
+        "question": "Bu kod şu anda ne yazdırır?",
+        "answerId": "p1",
+        "output": "Merhaba, ${ad}!",
+        "choices": [
+          { "id": "p1", "label": "Merhaba, ${ad}!", "feedback": "Tek tırnak içindeki ${} yorumlanmaz, olduğu gibi yazılır." },
+          { "id": "p2", "label": "Merhaba, Ece!", "feedback": "Bunun için ters tırnak (template literal) gerekir." },
+          { "id": "p3", "label": "Merhaba, ad!", "feedback": "Değişkenin adı yazılmaz; ya değeri gelir ya da metin aynen kalır." }
+        ]
+      },
+      "fix": {
+        "question": "Hedefe ulaşmak için hangi değişiklik gerekli?",
+        "answerId": "f1",
+        "target": { "line": 2, "snippet": "'Merhaba, ${ad}!'" },
+        "solution": "`Merhaba, ${ad}!`",
+        "output": "Merhaba, Ece!",
+        "choices": [
+          { "id": "f1", "label": "`Merhaba, ${ad}!`", "feedback": "Ters tırnak değişkeni metne yerleştirir: Merhaba, Ece!" },
+          { "id": "f2", "label": "\"Merhaba, ${ad}!\"", "feedback": "Çift tırnak da düz metindir; ${} yine yorumlanmaz." },
+          { "id": "f3", "label": "'Merhaba, ad!'", "feedback": "Bu kez değişkenin adı harf harf yazılır." }
+        ]
+      }
+    },
+    {
+      "id": "filter-parity",
+      "order": 12,
+      "title": "Çift sayılar",
+      "concept": "filter",
+      "goal": "Konsola 2, 4 yazdır.",
+      "code": "const sayilar = [1, 2, 3, 4];\nconst ciftler = sayilar.filter(n => n % 2);\nconsole.log(ciftler.join(', '));",
+      "explain": "filter koşulu doğru olanları tutar; tek sayılarda kalan 1 olduğu için onlar kalıyor.",
+      "hint": "Çift sayının 2'ye bölümünden kalan kaçtır?",
+      "takeaway": "filter koşulu doğru olanları tutar; map ise her elemanı dönüştürür.",
+      "prediction": {
+        "question": "Bu kod şu anda ne yazdırır?",
+        "answerId": "p1",
+        "output": "1, 3",
+        "choices": [
+          { "id": "p1", "label": "1, 3", "feedback": "Kalan 1 olduğu için tek sayılar koşulu sağlıyor." },
+          { "id": "p2", "label": "2, 4", "feedback": "Bu, koşul tersine çevrilirse çıkar." },
+          { "id": "p3", "label": "1, 0, 1, 0", "feedback": "Bu çıktı map kullanılırsa oluşur; filter elemanları dönüştürmez." }
+        ]
+      },
+      "fix": {
+        "question": "Hedefe ulaşmak için hangi değişiklik gerekli?",
+        "answerId": "f1",
+        "target": { "line": 2, "snippet": "sayilar.filter(n => n % 2)" },
+        "solution": "sayilar.filter(n => n % 2 === 0)",
+        "output": "2, 4",
+        "choices": [
+          { "id": "f1", "label": "sayilar.filter(n => n % 2 === 0)", "feedback": "Kalan 0 olanlar, yani çift sayılar kalır: 2, 4." },
+          { "id": "f2", "label": "sayilar.filter(n => n % 2 === 1)", "feedback": "Bu koşul tek sayıları tutar: 1, 3." },
+          { "id": "f3", "label": "sayilar.map(n => n % 2)", "feedback": "map her elemanı dönüştürür; kalanları yazdırır: 1, 0, 1, 0." }
+        ]
+      }
+    },
+    {
+      "id": "parse-int",
+      "order": 13,
+      "title": "Piksel değeri",
+      "concept": "parseInt",
+      "goal": "Konsola 12 yazdır.",
+      "code": "const genislik = '12.7px';\nconsole.log(Number(genislik));",
+      "explain": "Number metnin tamamını çevirmeye çalışır; px yüzünden NaN döner.",
+      "hint": "Baştaki sayıyı alıp gerisini yok sayan fonksiyon hangisi?",
+      "takeaway": "parseInt baştaki tam sayıyı alır; parseFloat ondalığı korur, Number tamamını ister.",
+      "prediction": {
+        "question": "Bu kod şu anda ne yazdırır?",
+        "answerId": "p1",
+        "output": "NaN",
+        "choices": [
+          { "id": "p1", "label": "NaN", "feedback": "Number tüm metni sayı sayar; px kalınca sonuç NaN olur." },
+          { "id": "p2", "label": "12", "feedback": "Bunun için baştaki sayıyı ayıklamak gerekir." },
+          { "id": "p3", "label": "12.7", "feedback": "Bu, ondalık kısmı koruyan bir çevrimde çıkar." }
+        ]
+      },
+      "fix": {
+        "question": "Hedefe ulaşmak için hangi değişiklik gerekli?",
+        "answerId": "f1",
+        "target": { "line": 2, "snippet": "Number(genislik)" },
+        "solution": "parseInt(genislik)",
+        "output": "12",
+        "choices": [
+          { "id": "f1", "label": "parseInt(genislik)", "feedback": "Baştaki tam sayıyı alır, px kısmını yok sayar: 12." },
+          { "id": "f2", "label": "parseFloat(genislik)", "feedback": "Ondalığı korur: 12.7." },
+          { "id": "f3", "label": "Math.round(genislik)", "feedback": "Math.round sayı bekler; metin verilince NaN döner." }
+        ]
+      }
+    },
+    {
+      "id": "nullish-zero",
+      "order": 14,
+      "title": "Sıfır indirim",
+      "concept": "?? operatörü",
+      "goal": "Konsola 100 yazdır.",
+      "code": "function indirimli(fiyat, indirim) {\n  const oran = indirim || 0.1;\n  return fiyat * (1 - oran);\n}\n\nconsole.log(indirimli(100, 0));",
+      "explain": "|| sıfırı da yok sayar; indirim 0 iken varsayılan oran devreye giriyor.",
+      "hint": "0 geçerli bir değerse hangi operatör yalnızca null/undefined'da devreye girer?",
+      "takeaway": "?? yalnızca null/undefined'da varsayılana düşer; || 0 ve boş metinde de düşer.",
+      "prediction": {
+        "question": "Bu kod şu anda ne yazdırır?",
+        "answerId": "p1",
+        "output": "90",
+        "choices": [
+          { "id": "p1", "label": "90", "feedback": "indirim 0 ama || onu yok sayıp 0.1 oranını uyguluyor." },
+          { "id": "p2", "label": "100", "feedback": "Bu, 0 indirimin geçerli sayıldığı durum." },
+          { "id": "p3", "label": "10", "feedback": "İndirim uygulanmış hâli 10 değil; oran 0.1, fiyat 100." }
+        ]
+      },
+      "fix": {
+        "question": "Hedefe ulaşmak için hangi değişiklik gerekli?",
+        "answerId": "f1",
+        "target": { "line": 2, "snippet": "indirim || 0.1" },
+        "solution": "indirim ?? 0.1",
+        "output": "100",
+        "choices": [
+          { "id": "f1", "label": "indirim ?? 0.1", "feedback": "0 null değil, geçerli sayılır; oran 0 olur ve fiyat değişmez: 100." },
+          { "id": "f2", "label": "indirim === 0 ? 0.1 : indirim", "feedback": "Sıfırı yine varsayılana çeviriyor: 90." },
+          { "id": "f3", "label": "Number(indirim) || 0.1", "feedback": "Sayıya çevirmek 0'ı değiştirmez; || hâlâ 0.1'i seçer: 90." }
+        ]
+      }
+    },
+    {
+      "id": "string-null",
+      "order": 15,
+      "title": "Boş değer",
+      "concept": "String()",
+      "goal": "Konsola null yazdır.",
+      "code": "const deger = null;\nconsole.log(deger.toString());",
+      "explain": "null üzerinde metot çağrılamaz; önce metne çevirmek gerekir.",
+      "hint": "null bir nesne değil; metne çevirmenin güvenli yolu hangisi?",
+      "takeaway": "null/undefined üzerinde metot çağırmak hata verir; String() güvenlidir.",
+      "prediction": {
+        "question": "Bu kod şu anda ne yazdırır?",
+        "answerId": "p1",
+        "output": "TypeError: Cannot read properties of null (reading 'toString')",
+        "choices": [
+          { "id": "p1", "label": "TypeError: Cannot read properties of null (reading 'toString')", "feedback": "null üzerinde özellik okunamaz; çağrı hata verir." },
+          { "id": "p2", "label": "null", "feedback": "Metne çevirmeden önce null üzerinde metot çağrılamaz." },
+          { "id": "p3", "label": "undefined", "feedback": "Hata fırlatılır; konsola undefined yazılmaz." }
+        ]
+      },
+      "fix": {
+        "question": "Hedefe ulaşmak için hangi değişiklik gerekli?",
+        "answerId": "f1",
+        "target": { "line": 2, "snippet": "deger.toString()" },
+        "solution": "String(deger)",
+        "output": "null",
+        "choices": [
+          { "id": "f1", "label": "String(deger)", "feedback": "String her değeri güvenle metne çevirir: null." },
+          { "id": "f2", "label": "deger?.toString()", "feedback": "İsteğe bağlı zincir hatayı önler ama undefined döndürür." },
+          { "id": "f3", "label": "deger.toString", "feedback": "Parantez olmadan da null üzerinde özellik okunamaz: TypeError." }
+        ]
+      }
     }
   ]
 }

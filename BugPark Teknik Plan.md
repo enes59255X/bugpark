@@ -412,6 +412,11 @@ bugpark/
 | 8 | Büyük harf | Metot çağrısı | `TypeError` → `ECE` |
 | 9 | İç içe dizi | İç içe indeks | `TypeError` → `3` |
 | 10 | Metin gibi sıralama | `sort` karşılaştırıcısı | `10, 100, 9` → `9, 10, 100` |
+| 11 | Düz metin | Şablon metni | `${ad}` → `Ece` |
+| 12 | Çift sayılar | `filter` | `1, 3` → `2, 4` |
+| 13 | Piksel değeri | `parseInt` | `NaN` → `12` |
+| 14 | Sıfır indirim | `??` operatörü | `90` → `100` |
+| 15 | Boş değer | `String()` | `TypeError` → `null` |
 
 **2 — İlk meyve**
 ```js
@@ -506,6 +511,51 @@ console.log(sayilar.join(', '));
 - Hedef: "Konsola `9, 10, 100` yazdır." · Çıktı: `10, 100, 9`
 - Düzeltme (satır 2, `sayilar.sort()`): `sayilar.sort((a, b) => a - b)` ✔ · `sayilar.sort((a, b) => b - a)` → 100, 10, 9 · `sayilar.reverse()` → 100, 9, 10
 
+**11 — Düz metin**
+```js
+const ad = 'Ece';
+console.log('Merhaba, ${ad}!');
+```
+- Hedef: "Konsola `Merhaba, Ece!` yazdır." · Çıktı: `Merhaba, ${ad}!`
+- Düzeltme (satır 2, `'Merhaba, ${ad}!'`): `` `Merhaba, ${ad}!` `` ✔ · `"Merhaba, ${ad}!"` → yine düz metin · `'Merhaba, ad!'` → "ad" harf harf
+
+**12 — Çift sayılar**
+```js
+const sayilar = [1, 2, 3, 4];
+const ciftler = sayilar.filter(n => n % 2);
+console.log(ciftler.join(', '));
+```
+- Hedef: "Konsola `2, 4` yazdır." · Çıktı: `1, 3`
+- Düzeltme (satır 2, `sayilar.filter(n => n % 2)`): `sayilar.filter(n => n % 2 === 0)` ✔ · `... === 1` → 1, 3 · `sayilar.map(n => n % 2)` → 1, 0, 1, 0
+
+**13 — Piksel değeri**
+```js
+const genislik = '12.7px';
+console.log(Number(genislik));
+```
+- Hedef: "Konsola `12` yazdır." · Çıktı: `NaN`
+- Düzeltme (satır 2, `Number(genislik)`): `parseInt(genislik)` ✔ · `parseFloat(genislik)` → 12.7 · `Math.round(genislik)` → NaN
+
+**14 — Sıfır indirim**
+```js
+function indirimli(fiyat, indirim) {
+  const oran = indirim || 0.1;
+  return fiyat * (1 - oran);
+}
+
+console.log(indirimli(100, 0));
+```
+- Hedef: "Konsola `100` yazdır." · Çıktı: `90`
+- Düzeltme (satır 2, `indirim || 0.1`): `indirim ?? 0.1` ✔ · `indirim === 0 ? 0.1 : indirim` → 90 · `Number(indirim) || 0.1` → 90
+
+**15 — Boş değer**
+```js
+const deger = null;
+console.log(deger.toString());
+```
+- Hedef: "Konsola `null` yazdır." · Çıktı: `TypeError: Cannot read properties of null (reading 'toString')`
+- Düzeltme (satır 2, `deger.toString()`): `String(deger)` ✔ · `deger?.toString()` → undefined · `deger.toString` → TypeError
+
 ---
 
 ## 7. Erişilebilirlik sözleşmeleri
@@ -572,6 +622,8 @@ console.log(sayilar.join(', '));
 > **GençTek sürümü (v3):** karanlık tema, ses, rozetler, karne, ipucu, kavram sözlüğü, kalıcı ilerleme, paylaşım, klavye kısayolları ve illüstrasyonlar eklendi. `js/storage.js` ve `SHOW_HINT` / `RESUME` eylemleri bu sürümle geldi; test sayısı 20 → 28.
 >
 > **v4:** bölüm sayısı 10'a çıktı (nesne alanı, ok fonksiyonu, metot çağrısı, iç içe indeks, `sort` karşılaştırıcısı). `LEVEL_COUNT` 10, "Keskin göz" eşiği 5 doğru tahmin; test sayısı 30. Girişteki bilet listesi ve ilerleme rayı veriye göre üretildiği için ek JS değişikliği gerekmedi.
+>
+> **v5:** bölüm sayısı 15 (şablon metni, `filter`, `parseInt`, `??`, `String()`). "Keskin göz" eşiği 8 doğru tahmin; bilet listesi masaüstünde iki sütuna geçti, ray 15 segmentte daralıyor.
 
 Her faz tek başına çalışır bir çıktı bırakır; faz atlanmaz, faz içinde geri dönülür.
 

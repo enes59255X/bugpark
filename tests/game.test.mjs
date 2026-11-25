@@ -178,15 +178,15 @@ test('İlk düzeltmede "İlk adım" rozeti gelir', () => {
   assert.equal(solved.predictionsCorrect, 1);
 });
 
-test('Beş doğru tahminde "Keskin göz" açılır', () => {
+test('Sekiz doğru tahminde "Keskin göz" açılır', () => {
   let state = started();
-  for (let index = 0; index < 5; index += 1) {
+  for (let index = 0; index < 8; index += 1) {
     const level = state.levels[state.levelIndex];
     state = reduce(state, { type: 'SUBMIT_PREDICTION', choiceId: level.prediction.answerId });
     state = reduce(state, { type: 'SUBMIT_FIX', choiceId: level.fix.answerId });
     state = reduce(state, { type: 'NEXT_LEVEL' });
   }
-  assert.equal(state.predictionsCorrect, 5);
+  assert.equal(state.predictionsCorrect, 8);
   assert.ok(state.achievements.includes('keskin-goz'));
 });
 

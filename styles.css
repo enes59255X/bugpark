@@ -1329,3 +1329,38 @@ kbd {
 
 .takeaways .icon { width: 18px; height: 18px; }
 .badge__icon .icon { width: 20px; height: 20px; }
+
+/* 15 bölüm: bilet listesi iki sütun, ray dar ekranda daralır */
+.intro-grid { grid-template-columns: minmax(0, 1fr) 360px; }
+
+.pass__list {
+  display: grid;
+  grid-auto-flow: column;
+  grid-template-rows: repeat(8, auto);
+  grid-template-columns: 1fr 1fr;
+  background-image: linear-gradient(
+    to right,
+    transparent calc(50% - 0.5px),
+    var(--line) calc(50% - 0.5px),
+    var(--line) calc(50% + 0.5px),
+    transparent calc(50% + 0.5px)
+  );
+}
+
+.pass__list li {
+  padding: 8px 12px;
+  font-size: .875rem;
+}
+
+@media (max-width: 1280px) {
+  .rail li { width: 16px; }
+}
+
+@media (max-width: 1023px) {
+  .rail li { width: 12px; }
+  .rail__label { display: none; }
+}
+
+@media (max-width: 900px) {
+  .intro-grid { grid-template-columns: minmax(0, 1fr); }
+}

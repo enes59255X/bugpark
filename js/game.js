@@ -3,11 +3,11 @@
  * Fazlar: loading | error | intro | predict | fix | solved | summary
  */
 
-export const LEVEL_COUNT = 10;
+export const LEVEL_COUNT = 15;
 
 export const ACHIEVEMENTS = [
   { id: 'ilk-adim', title: 'İlk adım', description: 'İlk hatayı düzelttin.', icon: 'bolt' },
-  { id: 'keskin-goz', title: 'Keskin göz', description: 'Beş tahminin doğru çıktı.', icon: 'eye' },
+  { id: 'keskin-goz', title: 'Keskin göz', description: 'Sekiz tahminin doğru çıktı.', icon: 'eye' },
   { id: 'temiz-tur', title: 'Temiz tur', description: 'Tüm görevleri çözüm göstermeden bitirdin.', icon: 'shield' },
   { id: 'ipucusuz', title: 'İpucusuz', description: 'Hiç ipucu kullanmadın.', icon: 'star' },
 ];
@@ -155,7 +155,7 @@ function withAchievements(state) {
 
   const earned = new Set(state.achievements);
   if (state.completed.length >= 1) earned.add('ilk-adim');
-  if (state.predictionsCorrect >= 5) earned.add('keskin-goz');
+  if (state.predictionsCorrect >= 8) earned.add('keskin-goz');
 
   const allDone = state.levels.length > 0 && state.completed.length === state.levels.length;
   if (allDone && state.completed.every((item) => item.outcome === 'solved')) {
