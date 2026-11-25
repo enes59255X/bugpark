@@ -4,11 +4,11 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>BugPark — Kodun çıktısını tahmin et, hatayı düzelt</title>
-  <meta name="description" content="Yirmi kısa görevde JavaScript'in yaygın hatalarını tahmin et, düzelt ve nedenini öğren.">
+  <meta name="description" content="Yirmi beş kısa görevde JavaScript'in yaygın hatalarını tahmin et, düzelt ve nedenini öğren.">
   <meta name="color-scheme" content="light dark">
   <meta name="theme-color" content="#F5F2EA">
   <meta property="og:title" content="BugPark — JavaScript hata avı">
-  <meta property="og:description" content="Kodu oku, çıktısını tahmin et, hatayı düzelt. 20 görev, süre yok, puan yok.">
+  <meta property="og:description" content="Kodu oku, çıktısını tahmin et, hatayı düzelt. 25 görev, süre yok, puan yok.">
   <meta property="og:type" content="website">
   <meta property="og:url" content="https://enes59255x.github.io/bugpark/">
   <meta property="og:image" content="https://enes59255x.github.io/bugpark/assets/og.png">
@@ -46,6 +46,12 @@
     <symbol id="i-parse" viewBox="0 0 24 24"><path d="M4 9V4h5M15 4h5v5M20 15v5h-5M9 20H4v-5"/><path d="M9 12h6"/></symbol>
     <symbol id="i-nullish" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8"/><path d="M6.4 17.6 17.6 6.4"/></symbol>
     <symbol id="i-empty" viewBox="0 0 24 24"><rect x="4.5" y="4.5" width="15" height="15" rx="3"/><path d="M9 12h6"/></symbol>
+    <symbol id="i-class" viewBox="0 0 24 24"><path d="M12 3 4 7.5v9L12 21l8-4.5v-9L12 3Z"/><path d="M4 7.5 12 12l8-4.5"/><path d="M12 12v9"/></symbol>
+    <symbol id="i-map" viewBox="0 0 24 24"><rect x="3.5" y="5" width="17" height="14" rx="2.5"/><path d="M3.5 10.5h17"/><path d="M9 10.5V19"/></symbol>
+    <symbol id="i-set" viewBox="0 0 24 24"><circle cx="9.5" cy="12" r="5.5"/><circle cx="14.5" cy="12" r="5.5"/></symbol>
+    <symbol id="i-storage" viewBox="0 0 24 24"><rect x="3.5" y="4.5" width="17" height="15" rx="3"/><path d="M7.5 9.5h9"/><path d="M7.5 14.5h5"/></symbol>
+    <symbol id="i-bind" viewBox="0 0 24 24"><path d="M9.5 14.5 14.5 9.5"/><path d="M11 7.5 12.6 6a3.2 3.2 0 0 1 4.5 4.5L15.5 12"/><path d="M13 16.5 11.4 18a3.2 3.2 0 0 1-4.5-4.5L8.5 12"/></symbol>
+    <symbol id="i-classroom" viewBox="0 0 24 24"><circle cx="9" cy="8" r="3.2"/><path d="M3.5 19c0-3 2.5-5 5.5-5s5.5 2 5.5 5"/><path d="M16.5 6.5h4"/><path d="M18.5 4.5v4"/><path d="M15.5 19h5"/></symbol>
     <symbol id="i-close" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6 6 18"/></symbol>
   </svg>
 
@@ -85,14 +91,14 @@
     <section class="screen screen--intro" id="screenIntro" hidden aria-labelledby="introTitle">
       <div class="intro-grid">
         <div class="intro-main">
-          <p class="eyebrow">JavaScript · 20 görev</p>
+          <p class="eyebrow">JavaScript · 25 görev</p>
           <h1 class="display" id="introTitle" tabindex="-1">
             <span class="display__line">Kodu oku.</span>
             <span class="display__line">Çıktıyı tahmin et.</span>
             <span class="display__line">Hatayı düzelt.</span>
           </h1>
           <p class="lede">Her görevde bozuk bir kod parçası var. Önce ne yazdırdığını tahmin et, sonra tek bir değişiklikle düzelt.</p>
-          <p class="meta-line">20 kısa görev · süre yok · puan yok</p>
+          <p class="meta-line">25 kısa görev · süre yok · puan yok</p>
           <ol class="steps">
             <li><span class="steps__n" aria-hidden="true">1</span> Oku</li>
             <li><span class="steps__n" aria-hidden="true">2</span> Tahmin et</li>
@@ -104,6 +110,12 @@
             <button class="mode__btn" type="button" data-action="mode-free" aria-pressed="false">Serbest</button>
           </div>
           <p class="mode__note" id="modeNote">Sıralı mod: görevler sırayla, tahminler çoktan seçmeli.</p>
+
+          <p class="teacher-link">
+            <svg class="icon icon--sm" aria-hidden="true"><use href="#i-classroom"></use></svg>
+            <span>Öğretmen misin?</span>
+            <button class="link-btn" type="button" data-action="classroom-open">Sınıf panelini aç</button>
+          </p>
 
           <div class="start-block" id="startBlock">
             <button class="btn btn--primary btn--lg" type="button" data-action="start">Başla</button>
@@ -156,7 +168,7 @@
           <div class="pass">
             <div class="pass__head">
               <span class="eyebrow">Giriş bileti</span>
-              <span class="pass__no" id="passCount">20 görev</span>
+              <span class="pass__no" id="passCount">25 görev</span>
             </div>
             <ol class="pass__list" id="passList"></ol>
             <p class="pass__foot">Süre yok · puan yok</p>
@@ -297,14 +309,67 @@
       <p class="detail" id="reportNote">Bu rapor öğrencinin tarayıcısında oluşturuldu; sunucuya hiçbir veri gönderilmedi.</p>
       <div class="actionbar actionbar--plain">
         <button class="btn btn--primary" type="button" data-action="report-close">Oyunu aç</button>
+        <button class="btn btn--ghost" type="button" data-action="report-class">Sınıf paneline ekle</button>
+      </div>
+    </section>
+
+    <section class="screen" id="screenClass" hidden aria-labelledby="classTitle">
+      <p class="eyebrow">Sınıf modu</p>
+      <h1 class="title" id="classTitle" tabindex="-1">Sınıf paneli</h1>
+      <p class="lede">
+        Öğrenciler bitirince rapor bağlantısını sana iletir. Bağlantıları ya da yalnızca kodları
+        buraya yapıştır; panel hepsini tek tabloda toplar. Veriler yalnızca bu tarayıcıda kalır.
+      </p>
+
+      <div class="class-input">
+        <label class="typed__label" for="classInput">Rapor bağlantısı veya kodu</label>
+        <textarea class="class-input__area" id="classInput" rows="3" spellcheck="false"
+          placeholder="https://…/bugpark/#rapor=djF8…  ·  her satıra bir bağlantı ya da kod"></textarea>
+        <div class="class-input__row">
+          <button class="btn btn--primary" type="button" data-action="class-add">Kodu ekle</button>
+          <button class="btn btn--ghost" type="button" data-action="class-csv">CSV indir</button>
+          <button class="btn btn--ghost" type="button" data-action="class-clear">Listeyi temizle</button>
+          <span class="share-note" id="classNote" role="status"></span>
+        </div>
+      </div>
+
+      <ul class="report-stats" id="classStats"></ul>
+
+      <h2 class="section-title">Öğrenciler</h2>
+      <div class="table-wrap" tabindex="0" role="region" aria-label="Sınıf tablosu, yatay kaydırılabilir">
+        <table class="class-table">
+          <caption class="sr-only">Sınıftaki öğrenci raporları</caption>
+          <thead>
+            <tr>
+              <th scope="col">Ad</th>
+              <th scope="col">Tarih</th>
+              <th scope="col">Mod</th>
+              <th scope="col">Tamamlanan</th>
+              <th scope="col">Çözülen</th>
+              <th scope="col">Gösterilen</th>
+              <th scope="col">Doğru tahmin</th>
+              <th scope="col">Rozet</th>
+            </tr>
+          </thead>
+          <tbody id="classRows"></tbody>
+        </table>
+      </div>
+
+      <h2 class="section-title">Görev bazında</h2>
+      <p class="class-legend">✓ çözüldü · ! çözüm gösterildi · — yapılmadı</p>
+      <ol class="results class-levels" id="classLevels"></ol>
+
+      <p class="detail" id="classDetail">Henüz kod eklenmedi.</p>
+
+      <div class="actionbar actionbar--plain">
+        <button class="btn btn--primary" type="button" data-action="class-close">Giriş ekranı</button>
       </div>
     </section>
 
     <section class="screen" id="screenError" hidden aria-labelledby="errorTitle">
       <p class="eyebrow">Hata</p>
       <h1 class="title" id="errorTitle" tabindex="-1">Görevler yüklenemedi</h1>
-      <p class="lede">Görev dosyası okunamadı. Dosyayı yerel sunucu üzerinden açtığından emin ol; çift tıklama JSON yüklemeyi engeller.</p>
-      <p class="code-hint"><code>python -m http.server 8000</code></p>
+      <p class="lede">Görev dosyası okunamadı. Sayfayı yenilemeyi dene; dosyayı indirip çift tıkladıysan <a href="./BugPark.html">tek dosyalık sürümü</a> kullan.</p>
       <p class="detail" id="errorDetail"></p>
       <div class="actionbar actionbar--plain">
         <button class="btn btn--primary" type="button" data-action="retry">Yeniden dene</button>

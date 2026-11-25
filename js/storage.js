@@ -6,6 +6,7 @@ import { progressSnapshot } from './game.js';
 
 const PROGRESS_KEY = 'bugpark.progress.v1';
 const PREFS_KEY = 'bugpark.prefs.v1';
+const CLASS_KEY = 'bugpark.class.v1';
 
 function read(key) {
   try {
@@ -60,4 +61,14 @@ export function savePrefs(prefs) {
     sound: prefs.sound,
     mode: prefs.mode === 'free' ? 'free' : 'guided',
   });
+}
+
+export function loadClassCodes() {
+  const data = read(CLASS_KEY);
+  if (!data || data.version !== 1 || !Array.isArray(data.codes)) return [];
+  return data.codes.filter((code) => typeof code === 'string');
+}
+
+export function saveClassCodes(codes) {
+  return write(CLASS_KEY, { version: 1, codes: Array.isArray(codes) ? codes : [] });
 }

@@ -3,7 +3,7 @@
  * Fazlar: loading | error | intro | predict | fix | solved | summary
  */
 
-export const LEVEL_COUNT = 20;
+export const LEVEL_COUNT = 25;
 
 export const ACHIEVEMENTS = [
   { id: 'ilk-adim', title: 'İlk adım', description: 'İlk hatayı düzelttin.', icon: 'bolt' },

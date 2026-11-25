@@ -660,6 +660,171 @@
           { "id": "f3", "label": "console.log('sıfıra bölme')", "feedback": "İçeride metin yazdırılır, sonra a / b çalışır: Infinity." }
         ]
       }
+    },
+    {
+      "id": "class-new",
+      "order": 21,
+      "title": "Kütüphane kaydı",
+      "concept": "sınıf",
+      "goal": "Konsola Kısa Hikâye yazdır.",
+      "code": "class Kitap {\n  constructor(ad) {\n    this.ad = ad;\n  }\n}\n\nconst kitap = Kitap('Kısa Hikâye');\nconsole.log(kitap.ad);",
+      "explain": "Sınıflar new olmadan çağrılamaz; çağrılmadan nesne oluşmaz.",
+      "hint": "Sınıftan nesne üretirken hangi anahtar kelime gerekir?",
+      "takeaway": "class bir kalıptır; örneğini new ile üretmeden alanlarına erişemezsin.",
+      "prediction": {
+        "question": "Bu kod şu anda ne yazdırır?",
+        "answerId": "p1",
+        "output": "TypeError: Class constructor Kitap cannot be invoked without 'new'",
+        "choices": [
+          { "id": "p1", "label": "TypeError: Class constructor Kitap cannot be invoked without 'new'", "feedback": "Sınıf fonksiyonu new olmadan çağrılınca hata verir." },
+          { "id": "p2", "label": "Kısa Hikâye", "feedback": "Bunun için nesne new ile üretilmeli." },
+          { "id": "p3", "label": "undefined", "feedback": "Kod hiç bu noktaya gelemiyor; çağrı anında hata var." }
+        ]
+      },
+      "fix": {
+        "question": "Hedefe ulaşmak için hangi değişiklik gerekli?",
+        "answerId": "f1",
+        "target": { "line": 7, "snippet": "Kitap('Kısa Hikâye')" },
+        "solution": "new Kitap('Kısa Hikâye')",
+        "output": "Kısa Hikâye",
+        "choices": [
+          { "id": "f1", "label": "new Kitap('Kısa Hikâye')", "feedback": "new örnek üretir; constructor adı kitaba yazar." },
+          { "id": "f2", "label": "new Kitap", "feedback": "Nesne oluşur ama ad verilmez: undefined yazdırılır." },
+          { "id": "f3", "label": "Kitap.call(null, 'Kısa Hikâye')", "feedback": "call da new'in yerini tutmaz; aynı TypeError sürer." }
+        ]
+      }
+    },
+    {
+      "id": "map-get",
+      "order": 22,
+      "title": "Not defteri",
+      "concept": "Map",
+      "goal": "Konsola 90 yazdır.",
+      "code": "const puanlar = new Map();\npuanlar.set('Ece', 90);\nconsole.log(puanlar.Ece);",
+      "explain": "Map bir koleksiyondur; değerler anahtarla get() üzerinden okunur.",
+      "hint": "Map'te değeri okumak için hangi metot kullanılır?",
+      "takeaway": "Map'te değer get(anahtar) ile okunur; nokta notasyonu sıradan nesneler içindir.",
+      "prediction": {
+        "question": "Bu kod şu anda ne yazdırır?",
+        "answerId": "p1",
+        "output": "undefined",
+        "choices": [
+          { "id": "p1", "label": "undefined", "feedback": "Map'in kendi alanları yoktur; Ece diye bir özellik tanımlı değil." },
+          { "id": "p2", "label": "90", "feedback": "Bunun için get('Ece') gerekir." },
+          { "id": "p3", "label": "Map(1) { 'Ece' => 90 }", "feedback": "Bu, Map'in kendisi yazdırılırsa çıkar." }
+        ]
+      },
+      "fix": {
+        "question": "Hedefe ulaşmak için hangi değişiklik gerekli?",
+        "answerId": "f1",
+        "target": { "line": 3, "snippet": "puanlar.Ece" },
+        "solution": "puanlar.get('Ece')",
+        "output": "90",
+        "choices": [
+          { "id": "f1", "label": "puanlar.get('Ece')", "feedback": "get anahtarı arar, bulduğu değeri döndürür: 90." },
+          { "id": "f2", "label": "puanlar['Ece']", "feedback": "Köşeli parantez de Map'te çalışmaz; yine undefined." },
+          { "id": "f3", "label": "puanlar.has('Ece')", "feedback": "has yalnızca var mı diye bakar: true." }
+        ]
+      }
+    },
+    {
+      "id": "set-add",
+      "order": 23,
+      "title": "Tekil renkler",
+      "concept": "Set",
+      "goal": "Konsola 2 yazdır.",
+      "code": "const renkler = new Set(['kırmızı']);\nrenkler.push('mavi');\nconsole.log(renkler.size);",
+      "explain": "Set'te eleman eklemek için add kullanılır; push dizilere aittir.",
+      "hint": "Set'e eleman ekleyen metot hangisi?",
+      "takeaway": "Set tekrarı kabul etmez; eklemek için add, saymak için size kullan.",
+      "prediction": {
+        "question": "Bu kod şu anda ne yazdırır?",
+        "answerId": "p1",
+        "output": "TypeError: renkler.push is not a function",
+        "choices": [
+          { "id": "p1", "label": "TypeError: renkler.push is not a function", "feedback": "Set'te push yok; hata satır 2'de fırlar." },
+          { "id": "p2", "label": "2", "feedback": "Bunun için add kullanılmalı." },
+          { "id": "p3", "label": "1", "feedback": "Ekleme hiç yapılamadığı için kod buraya ulaşmaz." }
+        ]
+      },
+      "fix": {
+        "question": "Hedefe ulaşmak için hangi değişiklik gerekli?",
+        "answerId": "f1",
+        "target": { "line": 2, "snippet": "renkler.push" },
+        "solution": "renkler.add",
+        "output": "2",
+        "choices": [
+          { "id": "f1", "label": "renkler.add", "feedback": "mavi eklenir; Set iki elemanlı olur." },
+          { "id": "f2", "label": "renkler.set", "feedback": "Set'te set metodu yok: TypeError." },
+          { "id": "f3", "label": "renkler.append", "feedback": "append de yok: TypeError." }
+        ]
+      }
+    },
+    {
+      "id": "storage-stringify",
+      "order": 24,
+      "title": "Kalıcı ayar",
+      "concept": "localStorage",
+      "goal": "Konsola {\"tema\":\"koyu\"} yazdır.",
+      "code": "const ayarlar = { tema: 'koyu' };\nlocalStorage.setItem('ayarlar', ayarlar);\nconsole.log(localStorage.getItem('ayarlar'));",
+      "explain": "localStorage yalnızca metin saklar; nesne doğrudan verilirse [object Object] olur.",
+      "hint": "Nesneyi metne çeviren hangi araç var?",
+      "takeaway": "localStorage'a nesne yazarken JSON.stringify, okurken JSON.parse kullan.",
+      "prediction": {
+        "question": "Bu kod şu anda ne yazdırır?",
+        "answerId": "p1",
+        "output": "[object Object]",
+        "choices": [
+          { "id": "p1", "label": "[object Object]", "feedback": "Nesne metne zorlanınca bu çıktıya dönüşür." },
+          { "id": "p2", "label": "{\"tema\":\"koyu\"}", "feedback": "Bunun için JSON.stringify gerekir." },
+          { "id": "p3", "label": "undefined", "feedback": "Anahtar kaydedildi; değer boş değil." }
+        ]
+      },
+      "fix": {
+        "question": "Hedefe ulaşmak için hangi değişiklik gerekli?",
+        "answerId": "f1",
+        "target": { "line": 2, "snippet": ", ayarlar)" },
+        "solution": ", JSON.stringify(ayarlar))",
+        "output": "{\"tema\":\"koyu\"}",
+        "choices": [
+          { "id": "f1", "label": ", JSON.stringify(ayarlar))", "feedback": "Nesne JSON metnine dönüşür; okunduğunda aynı metin gelir." },
+          { "id": "f2", "label": ", String(ayarlar))", "feedback": "String de aynı [object Object] metnini üretir." },
+          { "id": "f3", "label": ", Object.keys(ayarlar))", "feedback": "Yalnızca anahtarlar kaydedilir: tema." }
+        ]
+      }
+    },
+    {
+      "id": "this-bind",
+      "order": 25,
+      "title": "Kayıp sayaç",
+      "concept": "this / bind",
+      "goal": "Konsola 1 yazdır.",
+      "code": "class Sayac {\n  constructor() {\n    this.deger = 0;\n  }\n\n  artir() {\n    this.deger += 1;\n  }\n}\n\nconst sayac = new Sayac();\nconst artir = sayac.artir;\nartir();\nconsole.log(sayac.deger);",
+      "explain": "Metot ayrı bir değişkene alınınca this bağını kaybeder; bind ile bağlanmalıdır.",
+      "hint": "Metodu başka bir değişkene alırken this'i neye bağlaman gerekir?",
+      "takeaway": "this çağrı yerine göre belirlenir; metodu ayırırken bind(sayac) ile sabitle.",
+      "prediction": {
+        "question": "Bu kod şu anda ne yazdırır?",
+        "answerId": "p1",
+        "output": "TypeError: Cannot read properties of undefined (reading 'deger')",
+        "choices": [
+          { "id": "p1", "label": "TypeError: Cannot read properties of undefined (reading 'deger')", "feedback": "artir() this'siz çağrılır; this undefined olur." },
+          { "id": "p2", "label": "1", "feedback": "Bunun için metot sayaca bağlanmalı." },
+          { "id": "p3", "label": "0", "feedback": "Hata fırlatıldığı için sayaç yazdırılamaz." }
+        ]
+      },
+      "fix": {
+        "question": "Hedefe ulaşmak için hangi değişiklik gerekli?",
+        "answerId": "f1",
+        "target": { "line": 12, "snippet": "sayac.artir;" },
+        "solution": "sayac.artir.bind(sayac);",
+        "output": "1",
+        "choices": [
+          { "id": "f1", "label": "sayac.artir.bind(sayac);", "feedback": "bind this'i sayaca sabitler; artir() sayacı artırır." },
+          { "id": "f2", "label": "sayac.artir();", "feedback": "Metot hemen çağrılır, artir değişkeni undefined olur: TypeError." },
+          { "id": "f3", "label": "sayac.artir.bind(null);", "feedback": "this null olur; aynı okuma hatası sürer." }
+        ]
+      }
     }
   ]
 }

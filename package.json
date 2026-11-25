@@ -1,12 +1,13 @@
 {
   "name": "bugpark",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "private": true,
   "type": "module",
-  "description": "JavaScript'te yaygın 5 hatayı bulup düzeltme oyunu",
+  "description": "Türkçe, tarayıcıda çalışan JavaScript hata avı oyunu",
   "scripts": {
     "test": "node --test \"tests/**/*.test.mjs\"",
     "check": "node tests/validate-levels.mjs",
+    "build": "node tools/build-single.mjs",
     "serve": "python -m http.server 8000"
   }
 }

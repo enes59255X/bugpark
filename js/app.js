@@ -1,6 +1,6 @@
 /**
  * Uygulama kabuğu: JSON yükler, eylemleri çalıştırır, ui.js'e render ettirir.
- * Tercihler ve ilerleme storage.js üzerinden yerelde tutulur.
+ * Tercihler, ilerleme ve sınıf listesi storage.js üzerinden yerelde tutulur.
  */
 import {
   ACHIEVEMENTS,
@@ -9,10 +9,13 @@ import {
   reduce,
   validateLevels,
 } from './game.js';
+import { addReports, summarize, toCsv } from './classroom.js';
 import { decodeReport, encodeReport, readReportCode, reportLink } from './report.js';
 import {
   announce,
   checkedChoice,
+  classInputValue,
+  clearClassInput,
   clearHints,
   closeGlossary,
   isGlossaryOpen,
@@ -21,6 +24,7 @@ import {
   render,
   reportNameValue,
   revealHint,
+  setClassNote,
   setReportNote,
   setShareNote,
   showHint,
@@ -28,8 +32,10 @@ import {
 } from './ui.js';
 import {
   clearProgress,
+  loadClassCodes,
   loadPrefs,
   loadProgress,
+  saveClassCodes,
   savePrefs,
   saveProgress,
 } from './storage.js';
@@ -40,6 +46,7 @@ const THEME_COLOR = { light: '#F5F2EA', dark: '#12141A' };
 let state = createGame();
 let savedProgress = null;
 let baseLevels = [];
+let classReports = [];
 
 const view = {
   theme: 'light',
@@ -49,6 +56,7 @@ const view = {
   resumeLabel: '',
   shareNote: '',
   report: null,
+  classroom: null,
 };
 
 let audioContext = null;
@@ -66,6 +74,11 @@ function applyTheme(theme) {
 
 function savePrefsNow() {
   savePrefs({ theme: view.theme, sound: view.sound, mode: view.mode });
+}
+
+function siteBase() {
+  if (window.location.protocol === 'file:') return null;
+  return `${window.location.origin}${window.location.pathname}`;
 }
 
 function refreshResume() {
@@ -160,9 +173,9 @@ async function copyText(text) {
 function shareText() {
   const total = state.levels.length;
   const solved = state.completed.filter((item) => item.outcome === 'solved').length;
-  const url = `${window.location.origin}${window.location.pathname}`;
   const earned = state.achievements.length;
   const mode = state.mode === 'free' ? ' · serbest mod' : '';
+  const url = siteBase() || 'BugPark (tek dosya)';
 
   return [
     `BugPark — ${total} görevden ${solved} tanesini çözüm göstermeden bitirdim.`,
@@ -172,8 +185,7 @@ function shareText() {
 }
 
 async function copyShare() {
-  const text = shareText();
-  const copied = await copyText(text);
+  const copied = await copyText(shareText());
 
   view.shareNote = copied
     ? 'Sonuç panoya kopyalandı.'
@@ -198,26 +210,64 @@ async function makeReportLink() {
     mode: state.mode,
   });
 
-  const link = reportLink(`${window.location.origin}${window.location.pathname}`, code);
-  const copied = await copyText(link);
+  const base = siteBase();
+  const text = base ? reportLink(base, code) : code;
+  const copied = await copyText(text);
+
+  if (!base) {
+    setReportNote(copied
+      ? `Bağlantı yerine kodu paylaş (sınıf paneli kodu okur): ${code}`
+      : `Kodu elle kopyala: ${code}`);
+    announce(copied ? 'Rapor kodu kopyalandı.' : 'Rapor kodu hazır.');
+    return;
+  }
 
   setReportNote(copied
-    ? `Bağlantı kopyalandı: ${link}`
-    : `Bağlantı hazır (kopyalanamadı, elle seç): ${link}`);
+    ? `Bağlantı kopyalandı: ${text}`
+    : `Bağlantı hazır (kopyalanamadı, elle seç): ${text}`);
   announce(copied ? 'Rapor bağlantısı kopyalandı.' : 'Rapor bağlantısı hazırlandı.');
 }
 
+function refreshClassroom() {
+  if (!view.classroom) return;
+  view.classroom = { summary: summarize(state.levels, classReports) };
+}
+
+function saveClass() {
+  saveClassCodes(classReports.map((report) => report.code));
+  refreshClassroom();
+}
+
+function downloadCsv() {
+  const csv = toCsv(summarize(state.levels, classReports));
+  const blob = new Blob([csv], { type: 'text/csv;charset=utf-8' });
+  const url = URL.createObjectURL(blob);
+  const anchor = document.createElement('a');
+  anchor.href = url;
+  anchor.download = `bugpark-sinif-${new Date().toISOString().slice(0, 10)}.csv`;
+  document.body.append(anchor);
+  anchor.click();
+  anchor.remove();
+  window.setTimeout(() => URL.revokeObjectURL(url), 1000);
+}
+
 /* ---------------------------------------------------------------- yükleme */
+
+async function loadLevels() {
+  const inline = globalThis.__BUGPARK_LEVELS__;
+  if (inline) return inline;
+
+  const response = await fetch(DATA_URL, { cache: 'no-cache' });
+  if (!response.ok) throw new Error(`levels.json → HTTP ${response.status}`);
+  return response.json();
+}
 
 async function boot() {
   state = { ...createGame(), phase: 'loading' };
   renderAll();
 
   try {
-    const response = await fetch(DATA_URL, { cache: 'no-cache' });
-    if (!response.ok) throw new Error(`levels.json → HTTP ${response.status}`);
-
-    const data = await response.json();
+    const data = await loadLevels();
     const check = validateLevels(data);
     if (!check.ok) throw new Error(check.errors.join(' · '));
 
@@ -226,12 +276,47 @@ async function boot() {
     refreshResume();
     view.hasResume = Boolean(savedProgress && hasProgress(savedProgress))
       && savedProgress.completed.length <= data.levels.length;
+
+    classReports = loadClassCodes()
+      .map((code) => ({ code, data: decodeReport(code) }))
+      .filter((report) => report.data);
+    refreshClassroom();
+    syncRoutes();
   } catch (error) {
     console.error('[BugPark]', error);
     state = reduce(state, { type: 'LOAD_FAILED', error: error.message || String(error) });
   }
 
   renderAll();
+}
+
+/* ----------------------------------------------------------------- rotalar */
+
+function clearHash() {
+  history.replaceState(null, '', window.location.pathname + window.location.search);
+}
+
+/** Adresteki #rapor=… ve #sinif yollarını view durumuna yansıtır. */
+function syncRoutes() {
+  const code = readReportCode(window.location.hash);
+
+  if (code) {
+    const decoded = decodeReport(code);
+    view.report = decoded;
+    view.classroom = null;
+    if (!decoded) {
+      console.warn('[BugPark] Rapor bağlantısı okunamadı, oyun açılıyor.');
+      clearHash();
+    }
+    return;
+  }
+
+  view.report = null;
+  if (window.location.hash === '#sinif' && state.levels.length > 0) {
+    view.classroom = { summary: summarize(state.levels, classReports) };
+  } else {
+    view.classroom = null;
+  }
 }
 
 /* ---------------------------------------------------------------- eylemler */
@@ -265,6 +350,22 @@ function submitPrediction() {
     ? 'Doğru tahmin. Şimdi kodu düzelt.'
     : 'Tahmin tutmadı. Gerçek çıktı konsolda.');
   return true;
+}
+
+function addToClass(text, code) {
+  const result = addReports(classReports, text ?? code ?? '');
+  classReports = result.reports;
+  saveClass();
+
+  const parts = [];
+  if (result.added) parts.push(`${result.added} rapor eklendi`);
+  if (result.duplicate) parts.push(`${result.duplicate} zaten listede`);
+  if (result.invalid) parts.push(`${result.invalid} kod okunamadı`);
+  const message = parts.join(' · ') || 'Yeni rapor bulunamadı.';
+
+  setClassNote(message);
+  announce(message);
+  return result;
 }
 
 function run(action) {
@@ -379,10 +480,81 @@ function run(action) {
 
     case 'report-close': {
       view.report = null;
-      if (window.location.hash) {
-        history.replaceState(null, '', window.location.pathname + window.location.search);
+      if (window.location.hash) clearHash();
+      renderAll();
+      announce('Oyun açık.');
+      return;
+    }
+
+    case 'report-class': {
+      const code = readReportCode(window.location.hash);
+      if (!code) return;
+      addToClass(code);
+      view.report = null;
+      view.classroom = { summary: summarize(state.levels, classReports) };
+      history.replaceState(null, '', `${window.location.pathname}${window.location.search}#sinif`);
+      renderAll();
+      return;
+    }
+
+    case 'classroom-open': {
+      view.report = null;
+      view.classroom = { summary: summarize(state.levels, classReports) };
+      if (window.location.hash !== '#sinif') {
+        history.replaceState(null, '', `${window.location.pathname}${window.location.search}#sinif`);
       }
-      boot();
+      setClassNote(classReports.length
+        ? `${classReports.length} rapor listede.`
+        : 'Henüz rapor yok.');
+      renderAll();
+      announce('Sınıf paneli açıldı.');
+      return;
+    }
+
+    case 'class-add': {
+      const text = classInputValue();
+      if (!text.trim()) {
+        setClassNote('Önce bir bağlantı ya da kod yapıştır.');
+        announce('Kod alanı boş.');
+        return;
+      }
+      addToClass(text);
+      clearClassInput();
+      renderAll();
+      return;
+    }
+
+    case 'class-csv': {
+      if (classReports.length === 0) {
+        setClassNote('CSV için önce en az bir rapor ekle.');
+        announce('Liste boş.');
+        return;
+      }
+      downloadCsv();
+      setClassNote('CSV indirildi.');
+      announce('CSV indirildi.');
+      return;
+    }
+
+    case 'class-clear': {
+      if (classReports.length === 0) {
+        setClassNote('Liste zaten boş.');
+        return;
+      }
+      if (!window.confirm('Sınıf listesindeki tüm raporlar bu tarayıcıdan silinecek. Emin misin?')) return;
+      classReports = [];
+      saveClass();
+      setClassNote('Liste temizlendi.');
+      announce('Sınıf listesi temizlendi.');
+      renderAll();
+      return;
+    }
+
+    case 'class-close': {
+      view.classroom = null;
+      if (window.location.hash === '#sinif') clearHash();
+      renderAll();
+      announce('Giriş ekranındasın.');
       return;
     }
 
@@ -471,7 +643,7 @@ document.addEventListener('keydown', (event) => {
 document.addEventListener('keydown', (event) => {
   if (event.ctrlKey || event.altKey || event.metaKey) return;
   if (isGlossaryOpen()) return;
-  if (view.report) return;
+  if (view.report || view.classroom) return;
   if (event.target instanceof HTMLButtonElement) return;
   if (event.target instanceof HTMLInputElement && event.target.type === 'text') return;
 
@@ -511,32 +683,14 @@ view.sound = prefs.sound;
 view.mode = prefs.mode;
 savedProgress = loadProgress();
 
-const reportCode = readReportCode(window.location.hash);
-if (reportCode) {
-  view.report = decodeReport(reportCode);
-  if (!view.report) {
-    console.warn('[BugPark] Rapor bağlantısı okunamadı, oyun açılıyor.');
-    history.replaceState(null, '', window.location.pathname + window.location.search);
-  }
-}
-
-/* Aynı sayfada farklı bir rapor bağlantısı açılırsa (hash değişimi) yeniden yükle. */
+/* Aynı sayfada başka bir rota açılırsa (rapor bağlantısı ya da #sinif) uygula. */
 window.addEventListener('hashchange', () => {
-  const code = readReportCode(window.location.hash);
-  if (code) {
-    const decoded = decodeReport(code);
-    if (!decoded) {
-      history.replaceState(null, '', window.location.pathname + window.location.search);
-      view.report = null;
-    } else {
-      view.report = decoded;
-    }
-  } else if (view.report) {
-    view.report = null;
-  } else {
+  if (state.levels.length === 0) {
+    boot();
     return;
   }
-  boot();
+  syncRoutes();
+  renderAll();
 });
 
 renderAll();

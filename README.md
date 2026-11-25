@@ -1,213 +1,186 @@
-<div align="center">
-
-<img src="assets/favicon.svg" width="64" height="64" alt="BugPark logosu: kırmızı hata böceği">
-
 # BugPark
 
-**Kodu oku, çıktısını tahmin et, hatayı düzelt.**
+**Kodu oku. Çıktısını tahmin et. Hatayı düzelt.**
 
-JavaScript'e yeni başlayanlar için yirmi kısa görevden oluşan, tarayıcıda çalışan bir hata avı oyunu.
-Süre yok, puan yok, üyelik yok — sadece kod, çıktı ve neden.
+Türkçe, tarayıcıda çalışan bir JavaScript hata avı oyunu. 25 kısa görev, süre yok, puan yok, hesap yok.
+Kod hiçbir zaman çalıştırılmaz: önce çıktıyı tahmin edersin, sonra tek bir değişiklikle hatayı düzeltir,
+nedenini okursun.
 
-[![testler](https://img.shields.io/badge/testler-43%20ge%C3%A7ti-0F6B45?style=flat-square&labelColor=14161A)](tests/)
-[![bağımlılık](https://img.shields.io/badge/ba%C4%9F%C4%B1ml%C4%B1l%C4%B1k-0-0F6B45?style=flat-square&labelColor=14161A)](package.json)
-[![erişilebilirlik](https://img.shields.io/badge/axe-0%20ihlal-0F6B45?style=flat-square&labelColor=14161A)](#erişilebilirlik)
+<p>
+  <a href="https://enes59255x.github.io/bugpark/"><img alt="Oyna" src="https://img.shields.io/badge/HEMEN%20OYNA-enes59255x.github.io%2Fbugpark-14161A?style=for-the-badge"></a>
+  <a href="https://github.com/enes59255X/bugpark/releases/latest/download/BugPark.html"><img alt="Tek dosya indir" src="https://img.shields.io/badge/%C4%B0ND%C4%B0R-tek%20dosya%20%C2%B7%20%C3%A7evrimd%C4%B1%C3%A7%C4%B1-0F6B45?style=for-the-badge"></a>
+</p>
+
+[![testler](https://img.shields.io/badge/testler-56%20ge%C3%A7ti-0F6B45?style=flat-square&labelColor=14161A)](tests/)
+[![axe-core](https://img.shields.io/badge/axe--core-9%20durumda%200%20ihlal-0F6B45?style=flat-square&labelColor=14161A)](#erişilebilirlik)
+[![görev](https://img.shields.io/badge/g%C3%B6rev-25-14161A?style=flat-square)](data/levels.json)
 [![lisans](https://img.shields.io/badge/lisans-MIT-14161A?style=flat-square)](LICENSE)
-
-[Canlı demo](https://enes59255X.github.io/bugpark/) · [Özellikler](#özellikler) · [Hızlı başlangıç](#hızlı-başlangıç) · [İçerik ekleme](#yeni-bölüm-ekleme)
-
-</div>
 
 ![BugPark giriş ekranı](docs/screenshots/01-intro.png)
 
-## Ne yapıyor
+## İndir
 
-Her bölümde kasıtlı olarak bozuk bir kod parçası var. Oyuncu önce **bu kodun şu an ne yazdırdığını** tahmin eder,
-sonra tek bir değişiklikle hedefe ulaştırır. Tahmin yanlış olsa da akış kilitlenmez: gerçek çıktı, seçilen
-seçeneğin neden yanlış olduğu ve hatanın nedeni birlikte gösterilir.
+| | |
+| :-- | :-- |
+| **Tek dosya** | [BugPark.html](https://github.com/enes59255X/bugpark/releases/latest/download/BugPark.html) — indir, çift tıkla, oyna. Kurulum, sunucu ve internet gerekmez. |
+| **Site** | <https://enes59255x.github.io/bugpark/> — kurulum yok, tarayıcıda açılır. |
+| **Kaynak** | [bugpark-kaynak.zip](https://github.com/enes59255X/bugpark/releases/latest/download/bugpark-kaynak.zip) veya `git clone`. |
 
-Yirmi görev, JavaScript'te en sık yapılan yirmi hatayı hedefler:
+Tek dosyalık sürüm CSS, JavaScript ve görev verisini tek HTML içine gömer; `file://` üzerinden de çalışır.
+(Çift tıklanan sayfalarda bazı tarayıcılar `localStorage`'ı kısıtlar; oyun çalışır, yalnızca ilerleme kaydı tutulmaz.)
 
-| # | Görev | Kavram | Hatalı çıktı → hedef |
-| :--: | --- | --- | --- |
-| 1 | Eksik tur | Döngü koşulu | `1 2` → `1 2 3` |
-| 2 | İlk meyve | Dizi indeksi | `armut` → `elma` |
-| 3 | Yan yana sayılar | Tip dönüşümü | `52` → `7` |
-| 4 | Kulüp kapısı | Mantık operatörü | `Girebilir` → `Giremez` |
-| 5 | Kayıp sonuç | `return` | `undefined` → `6` |
+## Nasıl oynanır
+
+1. **Oku** — bozuk kod parçasını incele.
+2. **Tahmin et** — konsola ne yazacağını seç (ya da serbest modda yaz).
+3. **Düzelt** — tek satırlık değişikliklerden doğrusunu seç; gerçek çıktı ve gerekçe hemen görünür.
+
+Yanlış cevap akışı kilitlemez; iki yanlış düzeltmeden sonra çözümü görebilirsin (o görev "çözüldü"
+sayılmaz, karneye "çözüm gösterildi" olarak işlenir).
+
+<details>
+<summary><strong>25 görevin tamamı</strong> — başlık · kavram · çıktı → hedef</summary>
+
+| # | Başlık | Kavram | Çıktı → Hedef |
+| :-- | :-- | :-- | :-- |
+| 1 | Eksik tur | Döngü koşulu | `1 2 3` → `1 2 3 4` |
+| 2 | İlk meyve | Dizi indeksi | `elma` → `armut` |
+| 3 | Yan yana sayılar | Tip dönüşümü | `"3"` → `5` |
+| 4 | Kulüp kapısı | Mantık operatörü | `false` → `true` |
+| 5 | Kayıp sonuç | `return` | `undefined` → `4` |
 | 6 | Yanlış adres | Nesne alanı | `undefined` → `Ece` |
 | 7 | Sessiz hesap | Ok fonksiyonu | `undefined` → `1` |
-| 8 | Büyük harf | Metot çağrısı | `TypeError` → `ECE` |
-| 9 | İç içe dizi | İç içe indeks | `TypeError` → `3` |
-| 10 | Metin gibi sıralama | `sort` karşılaştırıcısı | `10, 100, 9` → `9, 10, 100` |
+| 8 | Büyük harf | Metot çağrısı | `TypeError` → `MERHABA` |
+| 9 | İç içe dizi | İç içe indeks | `a` → `c` |
+| 10 | Metin gibi sıralama | `sort` karşılaştırıcısı | `[10, 9, 1]` → `[1, 9, 10]` |
 | 11 | Düz metin | Şablon metni | `${ad}` → `Ece` |
 | 12 | Çift sayılar | `filter` | `1, 3` → `2, 4` |
-| 13 | Piksel değeri | `parseInt` | `NaN` → `12` |
-| 14 | Sıfır indirim | `??` operatörü | `90` → `100` |
+| 13 | Piksel değeri | `parseInt` | `12.5` → `12` |
+| 14 | Sıfır indirim | `??` | `12` → `0` |
 | 15 | Boş değer | `String()` | `TypeError` → `null` |
 | 16 | Beklemeden okuma | `await` | `Promise` → `hazır` |
 | 17 | Fazla başlangıç | `reduce` | `16` → `6` |
 | 18 | Nesne döngüsü | `Object.entries` | `TypeError` → `Ece, 17` |
 | 19 | Ay numarası | `Date` | `4` → `5` |
 | 20 | Sıfıra bölme | `try/catch` | `Error` → `0` |
+| 21 | Kütüphane kaydı | `class` / `new` | `TypeError` → `Kısa Hikâye` |
+| 22 | Not defteri | `Map` | `undefined` → `90` |
+| 23 | Tekil renkler | `Set` | `TypeError` → `2` |
+| 24 | Kalıcı ayar | `localStorage` | `[object Object]` → `{"tema":"koyu"}` |
+| 25 | Kayıp sayaç | `this` / `bind` | `TypeError` → `1` |
 
-## Neden böyle
+</details>
 
-- **Kod çalıştırılmaz.** `eval`, `new Function` veya `innerHTML` yok; örnekler, seçenekler ve çıktılar
-  önceden yazılmış metinlerdir. Böylece oyun her yerde aynı davranır ve güvenlik yüzeyi sıfırdır.
-- **Renk bilgi taşır, süs değildir.** Arayüz mürekkep ve kâğıt üzerine kuruludur; yeşil/kırmızı/amber
-  yalnızca doğru, yanlış ve "çözüm gösterildi" durumlarında görünür — her zaman bir simge ve metinle birlikte.
-- **Tek doğru cevap.** Her soruda tam üç seçenek ve tek doğru vardır; yanlış seçenekler pedagojik olarak
-  anlamlı yanılgılardır (ör. `metin + Number(sayi)` → `"52"`).
+## Üç mod
 
-| Tahmin ve gerçek çıktı | Düzeltme ve değişen satır |
+| Mod | Ne yapar |
+| :-- | :-- |
+| **Sıralı** | 25 görev sırayla; tahmin çoktan seçmeli; ilerleme tarayıcıda saklanır, kaldığın yerden devam edersin. |
+| **Serbest** | Görevler karışık sırada; çıktıyı kendin yazarsın (boşluklar ve virgülle ayrılmış satırlar tolere edilir). |
+| **Sınıf** | Öğretmen paneli: öğrenci raporlarını toplar, tabloya ve CSV'ye döker. Sunucu gerekmez. |
+
+### Sınıf modu
+
+Öğrenci özet ekranında **Rapor bağlantısı oluştur**'a basar ve bağlantıyı öğretmene iletir. Öğretmen
+**Sınıf paneli**'ni açar, bağlantıları (ya da yalnızca kodları) yapıştırır; panel hepsini tek tabloda
+toplar:
+
+- öğrenci bazında tamamlanan / çözülen / çözüm gösterilen / doğru tahmin / rozet,
+- görev bazında kaç öğrencinin çözdüğü, kaçının çözüm gördüğü,
+- ortalama tamamlama, ortalama doğru tahmin ve en çok çözüm gösterilen görev,
+- tek tuşla **CSV** (Excel'in Türkçe yerel ayarına uygun, noktalı virgüllü).
+
+Raporlar yalnızca bağlantının içinde taşınır; sınıf listesi öğretmenin tarayıcısında saklanır.
+Hesap, sunucu, veri toplama yok.
+
+<p align="center">
+  <img src="docs/screenshots/11-class.png" alt="Sınıf paneli: öğrenci tablosu ve görev bazında özet" width="100%">
+</p>
+
+## Ekranlar
+
+| Bölüm | Serbest mod: çıktıyı kendin yaz |
 | :--: | :--: |
-| ![Yanlış tahmin ekranı](docs/screenshots/03-prediction.png) | ![Düzeltme ekranı](docs/screenshots/04-fix-hint.png) |
+| ![Bölüm ekranı](docs/screenshots/02-level.png) | ![Serbest mod](docs/screenshots/09-free-mode.png) |
 
-## Hızlı başlangıç
-
-Proje bağımlılık içermez; Node 20+ yalnızca testler için gerekir.
-
-```bash
-git clone https://github.com/enes59255X/bugpark.git
-cd bugpark
-python -m http.server 8000     # ya da: npx serve .
-```
-
-Tarayıcıda <http://localhost:8000> adresini aç.
-
-> `index.html` dosyasını çift tıklamak çalışmaz: tarayıcı `file://` üzerinden `data/levels.json` okumayı
-> engeller. Oyun bu durumda açıklayıcı bir hata ekranı gösterir.
-
-Testler ve şema doğrulaması:
-
-```bash
-npm test                          # 43 birim testi (game.js + tokenize.js + report.js)
-node tests/validate-levels.mjs    # levels.json şema kontrolü
-```
-
-## Özellikler
-
-- **Tahmin → gerçek çıktı → düzeltme** akışı; yanlış cevap akışı kilitlemez.
-- **Adım adım ipucu** (isteğe bağlı) ve iki yanlış düzeltmeden sonra **çözümü göster**; çözümle geçilen
-  bölüm özette ayrı işaretlenir.
-- **Rozetler:** İlk adım, Keskin göz, Temiz tur, İpucusuz — puan değil, davranış rozetleri.
-- **Karne:** her bölümün tek cümlelik çıkarımı özet ekranında toplanır.
-- **Kavram sözlüğü:** bölüm başlığındaki çipe basınca açılan, klavye ile kullanılabilen diyalog.
-- **Kalıcılık:** ilerleme, tema ve ses tercihi `localStorage`'da tutulur; dönüşte "Devam et / Baştan başla".
-- **Karanlık tema** ve **isteğe bağlı ses** (WebAudio, varsayılan kapalı).
-- **Klavye:** `1`–`3` seç, `Enter` gönder, `N` sonraki bölüm.
-- **Sonucu paylaş:** özet ekranı tek tuşla panoya kopyalanabilir bir metin üretir.
-- **Serbest mod:** görevler karışık sırada gelir ve tahmin çoktan seçmeli değildir — çıktıyı kendin
-  yazarsın. Boşluklar ve satır sonları tolere edilir, çok satırlı çıktı virgülle de yazılabilir.
-- **Öğretmen raporu:** özet ekranındaki düğme, sonucu bir bağlantının içine kodlar. Öğretmen bağlantıyı
-  açtığında görev görev raporu görür — sunucu, hesap veya veri toplama yok.
-- **Sözdizimi renklendirme** `innerHTML` kullanmadan, kendi tokenizer'ı ile yapılır.
-
-| Karanlık tema | Özet ve rozetler |
+| Öğretmen raporu | Özet ve rozetler |
 | :--: | :--: |
-| ![Karanlık tema](docs/screenshots/05-dark.png) | ![Özet ekranı](docs/screenshots/06-summary.png) |
+| ![Öğretmen raporu](docs/screenshots/10-report.png) | ![Özet ekranı](docs/screenshots/06-summary.png) |
 
-| Serbest mod: çıktıyı kendin yaz | Öğretmen raporu (bağlantıyla) |
+<details>
+<summary>Daha fazla ekran görüntüsü</summary>
+
+| Karanlık tema | Yanlış tahmin |
 | :--: | :--: |
-| ![Serbest mod](docs/screenshots/09-free-mode.png) | ![Öğretmen raporu](docs/screenshots/10-report.png) |
+| ![Karanlık tema](docs/screenshots/05-dark.png) | ![Yanlış tahmin](docs/screenshots/03-prediction.png) |
+
+<p align="center">
+  <img src="docs/screenshots/04-fix-hint.png" alt="Düzeltme ve ipucu" width="100%">
+</p>
 
 <p align="center">
   <img src="docs/screenshots/07-mobile-intro.png" width="46%" alt="Mobil giriş ekranı">
   <img src="docs/screenshots/08-mobile-level.png" width="46%" alt="Mobil bölüm ekranı">
 </p>
 
-## Nasıl çalışır
+</details>
 
-```text
-index.html ──▶ js/app.js ──▶ fetch('./data/levels.json')
-                  │              │
-                  │              └─ validateLevels()  → bozuksa hata ekranı
-                  ├─▶ js/game.js     saf durum makinesi (DOM yok, test edilebilir)
-                  ├─▶ js/ui.js       DOM yazımı, odak yönetimi, canlı bölge
-                  ├─▶ js/tokenize.js güvenli sözdizimi renklendirme
-                  ├─▶ js/report.js   rapor bağlantısı kodlama/çözme (base64url)
-                  └─▶ js/storage.js  ilerleme ve tercihler (localStorage)
-```
+## Neden böyle
 
-Durum makinesi: `intro → predict → fix → solved → summary`. `reduce(state, action)` saf fonksiyondur;
-geçersiz eylemde aynı referansı döndürür, bu yüzden çift tıklama veya tekrar gönderim durumu bozamaz.
-
-```js
-const next = reduce(state, { type: 'SUBMIT_FIX', choiceId: 'f2' });
-// yanlış seçim: faz 'fix' kalır, seçenek kilitlenir, deneme sayısı artar
-// doğru seçim: faz 'solved', completed'a { id, outcome: 'solved' } eklenir
-```
-
-## Yeni bölüm ekleme
-
-Yalnızca `data/levels.json` düzenlenir; JavaScript'e dokunmak gerekmez. Her bölüm şu alanları taşır:
-
-| Alan | Kural |
-| --- | --- |
-| `id`, `order` | benzersiz `kebab-case` kimlik; `order` dizideki sırayla aynı |
-| `title`, `concept`, `goal` | kısa metinler |
-| `code` | gösterilecek kod; satırlar `\n` ile |
-| `explain` | hatanın nedeni (tahminden sonra gösterilir) |
-| `hint`, `takeaway` | isteğe bağlı ipucu ve tek cümlelik çıkarım |
-| `prediction` | `question`, `answerId`, `output` (kodun **şu anki** çıktısı), 3 seçenek |
-| `fix` | `question`, `answerId`, `target: { line, snippet }`, `solution`, `output`, 3 seçenek |
-
-`fix.target.line` 1 tabanlıdır ve `snippet` o satırda birebir geçmelidir; düzeltilmiş kod bu alt dizenin
-değiştirilmesiyle üretilir. Tüm kurallar `validateLevels()` ile hem açılışta hem testte denetlenir —
-tek ihlal oyunu sessizce bozmak yerine açıklayıcı hata ekranına düşürür.
-
-## Testler ve doğrulama
-
-| Kontrol | Sonuç |
-| --- | --- |
-| Birim testleri (`node --test`) | 43/43 |
-| `levels.json` şema doğrulaması | 20 bölüm · 120 seçenek geçerli |
-| axe-core 4.10 (WCAG 2.1 A/AA + best-practice) | 9 ekran durumunda 0 ihlal |
-| Elle test matrisi | 16 senaryo (klavye, mobil, %200 yakınlaştırma, ağ hatası, çift tıklama) |
-| Tarayıcılar | Chrome, Edge, Firefox, Safari son iki sürüm · iOS Safari 16+ |
+- **Kod çalıştırılmaz.** `eval`, `new Function` ve `innerHTML` yok. Görevler, seçenekler ve çıktılar
+  veriden gelir; sözdizimi renklendirmesi kendi tokenizer'ı ile yapılır ve DOM'a yalnızca
+  `createElement` + `textContent` ile yazılır. Oyun, zararlı bir kod parçasını asla yürütmez.
+- **Renk bilgi taşır, süs değildir.** Arayüz mürekkep ve kâğıt üzerine kuruludur; yeşil/kırmızı/amber
+  yalnızca durum için kullanılır. Her durum ayrıca simge ve metinle anlatılır.
+- **Tek doğru cevap.** Her soruda üç seçenek ve tek doğru vardır; yanlış seçenekler pedagojik olarak
+  anlamlı hatalardır, rastgele çeldiriciler değil.
+- **Bağımlılık yok.** Çerçeve, derleme adımı, web fontu ve ikon kütüphanesi yok; ikonlar satır içi SVG
+  sprite, yazı tipi sistem yazı tipi.
+- **Çevrimdışı.** Tek dosyalık sürüm internet olmadan, sunucusuz çalışır.
 
 ## Erişilebilirlik
 
-- Her ekranda tek `h1`; ekran değişiminde odak başlığa taşınır, geri bildirimde odak çalınmaz.
-- Kısa hükümler tek bir `role="status"` bölgesinde duyurulur; uzun gerekçeler otomatik okunmaz (çift anons yok).
-- Odaklı buton asla `disabled` yapılmaz; `aria-disabled` ve işleyici guard'ı kullanılır.
-- Durumlar yalnızca renkle anlatılmaz; simge + metin zorunludur. `forced-colors` modunda kenarlıklar korunur.
-- `prefers-reduced-motion` açıkken tüm hareket kapanır.
-- Ölçülen kontrastlar: gövde 16.19:1, kontrol sınırı 3.50:1, kod tokenları 5.85–10.58:1.
+| Kontrol | Sonuç |
+| :-- | :-- |
+| axe-core (WCAG 2.1 A/AA + best-practice) | 9 ekran durumunda 0 ihlal |
+| Klavye | Tüm akış klavyeyle tamamlanabilir; `1 2 3` seçer, `N` sonraki görev, `Esc` sözlüğü kapatır |
+| Odak | Ekran değişiminde başlığa taşınır; geri bildirim sırasında odak çalınmaz |
+| Duyuru | Kısa hükümler tek `role="status"` bölgesinde duyurulur, uzun gerekçeler otomatik okunmaz |
+| Renk | Durum asla yalnızca renkle anlatılmaz; kontrastlar ölçüldü (gövde 16.19:1, kontrol sınırı 3.50:1) |
+| Hareket | `prefers-reduced-motion` açıkken tüm hareket kapanır; `forced-colors` modunda kenarlıklar korunur |
 
-## Öğretmen raporu
+## Geliştirme
 
-Özet ekranında bir ad yazıp **Rapor bağlantısı oluştur** düğmesine bas. Sonuç, bağlantının `#rapor=…`
-kısmına sıkıştırılır:
-
-```text
-https://…/bugpark/#rapor=djF8RWNlIFkufDE2fDB8aWxrLWFkaW0…
+```bash
+git clone https://github.com/enes59255X/bugpark.git
+cd bugpark
+python -m http.server 8000      # ya da npx serve
+npm test                        # 56 birim testi (durum makinesi, rapor, sınıf, derleme)
+npm run check                   # levels.json şema doğrulaması
+npm run build                   # tek dosyalık BugPark.html üretir
 ```
 
-Bağlantıyı açan kişi (öğretmen) görev görev raporu görür: hangi görev çözüldü, hangisinde çözüm
-gösterildi, kaç tahmin doğru, hangi rozetler kazanıldı. Veri yalnızca bağlantının içinde taşınır;
-sunucuya hiçbir şey gönderilmez, hesap gerekmez. Ad isteğe bağlıdır ve bağlantıyı üreten kişi
-tarafından seçilir.
+```text
+index.html                 ekranlar + erişilebilirlik iskeleti + SVG sprite
+styles.css                 tasarım belirteçleri, bileşenler, karanlık tema
+data/levels.json           25 görev (tek doğruluk kaynağı)
+js/
+  app.js                   JSON yükleme, rotalar, olaylar, tercihler
+  game.js                  saf durum makinesi: createGame, reduce, validateLevels, matchesPrediction
+  ui.js                    DOM yazımı, odak yönetimi, canlı bölge
+  tokenize.js              güvenli sözdizimi renklendirme
+  report.js                bireysel rapor kodlama/çözme (base64url)
+  classroom.js             sınıf paneli: kod ayıklama, özet, CSV
+  storage.js               localStorage sarmalayıcı
+tools/build-single.mjs     CSS + JS + veriyi tek HTML'e gömer
+tests/                     node --test; veri şeması ayrıca doğrulanır
+```
 
-## Bilinen davranışlar
-
-- İlerleme bu tarayıcıya özeldir; hesaplar arasında taşınmaz. "Baştan başla" kaydı siler.
-- Serbest modda ilerleme kaydedilmez; sıralı moda dönünce kaldığın yerden devam edersin.
-- Tarayıcı geri tuşu oyun içi geri sayılmaz.
-- Kod asla çalıştırılmaz; çıktılar önceden yazılmış metinlerdir.
-- Mobilde uzun kod satırları alt satıra sarılır; masaüstünde yatay kaydırılır.
-
-## Yol haritası
-
-- [x] Bölüm 6–10 (nesne, ok fonksiyonu, metot, iç içe dizi, `sort`)
-- [x] Bölüm 11–15 (şablon metni, `filter`, `parseInt`, `??`, `String()`)
-- [x] Bölüm 16–20 (`await`, `reduce`, `Object.entries`, `Date`, `try/catch`)
-- [x] Serbest mod: karışık sıra, çıktıyı kendin yaz
-- [x] Öğretmen görünümü: bağlantıyla paylaşılan ilerleme raporu
-- [ ] Bölüm 21–25 (sınıf, `Map`/`Set`, modüller, `localStorage` kullanımı)
-- [ ] Sınıf modu: öğretmen bağlantı üretip öğrencilere dağıtır, raporlar aynı ekranda toplanır
+Bir görev eklemek için `data/levels.json`'a kayıt ekle: `id`, `order`, `title`, `concept`, `goal`,
+`code`, `explain`, `hint`, `takeaway`, `prediction` ve `fix`. Kural: `fix.target.snippet`, `code`
+içindeki `fix.target.line` satırında **birebir** geçmeli; yanlış düzeltmelerin çıktısı hedefle
+çakışmamalı. `npm run check` bunu ve sıralamayı doğrular.
 
 ## Lisans
 
-[MIT](LICENSE) · GençTek başvurusu için geliştirildi.
+[MIT](LICENSE) · Enes

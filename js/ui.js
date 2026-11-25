@@ -11,6 +11,7 @@ const CONCEPT_ICONS = [
   'i-loop', 'i-array', 'i-type', 'i-logic', 'i-return',
   'i-object', 'i-arrow', 'i-case', 'i-nested', 'i-sort',
   'i-template', 'i-filter', 'i-parse', 'i-nullish', 'i-empty',
+  'i-class', 'i-map', 'i-set', 'i-storage', 'i-bind',
 ];
 
 const dom = {
@@ -77,6 +78,13 @@ const dom = {
   reportMeta: byId('reportMeta'),
   reportStats: byId('reportStats'),
   reportResults: byId('reportResults'),
+  classScreen: byId('screenClass'),
+  classInput: byId('classInput'),
+  classNote: byId('classNote'),
+  classStats: byId('classStats'),
+  classRows: byId('classRows'),
+  classLevels: byId('classLevels'),
+  classDetail: byId('classDetail'),
   keys: null,
   status: byId('status'),
 };
@@ -91,6 +99,7 @@ const screens = {
   level: dom.level,
   summary: dom.summary,
   report: dom.report,
+  class: dom.classScreen,
   error: dom.error,
 };
 
@@ -100,6 +109,7 @@ const HEADING = {
   level: dom.levelTitle,
   summary: byId('summaryTitle'),
   report: byId('reportTitle'),
+  class: byId('classTitle'),
   error: byId('errorTitle'),
 };
 
@@ -154,6 +164,18 @@ export function render(state, view = {}) {
     if (heading && (firstRender || lastScreen !== 'report')) heading.focus();
     firstRender = false;
     lastScreen = 'report';
+    return;
+  }
+
+  if (view.classroom && state.levels.length > 0) {
+    for (const [name, node] of Object.entries(screens)) node.hidden = name !== 'class';
+    renderTools(view);
+    dom.topbarStatus.hidden = true;
+    renderClassroom(view.classroom, state.levels);
+    const heading = HEADING.class;
+    if (heading && (firstRender || lastScreen !== 'class')) heading.focus();
+    firstRender = false;
+    lastScreen = 'class';
     return;
   }
 
@@ -263,6 +285,18 @@ export function isTypedInput(node) {
 
 export function reportNameValue() {
   return dom.reportName.value;
+}
+
+export function classInputValue() {
+  return dom.classInput.value;
+}
+
+export function clearClassInput() {
+  dom.classInput.value = '';
+}
+
+export function setClassNote(text) {
+  dom.classNote.textContent = text;
 }
 
 export function revealHint() {
@@ -763,4 +797,92 @@ function renderReport(report, levels) {
     row.append(num, main, el('span', `chip chip--${chipClass}`, chipText));
     dom.reportResults.append(row);
   });
+}
+
+/* ------------------------------------------------------------ sınıf paneli */
+
+function formatAverage(value) {
+  if (value === null) return '—';
+  return Number.isInteger(value) ? String(value) : value.toFixed(1).replace('.', ',');
+}
+
+function renderClassroom(classroom, levels) {
+  const { summary } = classroom;
+
+  const stats = [
+    ['Öğrenci', String(summary.students)],
+    ['Ortalama tamamlama', summary.avgCompleted === null ? '—' : `${formatAverage(summary.avgCompleted)}/${summary.total}`],
+    ['Ortalama doğru tahmin', formatAverage(summary.avgCorrect)],
+    ['En çok çözüm gösterilen', summary.hardest ? summary.hardest.title : '—'],
+  ];
+
+  dom.classStats.textContent = '';
+  for (const [label, value] of stats) {
+    const item = document.createElement('li');
+    if (!/^[\d/]+$/.test(value)) item.classList.add('is-text');
+    item.append(
+      el('span', 'report-stats__label', label),
+      el('span', 'report-stats__value', value),
+    );
+    dom.classStats.append(item);
+  }
+
+  dom.classRows.textContent = '';
+  if (summary.rows.length === 0) {
+    const row = document.createElement('tr');
+    row.className = 'class-table__empty';
+    const cell = document.createElement('td');
+    cell.colSpan = 8;
+    cell.textContent = 'Henüz rapor yok. Yukarıdaki alana bir bağlantı yapıştırıp “Kodu ekle”ye bas.';
+    row.append(cell);
+    dom.classRows.append(row);
+  } else {
+    for (const student of summary.rows) {
+      const row = document.createElement('tr');
+
+      const name = document.createElement('th');
+      name.scope = 'row';
+      name.textContent = student.name;
+      row.append(name);
+
+      const cells = [
+        student.date || '—',
+        student.mode === 'free' ? 'Serbest' : 'Sıralı',
+        `${student.completed}/${summary.total}`,
+        student.solved,
+        student.revealed,
+        student.correct,
+        student.badges,
+      ];
+
+      for (const value of cells) {
+        row.append(el('td', null, String(value)));
+      }
+
+      dom.classRows.append(row);
+    }
+  }
+
+  dom.classLevels.textContent = '';
+  summary.perLevel.forEach((level, index) => {
+    const row = document.createElement('li');
+    const num = el('span', 'results__n', String(index + 1));
+    num.setAttribute('aria-hidden', 'true');
+
+    const main = el('span', 'results__main');
+    main.append(
+      el('span', 'results__title', level.title),
+      el('span', 'results__concept', level.concept),
+    );
+
+    const counts = el('span', 'class-counts', `✓ ${level.solved} · ! ${level.revealed} · — ${level.missing}`);
+    counts.setAttribute('title', `${level.solved} çözüldü, ${level.revealed} çözüm gösterildi, ${level.missing} yapılmadı`);
+
+    row.append(num, main, counts);
+    dom.classLevels.append(row);
+  });
+
+  dom.classDetail.textContent = summary.students === 0
+    ? 'Henüz kod eklenmedi. Sınıf listesi bu tarayıcıda saklanır; sayfayı kapatsan da kaybolmaz.'
+    : `${summary.students} öğrenci · ${levels.length} görev · liste bu tarayıcıda saklanır.`;
 }

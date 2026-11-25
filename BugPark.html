@@ -1,0 +1,4398 @@
+<!DOCTYPE html>
+<html lang="tr" data-theme="light">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>BugPark — Kodun çıktısını tahmin et, hatayı düzelt</title>
+  <meta name="description" content="Yirmi beş kısa görevde JavaScript'in yaygın hatalarını tahmin et, düzelt ve nedenini öğren.">
+  <meta name="color-scheme" content="light dark">
+  <meta name="theme-color" content="#F5F2EA">
+  <meta property="og:title" content="BugPark — JavaScript hata avı">
+  <meta property="og:description" content="Kodu oku, çıktısını tahmin et, hatayı düzelt. 25 görev, süre yok, puan yok.">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://enes59255x.github.io/bugpark/">
+  <meta property="og:image" content="https://enes59255x.github.io/bugpark/assets/og.png">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta name="twitter:card" content="summary_large_image">
+  <link rel="icon" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAzMiAzMiIgd2lkdGg9IjMyIiBoZWlnaHQ9IjMyIiByb2xlPSJpbWciIGFyaWEtbGFiZWw9IkJ1Z1BhcmsiPgogIDxyZWN0IHdpZHRoPSIzMiIgaGVpZ2h0PSIzMiIgcng9IjciIGZpbGw9IiNGNUYyRUEiLz4KICA8ZyBmaWxsPSIjMTQxNjFBIj4KICAgIDxjaXJjbGUgY3g9IjE2IiBjeT0iOSIgcj0iMy40Ii8+CiAgICA8ZWxsaXBzZSBjeD0iMTYiIGN5PSIxOSIgcng9IjciIHJ5PSI4LjUiLz4KICA8L2c+CiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMTQxNjFBIiBzdHJva2Utd2lkdGg9IjIiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCI+CiAgICA8cGF0aCBkPSJNMTMuNCA2LjYgMTAuOCA0TTE4LjYgNi42IDIxLjIgNCIvPgogICAgPHBhdGggZD0iTTkgMTQgNSAxMk05IDE5SDQuNk05IDI0IDUgMjYiLz4KICAgIDxwYXRoIGQ9Ik0yMyAxNCAyNyAxMk0yMyAxOWg0LjRNMjMgMjQgMjcgMjYiLz4KICA8L2c+Cjwvc3ZnPgo=" type="image/svg+xml">
+  <style>
+/* ==========================================================================
+   BugPark — "Mürekkep & Kâğıt"
+   1. Tokenlar  2. Temel  3. Yerleşim  4. Bileşenler  5. Duyarlı  6. Tercihler
+   ========================================================================== */
+
+/* 1. Tokenlar ------------------------------------------------------------- */
+:root {
+  --paper: #F5F2EA;
+  --surface: #FFFDF8;
+  --surface-2: #EFEBE1;
+
+  --ink: #14161A;
+  --ink-soft: #4B4F58;
+  --ink-mute: #5F646D;
+
+  --line: #DCD6C8;
+  --line-ui: #8C8878;
+
+  --good: #0F6B45;
+  --good-soft: #E4F0E9;
+  --good-line: #C9DED2;
+  --bad: #A5211B;
+  --bad-soft: #FBEAE7;
+  --bad-line: #EBD3CF;
+  --warn: #7A5200;
+  --warn-soft: #FBF0D9;
+  --warn-line: #E9DBB9;
+  --focus: #1F4BD8;
+
+  --btn-bg: #14161A;
+  --btn-bg-hover: #000000;
+  --btn-fg: #FFFDF8;
+  --sel: #F3E3B8;
+
+  --code-bg: #14161A;
+  --code-bg-2: #1B1E24;
+  --code-bg-3: #101216;
+  --code-ink: #EDEFF3;
+  --code-kw: #E8A76B;
+  --code-str: #9BD3A6;
+  --code-num: #8FB8F0;
+  --code-comment: #8A93A3;
+  --code-good: #5FC79B;
+  --code-bad: #F2877A;
+
+  --font-ui: ui-sans-serif, system-ui, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --font-mono: ui-monospace, "Cascadia Mono", "Cascadia Code", Consolas, "SF Mono", Menlo, monospace;
+
+  --s1: 4px;
+  --s2: 8px;
+  --s3: 12px;
+  --s4: 16px;
+  --s5: 24px;
+  --s6: 32px;
+  --s7: 48px;
+  --s8: 64px;
+  --s9: 96px;
+
+  --r-sm: 4px;
+  --r-md: 10px;
+  --r-lg: 16px;
+  --r-pill: 999px;
+
+  --shadow-1: 0 1px 2px rgba(20, 22, 26, .06), 0 1px 1px rgba(20, 22, 26, .04);
+  --shadow-2: 0 2px 4px rgba(20, 22, 26, .06), 0 8px 24px -8px rgba(20, 22, 26, .12);
+
+  --dur: 140ms;
+  --ease: cubic-bezier(.2, .7, .2, 1);
+}
+
+/* 2. Temel ---------------------------------------------------------------- */
+*,
+*::before,
+*::after { box-sizing: border-box; }
+
+[hidden] { display: none !important; }
+
+html { -webkit-text-size-adjust: 100%; }
+
+body {
+  margin: 0;
+  background: var(--paper);
+  color: var(--ink);
+  font-family: var(--font-ui);
+  font-size: 1.0625rem;
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+  transition: background-color 200ms ease-out, color 200ms ease-out;
+}
+
+h1, p, ol, ul, figure { margin: 0; }
+ol, ul { padding: 0; list-style: none; }
+
+button { font: inherit; color: inherit; }
+
+a { color: inherit; }
+
+code, kbd, pre { font-family: var(--font-mono); }
+
+:focus-visible {
+  outline: 2px solid var(--focus);
+  outline-offset: 2px;
+}
+
+.title:focus,
+.display:focus { outline: none; }
+
+::selection { background: var(--sel); }
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+  border: 0;
+}
+
+.skip-link {
+  position: absolute;
+  top: -100px;
+  left: var(--s4);
+  z-index: 50;
+  padding: 10px 16px;
+  background: var(--ink);
+  color: var(--surface);
+  border-radius: var(--r-sm);
+  text-decoration: none;
+  font-size: .9375rem;
+}
+.skip-link:focus { top: var(--s3); }
+
+/* 3. Yerleşim ------------------------------------------------------------- */
+.wrap {
+  max-width: 1060px;
+  margin-inline: auto;
+  padding-inline: clamp(16px, 4vw, 40px);
+}
+
+main { padding-block: var(--s6) var(--s8); }
+
+.screen { animation: screen-in 180ms var(--ease) both; }
+
+@keyframes screen-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.topbar {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  background: var(--paper);
+  border-bottom: 1px solid var(--line);
+}
+
+.topbar__inner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--s4);
+  min-height: 64px;
+}
+
+.brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 1.0625rem;
+  font-weight: 600;
+  letter-spacing: -.01em;
+}
+
+.brand__mark {
+  width: 24px;
+  height: 24px;
+  flex: none;
+  color: var(--ink);
+}
+
+.topbar__status {
+  display: flex;
+  align-items: center;
+  gap: var(--s3);
+}
+
+.rail {
+  display: flex;
+  gap: 4px;
+}
+
+.rail li {
+  width: 22px;
+  height: 6px;
+  border-radius: 2px;
+  background: var(--line);
+}
+
+.rail li.is-done { background: var(--good); }
+
+.rail li.is-revealed {
+  background: repeating-linear-gradient(135deg, var(--warn) 0 3px, var(--warn-soft) 3px 6px);
+}
+
+.rail li.is-current { background: var(--ink); }
+
+.rail__label {
+  font-size: .8125rem;
+  font-weight: 600;
+  letter-spacing: .06em;
+  text-transform: uppercase;
+  color: var(--ink-mute);
+}
+
+.grid {
+  display: grid;
+  gap: var(--s6);
+  grid-template-columns: minmax(0, 1.1fr) minmax(0, .9fr);
+  align-items: start;
+  margin-top: var(--s5);
+}
+
+.pane {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s5);
+  min-width: 0;
+}
+
+/* 4. Bileşenler ----------------------------------------------------------- */
+
+/* Tipografi --------------------------------------------------------------- */
+.eyebrow {
+  display: flex;
+  align-items: center;
+  gap: var(--s2);
+  font-size: .8125rem;
+  font-weight: 600;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  color: var(--ink-mute);
+}
+
+.dot { opacity: .5; }
+
+.display {
+  margin-top: var(--s4);
+  font-size: clamp(2rem, 1.35rem + 3.2vw, 3.25rem);
+  line-height: 1.05;
+  letter-spacing: -.02em;
+  font-weight: 600;
+  text-wrap: balance;
+}
+
+.display__line { display: block; }
+
+.title {
+  margin-top: var(--s2);
+  font-size: 1.75rem;
+  line-height: 1.15;
+  letter-spacing: -.01em;
+  font-weight: 600;
+  text-wrap: balance;
+}
+
+.lede {
+  margin-top: var(--s5);
+  max-width: 46ch;
+  color: var(--ink-soft);
+}
+
+#screenClass .lede,
+#screenReport .lede {
+  max-width: 68ch;
+}
+
+.meta-line {
+  margin-top: var(--s3);
+  font-size: .875rem;
+  color: var(--ink-mute);
+}
+
+.detail {
+  margin-top: var(--s3);
+  font-family: var(--font-mono);
+  font-size: .8125rem;
+  color: var(--ink-mute);
+  overflow-wrap: anywhere;
+}
+
+/* Intro ------------------------------------------------------------------- */
+.intro-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 300px;
+  gap: var(--s7);
+  align-items: start;
+}
+
+.intro-main {
+  max-width: 620px;
+  padding-top: var(--s6);
+}
+
+.pass {
+  margin-top: var(--s6);
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--r-md);
+  box-shadow: var(--shadow-1);
+  overflow: hidden;
+}
+
+.pass__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--s3);
+  padding: 14px var(--s5);
+  border-bottom: 1px dashed var(--line-ui);
+}
+
+.pass__no {
+  font-family: var(--font-mono);
+  font-size: .8125rem;
+  color: var(--ink-mute);
+  font-variant-numeric: tabular-nums;
+}
+
+.pass__list li {
+  display: flex;
+  align-items: baseline;
+  gap: var(--s3);
+  padding: 10px var(--s5);
+  border-bottom: 1px solid var(--line);
+  font-size: .9375rem;
+}
+
+.pass__list li span {
+  flex: none;
+  font-family: var(--font-mono);
+  font-size: .8125rem;
+  color: var(--ink-mute);
+  font-variant-numeric: tabular-nums;
+}
+
+.pass__foot {
+  padding: 11px var(--s5);
+  background: var(--surface-2);
+  font-size: .75rem;
+  font-weight: 600;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  color: var(--ink-mute);
+}
+
+.steps {
+  display: flex;
+  flex-wrap: wrap;
+  margin-block: var(--s7) var(--s6);
+  border-block: 1px solid var(--line);
+}
+
+.steps li {
+  flex: 1 1 0;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 140px;
+  padding-block: var(--s4);
+  font-weight: 500;
+}
+
+.steps li + li {
+  border-left: 1px solid var(--line);
+  padding-left: var(--s4);
+}
+
+.steps__n {
+  display: grid;
+  place-items: center;
+  width: 26px;
+  height: 26px;
+  flex: none;
+  border: 1px solid var(--line-ui);
+  border-radius: 50%;
+  font-family: var(--font-mono);
+  font-size: .8125rem;
+  font-variant-numeric: tabular-nums;
+}
+
+/* Butonlar ---------------------------------------------------------------- */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--s2);
+  min-height: 48px;
+  padding: 11px 20px;
+  border: 1px solid transparent;
+  border-radius: 8px;
+  font-size: 1rem;
+  font-weight: 500;
+  line-height: 1.2;
+  cursor: pointer;
+  transition: background-color 120ms ease-out, border-color 120ms ease-out, color 120ms ease-out;
+}
+
+.btn--primary {
+  background: var(--btn-bg);
+  color: var(--btn-fg);
+}
+.btn--primary:hover { background: var(--btn-bg-hover); }
+
+.btn--ghost {
+  background: transparent;
+  border-color: var(--line-ui);
+  color: var(--ink);
+}
+.btn--ghost:hover { background: var(--surface-2); }
+
+.btn--lg {
+  min-height: 52px;
+  padding: 14px 28px;
+  font-size: 1.0625rem;
+}
+
+.btn[aria-disabled="true"] {
+  opacity: .55;
+  cursor: not-allowed;
+}
+
+/* Hedef / brief ----------------------------------------------------------- */
+.brief {
+  display: grid;
+  gap: 2px;
+  margin-top: var(--s5);
+  padding: var(--s4) var(--s5);
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-left: 3px solid var(--ink);
+  border-radius: var(--r-md);
+}
+
+.brief__text { font-weight: 500; }
+
+/* Kod paneli -------------------------------------------------------------- */
+.editor {
+  min-width: 0;
+  background: var(--code-bg);
+  border-radius: var(--r-lg);
+  box-shadow: var(--shadow-2);
+  overflow: hidden;
+}
+
+.editor__bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--s3);
+  padding: 10px var(--s4);
+  background: var(--code-bg-2);
+  border-bottom: 1px solid #262B34;
+  font-family: var(--font-mono);
+  font-size: .8125rem;
+}
+
+.editor__file { color: var(--code-ink); }
+
+.editor__meta { color: var(--code-comment); }
+
+.editor__code {
+  padding-block: var(--s3);
+  overflow-x: auto;
+  scrollbar-width: thin;
+  scrollbar-color: #3A4048 transparent;
+}
+
+.editor__code:focus-visible {
+  outline: 2px solid var(--focus);
+  outline-offset: -2px;
+  border-radius: var(--r-sm);
+}
+
+.editor__code.is-scrollable:not(.is-end) {
+  -webkit-mask-image: linear-gradient(to right, #000 calc(100% - 32px), transparent);
+  mask-image: linear-gradient(to right, #000 calc(100% - 32px), transparent);
+}
+
+.row {
+  display: grid;
+  grid-template-columns: 2.5rem minmax(0, 1fr);
+  min-height: 1.65em;
+  font-family: var(--font-mono);
+  font-size: .9375rem;
+  line-height: 1.65;
+}
+
+.row__num {
+  padding-right: var(--s3);
+  text-align: right;
+  color: var(--code-comment);
+  font-variant-numeric: tabular-nums;
+  user-select: none;
+}
+
+.row__code {
+  padding-right: var(--s4);
+  color: var(--code-ink);
+  white-space: pre;
+  tab-size: 2;
+}
+
+.row.is-changed {
+  background: #1F232A;
+  box-shadow: inset 3px 0 0 var(--code-good);
+}
+
+.tok--kw { color: var(--code-kw); }
+.tok--str { color: var(--code-str); }
+.tok--num { color: var(--code-num); }
+.tok--name { color: var(--code-num); }
+.tok--comment { color: var(--code-comment); }
+
+.editor__divider {
+  margin: 0;
+  padding: 7px var(--s4);
+  background: var(--code-bg-3);
+  border-block: 1px solid #262B34;
+  font-family: var(--font-mono);
+  font-size: .75rem;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  color: var(--code-comment);
+}
+
+.editor__console {
+  min-height: 76px;
+  padding: var(--s3) var(--s4) var(--s4);
+  font-family: var(--font-mono);
+  font-size: .9375rem;
+  line-height: 1.65;
+}
+
+.console__row {
+  display: flex;
+  gap: var(--s2);
+  color: var(--code-ink);
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+.console__caret { color: var(--code-comment); }
+
+.console--good .console__caret { color: var(--code-good); }
+.console--bad .console__caret { color: var(--code-bad); }
+
+.console__idle {
+  color: var(--code-comment);
+  font-family: var(--font-ui);
+  font-size: .875rem;
+}
+
+/* Soru ve seçenekler ------------------------------------------------------ */
+.q {
+  min-width: 0;
+  padding: 0;
+  border: 0;
+  margin: 0;
+}
+
+.q__legend {
+  width: 100%;
+  padding: 0;
+  margin-bottom: var(--s3);
+  font-size: 1.0625rem;
+  font-weight: 600;
+  line-height: 1.45;
+}
+
+.q__hint {
+  margin-top: var(--s2);
+  font-size: .875rem;
+  color: var(--bad);
+}
+
+.options {
+  display: grid;
+  gap: var(--s2);
+}
+
+.option {
+  position: relative;
+  display: block;
+  cursor: pointer;
+}
+
+.option input {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  opacity: 0;
+  margin: 0;
+}
+
+.option__body {
+  display: flex;
+  align-items: center;
+  gap: var(--s3);
+  min-height: 56px;
+  padding: var(--s3) 14px;
+  background: var(--surface);
+  border: 1px solid var(--line-ui);
+  border-radius: var(--r-md);
+  transition: border-color 120ms ease-out, background-color 120ms ease-out;
+}
+
+.option:hover .option__body {
+  border-color: var(--ink-mute);
+  background: var(--surface-2);
+}
+
+.option__mark {
+  position: relative;
+  flex: none;
+  width: 20px;
+  height: 20px;
+  border: 1.5px solid var(--ink-mute);
+  border-radius: 50%;
+  transition: border-color 120ms ease-out;
+}
+
+.option input:checked ~ .option__body {
+  border-color: var(--ink);
+  box-shadow: inset 0 0 0 1px var(--ink);
+  background: var(--surface-2);
+}
+
+.option input:checked ~ .option__body .option__mark { border-color: var(--ink); }
+
+.option input:checked ~ .option__body .option__mark::after {
+  content: "";
+  position: absolute;
+  inset: 3px;
+  border-radius: 50%;
+  background: var(--ink);
+}
+
+.option input:checked ~ .option__body .option__label { font-weight: 600; }
+
+.option input:focus-visible ~ .option__body {
+  outline: 2px solid var(--focus);
+  outline-offset: 2px;
+}
+
+.option__label {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  min-width: 0;
+  font-family: var(--font-mono);
+  font-size: 1rem;
+  line-height: 1.45;
+  overflow-wrap: anywhere;
+}
+
+.option__line { line-height: 1.35; }
+
+.option__body.has-lines { align-items: flex-start; }
+.option__body.has-lines .option__mark { margin-top: 3px; }
+.option__body.has-lines .option__icon { margin-top: 1px; }
+
+.option__icon {
+  margin-left: auto;
+  padding-left: var(--s2);
+  font-weight: 700;
+  font-size: 1rem;
+}
+
+.option__body.is-good,
+.option input:checked ~ .option__body.is-good {
+  border-color: var(--good);
+  box-shadow: inset 0 0 0 1px var(--good);
+  background: var(--good-soft);
+}
+.option__body.is-good .option__mark { border-color: var(--good); background: var(--good-soft); }
+.option__body.is-good .option__mark::after { background: var(--good); }
+.option__body.is-good .option__icon { color: var(--good); }
+
+.option__body.is-bad,
+.option input:checked ~ .option__body.is-bad {
+  border-color: var(--bad);
+  box-shadow: inset 0 0 0 1px var(--bad);
+  background: var(--bad-soft);
+}
+.option__body.is-bad .option__mark { border-color: var(--bad); background: var(--bad-soft); }
+.option__body.is-bad .option__mark::after { background: var(--bad); }
+.option__body.is-bad .option__icon { color: var(--bad); }
+
+.option__body.is-locked {
+  opacity: .72;
+  cursor: default;
+}
+
+.option.is-locked { cursor: default; }
+
+/* Düzeltme hedefi --------------------------------------------------------- */
+.patch {
+  display: flex;
+  gap: 10px;
+  margin-bottom: var(--s3);
+  padding: 10px var(--s3);
+  background: var(--surface-2);
+  border: 1px solid var(--line);
+  border-radius: var(--r-sm);
+  overflow-x: auto;
+}
+
+.patch__line {
+  flex: none;
+  padding-top: 1px;
+  color: var(--ink-mute);
+  font-family: var(--font-mono);
+  font-size: .8125rem;
+  font-variant-numeric: tabular-nums;
+  user-select: none;
+}
+
+.patch__code {
+  font-size: .875rem;
+  line-height: 1.6;
+  white-space: pre;
+}
+
+.patch mark {
+  padding: 0 3px;
+  border-radius: 3px;
+  background: var(--warn-soft);
+  box-shadow: inset 0 -2px 0 var(--warn);
+  color: var(--warn);
+  font-weight: 600;
+}
+
+/* Geri bildirim ----------------------------------------------------------- */
+.banner {
+  display: grid;
+  gap: 2px;
+  padding: var(--s3) var(--s4);
+  background: var(--surface);
+  border-radius: var(--r-md);
+  box-shadow: inset 3px 0 0 var(--ink-soft), 0 0 0 1px var(--line);
+  animation: banner-in 200ms var(--ease) both;
+}
+
+@keyframes banner-in {
+  from { opacity: 0; transform: translateY(4px); }
+  to { opacity: 1; transform: none; }
+}
+
+.banner__title {
+  display: flex;
+  align-items: center;
+  gap: var(--s2);
+  font-weight: 600;
+}
+
+.banner__icon {
+  font-family: var(--font-mono);
+  font-weight: 700;
+}
+
+.banner__body {
+  font-size: .9375rem;
+  color: var(--ink-soft);
+}
+
+.banner__note {
+  margin-top: 2px;
+  font-size: .875rem;
+  color: var(--ink-mute);
+}
+
+.banner--good {
+  background: var(--good-soft);
+  box-shadow: inset 3px 0 0 var(--good), 0 0 0 1px var(--good-line);
+}
+.banner--good .banner__icon { color: var(--good); }
+.banner--good .banner__body { color: var(--ink-soft); }
+
+.banner--bad {
+  background: var(--bad-soft);
+  box-shadow: inset 3px 0 0 var(--bad), 0 0 0 1px var(--bad-line);
+}
+.banner--bad .banner__icon { color: var(--bad); }
+.banner--bad .banner__body { color: var(--ink-soft); }
+
+.banner--warn {
+  background: var(--warn-soft);
+  box-shadow: inset 3px 0 0 var(--warn), 0 0 0 1px var(--warn-line);
+}
+.banner--warn .banner__icon { color: var(--warn); }
+.banner--warn .banner__body { color: var(--ink-soft); }
+
+/* Eylem çubuğu ------------------------------------------------------------ */
+.actionbar {
+  position: sticky;
+  bottom: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--s2);
+  align-items: center;
+  margin-top: auto;
+  padding: var(--s2) 0 calc(var(--s3) + env(safe-area-inset-bottom, 0px));
+  background: var(--paper);
+}
+
+.actionbar--plain {
+  position: static;
+  margin-top: var(--s6);
+}
+
+/* Özet -------------------------------------------------------------------- */
+.results {
+  margin-top: var(--s5);
+  border-top: 1px solid var(--line);
+}
+
+.results li {
+  display: grid;
+  grid-template-columns: 1.75rem minmax(0, 1fr) auto;
+  align-items: center;
+  gap: var(--s3);
+  padding-block: var(--s3);
+  border-bottom: 1px solid var(--line);
+}
+
+.results__n {
+  color: var(--ink-mute);
+  font-family: var(--font-mono);
+  font-size: .875rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.results__main { min-width: 0; display: grid; }
+
+.results__title { font-weight: 500; }
+
+.results__concept {
+  font-size: .8125rem;
+  letter-spacing: .06em;
+  text-transform: uppercase;
+  color: var(--ink-mute);
+}
+
+.chip {
+  padding: 3px 10px;
+  border-radius: var(--r-pill);
+  font-size: .8125rem;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.chip--solved { background: var(--good-soft); color: var(--good); }
+.chip--revealed { background: var(--warn-soft); color: var(--warn); }
+
+/* Hata / iskelet ---------------------------------------------------------- */
+.code-hint { margin-top: var(--s4); }
+
+.code-hint code {
+  padding: 5px 9px;
+  background: var(--surface-2);
+  border: 1px solid var(--line);
+  border-radius: var(--r-sm);
+  font-size: .875rem;
+}
+
+.editor--skeleton {
+  margin-top: var(--s5);
+  max-width: 520px;
+}
+
+.skeleton {
+  display: block;
+  height: 12px;
+  margin: 10px var(--s4);
+  border-radius: 4px;
+  background: #262B34;
+}
+
+.skeleton--long { width: 62%; }
+.skeleton--mid { width: 44%; }
+.skeleton--short { width: 28%; }
+.skeleton--tiny { width: 12%; }
+
+/* 5. Duyarlı -------------------------------------------------------------- */
+@media (max-width: 900px) {
+  .grid {
+    grid-template-columns: minmax(0, 1fr);
+    gap: var(--s5);
+  }
+
+  .title { font-size: 1.5rem; }
+
+  .intro-grid {
+    grid-template-columns: minmax(0, 1fr);
+    gap: var(--s5);
+  }
+
+  .intro-main {
+    max-width: none;
+    padding-top: var(--s5);
+  }
+
+  .pass { display: none; }
+
+  .actionbar {
+    margin-inline: calc(clamp(16px, 4vw, 40px) * -1);
+    padding-inline: clamp(16px, 4vw, 40px);
+    border-top: 1px solid var(--line);
+  }
+
+  .actionbar--plain { margin-top: var(--s5); }
+}
+
+@media (max-width: 640px) {
+  body { font-size: 1rem; }
+
+  main { padding-block: var(--s5) var(--s6); }
+
+  .topbar__inner { min-height: 56px; }
+
+  .rail li { width: 16px; }
+
+  .steps { margin-block: var(--s6) var(--s5); }
+  .steps li { min-width: 0; padding-block: var(--s3); }
+
+  .brief { padding: var(--s3) var(--s4); }
+
+  /* Mobilde kod kaydırmak yerine alt satıra iner; kod hücresi girintiyi korur. */
+  .editor__code {
+    overflow-x: visible;
+    -webkit-mask-image: none;
+    mask-image: none;
+  }
+
+  .row {
+    grid-template-columns: 1.75rem minmax(0, 1fr);
+    font-size: .875rem;
+  }
+
+  .row__num { padding-right: var(--s2); }
+
+  .row__code {
+    padding-right: var(--s3);
+    padding-left: 2ch;
+    text-indent: -2ch;
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+  }
+
+  .option__label { font-size: .9375rem; }
+
+  .actionbar .btn { flex: 1 1 auto; }
+
+  .results li { gap: var(--s2); }
+  .results .chip { justify-self: end; }
+}
+
+/* 6. Tercihler ------------------------------------------------------------ */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+@media (forced-colors: active) {
+  .brief,
+  .banner,
+  .option__body,
+  .patch,
+  .editor,
+  .chip { border: 1px solid CanvasText; }
+
+  .rail li { border: 1px solid CanvasText; }
+  .rail li.is-done,
+  .rail li.is-current { background: CanvasText; }
+}
+
+/* 7. GençTek sürümü: tema, ikonlar, rozetler, ipucu, sözlük ---------------- */
+
+/* Karanlık tema (token düzeyinde) */
+[data-theme="dark"] {
+  color-scheme: dark;
+  --paper: #12141A;
+  --surface: #191C23;
+  --surface-2: #232732;
+
+  --ink: #F2EFE7;
+  --ink-soft: #C2C7D2;
+  --ink-mute: #9AA0AC;
+
+  --line: #2A2E38;
+  --line-ui: #6E7482;
+
+  --good: #63D3A6;
+  --good-soft: #15302A;
+  --good-line: #2B4C40;
+  --bad: #F2877A;
+  --bad-soft: #3A1E1C;
+  --bad-line: #5A2E2A;
+  --warn: #E9B96A;
+  --warn-soft: #382915;
+  --warn-line: #5A4523;
+  --focus: #8FB8FF;
+
+  --btn-bg: #F2EFE7;
+  --btn-bg-hover: #FFFDF8;
+  --btn-fg: #12141A;
+  --sel: #3A3320;
+
+  --code-bg: #0E1015;
+  --code-bg-2: #171A21;
+  --code-bg-3: #0A0C10;
+
+  --shadow-1: 0 1px 2px rgba(0, 0, 0, .5);
+  --shadow-2: 0 2px 6px rgba(0, 0, 0, .45), 0 12px 32px -12px rgba(0, 0, 0, .6);
+}
+
+/* İkonlar */
+.sprite { position: absolute; width: 0; height: 0; overflow: hidden; }
+
+.icon {
+  width: 20px;
+  height: 20px;
+  flex: none;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.8;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.icon--sm { width: 16px; height: 16px; }
+
+.icon-btn {
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  padding: 0;
+  color: var(--ink-mute);
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: color 120ms ease-out, background-color 120ms ease-out;
+}
+
+.icon-btn:hover { color: var(--ink); background: var(--surface-2); }
+
+.icon-btn[aria-pressed="true"] {
+  color: var(--ink);
+  border-color: var(--line-ui);
+}
+
+.topbar__tools { display: flex; gap: 2px; }
+
+/* Giriş: illüstrasyon + bilet + devam et */
+.intro-side { display: grid; gap: var(--s5); padding-top: var(--s6); }
+
+.hero { margin: 0; }
+
+.hero__art {
+  display: block;
+  width: 100%;
+  max-width: 320px;
+  height: auto;
+}
+
+.resume { display: grid; gap: var(--s3); }
+
+.resume__text { font-size: .9375rem; color: var(--ink-soft); }
+
+.resume__actions { display: flex; flex-wrap: wrap; gap: var(--s2); }
+
+/* Bölüm başlığı + kavram çipi */
+.chip-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 32px;
+  padding: 4px 10px 4px 8px;
+  font: inherit;
+  font-size: .75rem;
+  font-weight: 600;
+  letter-spacing: .06em;
+  text-transform: uppercase;
+  color: var(--ink-soft);
+  background: var(--surface);
+  border: 1px solid var(--line-ui);
+  border-radius: var(--r-pill);
+  cursor: pointer;
+  transition: color 120ms ease-out, background-color 120ms ease-out;
+}
+
+.chip-btn:hover { color: var(--ink); background: var(--surface-2); }
+
+.chip-btn__more {
+  display: grid;
+  place-items: center;
+  width: 15px;
+  height: 15px;
+  border-radius: 50%;
+  background: var(--ink);
+  color: var(--surface);
+  font-size: .625rem;
+  letter-spacing: 0;
+  line-height: 1;
+}
+
+/* Çözüldü damgası */
+.brief { position: relative; }
+
+.stamp {
+  display: none;
+  padding: 4px 10px;
+  border: 2px solid var(--good);
+  border-radius: 4px;
+  color: var(--good);
+  font-size: .6875rem;
+  font-weight: 700;
+  letter-spacing: .14em;
+  text-transform: uppercase;
+  transform: rotate(-6deg);
+}
+
+.brief.is-solved { padding-right: 132px; }
+
+.brief.is-solved .stamp {
+  position: absolute;
+  top: 12px;
+  right: 16px;
+  display: block;
+  animation: stamp-in 260ms var(--ease) both;
+}
+
+@keyframes stamp-in {
+  from { opacity: 0; transform: rotate(-6deg) scale(1.35); }
+  to { opacity: 1; transform: rotate(-6deg) scale(1); }
+}
+
+/* İpucu */
+.hint {
+  display: flex;
+  gap: 10px;
+  padding: var(--s3) var(--s4);
+  background: var(--warn-soft);
+  border-radius: var(--r-md);
+  box-shadow: inset 3px 0 0 var(--warn);
+  animation: banner-in 200ms var(--ease) both;
+  scroll-margin-block: var(--s6) 96px;
+}
+
+.hint .icon { margin-top: 2px; color: var(--warn); }
+
+.hint p { font-size: .9375rem; color: var(--ink-soft); }
+
+.hint__label { margin-right: 4px; font-weight: 600; color: var(--warn); }
+
+/* Klavye kısayolu ipucu */
+.keys {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  font-size: .75rem;
+  color: var(--ink-mute);
+}
+
+kbd {
+  padding: 2px 5px;
+  background: var(--surface);
+  border: 1px solid var(--line-ui);
+  border-radius: 4px;
+  font-family: var(--font-mono);
+  font-size: .6875rem;
+}
+
+/* Rozetler */
+.badges {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+  gap: var(--s3);
+  margin-top: var(--s5);
+}
+
+.badge {
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+  padding: var(--s3) 14px;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--r-md);
+}
+
+.badge__icon {
+  display: grid;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  flex: none;
+  border-radius: 50%;
+  background: var(--good-soft);
+  color: var(--good);
+}
+
+.badge__title { font-size: .9375rem; font-weight: 600; }
+
+.badge__desc { font-size: .8125rem; color: var(--ink-mute); }
+
+.badge--locked { opacity: .5; }
+
+.badge--locked .badge__icon { background: var(--surface-2); color: var(--ink-mute); }
+
+/* Karne */
+.section-title {
+  margin-top: var(--s6);
+  font-size: 1.0625rem;
+  font-weight: 600;
+  letter-spacing: -.01em;
+}
+
+.takeaways {
+  margin-top: var(--s3);
+  border-top: 1px solid var(--line);
+}
+
+.takeaways li {
+  display: flex;
+  gap: 10px;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--line);
+  font-size: .9375rem;
+  color: var(--ink-soft);
+}
+
+.takeaways .icon { margin-top: 3px; color: var(--good); }
+
+.share-note { align-self: center; font-size: .8125rem; color: var(--good); }
+
+/* Kavram sözlüğü */
+.sheet {
+  width: min(560px, calc(100vw - 32px));
+  max-height: min(78vh, 640px);
+  padding: 0;
+  color: var(--ink);
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--r-lg);
+  box-shadow: var(--shadow-2);
+}
+
+.sheet::backdrop { background: rgba(10, 12, 16, .6); }
+
+.sheet__head {
+  position: sticky;
+  top: 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--s3);
+  padding: var(--s3) var(--s3) var(--s3) var(--s5);
+  background: var(--surface);
+  border-bottom: 1px solid var(--line);
+}
+
+.sheet__title { font-size: 1.0625rem; font-weight: 600; }
+
+.glossary {
+  padding: var(--s2) var(--s5) var(--s5);
+  overflow-y: auto;
+}
+
+.glossary li {
+  display: grid;
+  gap: 2px;
+  padding: var(--s3) 0;
+  border-bottom: 1px solid var(--line);
+}
+
+.glossary li:last-child { border-bottom: 0; }
+
+.glossary__term {
+  display: flex;
+  align-items: center;
+  gap: var(--s2);
+  font-size: .9375rem;
+  font-weight: 600;
+}
+
+.glossary__term .icon { color: var(--ink-mute); }
+
+.glossary__body { font-size: .875rem; color: var(--ink-soft); }
+
+.glossary li.is-current .glossary__term .icon { color: var(--good); }
+
+/* Geniş ekran: sözlük ortada, damga görünür */
+@media (max-width: 900px) {
+  .intro-side { display: none; }
+  .keys { display: none; }
+  .brief.is-solved { padding-right: var(--s5); }
+}
+
+@media (max-width: 640px) {
+  .topbar__inner { gap: var(--s2); }
+  .rail__label { font-size: .75rem; }
+  .chip-btn { min-height: 40px; }
+  .badges { grid-template-columns: minmax(0, 1fr); }
+  .glossary { padding-inline: var(--s4); }
+  .sheet__head { padding-left: var(--s4); }
+  .hero__art { max-width: 100%; }
+}
+
+/* Küçük ekran: üst çubukta yalnızca marka + araçlar (bölüm bilgisi başlıkta) */
+@media (max-width: 640px) {
+  .topbar__status { display: none; }
+  .icon-btn { width: 40px; height: 40px; }
+  .takeaways li { font-size: .875rem; }
+  .badges { gap: var(--s2); }
+}
+
+.takeaways .icon { width: 18px; height: 18px; }
+.badge__icon .icon { width: 20px; height: 20px; }
+
+/* 15 bölüm: bilet listesi iki sütun, ray dar ekranda daralır */
+.intro-grid { grid-template-columns: minmax(0, 1fr) 360px; }
+
+.pass__list {
+  display: grid;
+  grid-auto-flow: column;
+  grid-template-rows: repeat(8, auto);
+  grid-template-columns: 1fr 1fr;
+  background-image: linear-gradient(
+    to right,
+    transparent calc(50% - 0.5px),
+    var(--line) calc(50% - 0.5px),
+    var(--line) calc(50% + 0.5px),
+    transparent calc(50% + 0.5px)
+  );
+}
+
+.pass__list li {
+  padding: 6px 12px;
+  font-size: .8125rem;
+}
+
+@media (max-width: 1280px) {
+  .rail li { width: 16px; }
+}
+
+@media (max-width: 1023px) {
+  .rail li { width: 12px; }
+  .rail__label { display: none; }
+}
+
+@media (max-width: 900px) {
+  .intro-grid { grid-template-columns: minmax(0, 1fr); }
+}
+
+/* 20 bölüm: bilet iki sütun, on satır */
+.pass__list { grid-template-rows: repeat(13, auto); }
+
+/* Mod seçimi */
+.steps { margin-block: var(--s7) var(--s5); }
+
+.mode {
+  display: inline-flex;
+  gap: 2px;
+  padding: 3px;
+  background: var(--surface-2);
+  border: 1px solid var(--line);
+  border-radius: var(--r-pill);
+}
+
+.mode__btn {
+  min-height: 36px;
+  padding: 0 16px;
+  border: 0;
+  border-radius: var(--r-pill);
+  background: transparent;
+  color: var(--ink-soft);
+  font-size: .875rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.mode__btn[aria-pressed="true"] {
+  background: var(--surface);
+  color: var(--ink);
+  box-shadow: var(--shadow-1);
+}
+
+.mode__note {
+  margin-top: var(--s2);
+  max-width: 46ch;
+  font-size: .8125rem;
+  color: var(--ink-mute);
+}
+
+.start-block { margin-top: var(--s5); }
+
+/* Serbest mod: yazılı tahmin */
+.typed { display: grid; gap: 6px; }
+
+.typed__label {
+  font-size: .75rem;
+  font-weight: 600;
+  letter-spacing: .06em;
+  text-transform: uppercase;
+  color: var(--ink-mute);
+}
+
+.typed__input {
+  width: 100%;
+  min-height: 48px;
+  padding: 10px 12px;
+  background: var(--surface);
+  border: 1px solid var(--line-ui);
+  border-radius: var(--r-md);
+  color: var(--ink);
+  font-family: var(--font-mono);
+  font-size: 1rem;
+}
+
+.typed__input::placeholder { color: var(--ink-mute); }
+
+.typed__input:disabled {
+  background: var(--surface-2);
+  color: var(--ink-soft);
+  cursor: default;
+}
+
+.typed__note { font-size: .8125rem; color: var(--ink-mute); }
+
+/* Öğretmen raporu */
+.report-box {
+  display: grid;
+  gap: var(--s3);
+  margin-top: var(--s6);
+  padding: var(--s4);
+  background: var(--surface);
+  border: 1px dashed var(--line-ui);
+  border-radius: var(--r-md);
+}
+
+.report-box__row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--s2);
+}
+
+.report-box__row .typed__input {
+  flex: 1 1 200px;
+  font-family: var(--font-ui);
+}
+
+.report-box__note {
+  font-size: .8125rem;
+  color: var(--ink-mute);
+  overflow-wrap: anywhere;
+}
+
+.report-stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: var(--s3);
+  margin-top: var(--s5);
+}
+
+.report-stats li {
+  padding: var(--s3) var(--s4);
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--r-md);
+}
+
+.report-stats__label {
+  display: block;
+  min-height: 2.4em;
+  font-size: .75rem;
+  font-weight: 600;
+  line-height: 1.2;
+  letter-spacing: .06em;
+  text-transform: uppercase;
+  color: var(--ink-mute);
+}
+
+.report-stats__value {
+  display: block;
+  font-size: 1.5rem;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+.report-stats li.is-text .report-stats__value {
+  font-size: 1rem;
+  font-weight: 500;
+  line-height: 1.4;
+}
+
+.chip--none { background: var(--surface-2); color: var(--ink-mute); }
+
+/* Sınıf paneli --------------------------------------------------------- */
+
+.teacher-link {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  margin-top: var(--s4);
+  font-size: .875rem;
+  color: var(--ink-mute);
+}
+
+.link-btn {
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--ink);
+  font: inherit;
+  font-weight: 600;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  text-decoration-thickness: 1px;
+  cursor: pointer;
+}
+
+.link-btn:hover { color: var(--ink-soft); }
+
+.class-input {
+  display: grid;
+  gap: 8px;
+  margin-top: var(--s5);
+}
+
+.class-input__area {
+  width: 100%;
+  min-height: 96px;
+  padding: 12px;
+  background: var(--surface);
+  border: 1px solid var(--line-ui);
+  border-radius: var(--r-md);
+  color: var(--ink);
+  font-family: var(--font-mono);
+  font-size: .875rem;
+  line-height: 1.6;
+  resize: vertical;
+}
+
+.class-input__area::placeholder { color: var(--ink-mute); }
+
+.class-input__area:focus-visible {
+  outline: 2px solid var(--focus);
+  outline-offset: 2px;
+}
+
+.class-input__row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--s2);
+}
+
+.table-wrap {
+  margin-top: var(--s4);
+  overflow-x: auto;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--r-md);
+}
+
+.table-wrap:focus-visible {
+  outline: 2px solid var(--focus);
+  outline-offset: 2px;
+}
+
+.class-table {
+  width: 100%;
+  min-width: 620px;
+  border-collapse: collapse;
+  font-size: .875rem;
+}
+
+.class-table th {
+  padding: 10px 14px;
+  border-bottom: 1px solid var(--line);
+  color: var(--ink-mute);
+  font-size: .6875rem;
+  font-weight: 600;
+  letter-spacing: .06em;
+  text-align: left;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.class-table td {
+  padding: 10px 14px;
+  border-bottom: 1px solid var(--line);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.class-table tbody tr:last-child td { border-bottom: 0; }
+.class-table tbody tr:nth-child(even) { background: var(--surface-2); }
+
+.class-table__empty td {
+  color: var(--ink-mute);
+  white-space: normal;
+}
+
+.class-levels .results__main { min-width: 0; }
+
+.class-legend {
+  margin-top: var(--s2);
+  font-size: .8125rem;
+  color: var(--ink-mute);
+}
+
+.class-counts {
+  font-family: var(--font-mono);
+  font-size: .8125rem;
+  color: var(--ink-soft);
+  white-space: nowrap;
+}
+</style>
+</head>
+<body>
+  <a class="skip-link" href="#main">İçeriğe geç</a>
+
+  <svg class="sprite" aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg">
+    <symbol id="i-loop" viewBox="0 0 24 24"><path d="M20 12a8 8 0 1 1-2.4-5.7"/><path d="M20 4.5V9h-4.5"/></symbol>
+    <symbol id="i-array" viewBox="0 0 24 24"><path d="M7 4H4v16h3M17 4h3v16h-3"/><circle cx="10" cy="12" r="1.4" fill="currentColor" stroke="none"/><circle cx="14" cy="12" r="1.4" fill="currentColor" stroke="none"/></symbol>
+    <symbol id="i-type" viewBox="0 0 24 24"><path d="M3 8h11"/><path d="M11 5l3 3-3 3"/><path d="M21 16H10"/><path d="M13 13l-3 3 3 3"/></symbol>
+    <symbol id="i-logic" viewBox="0 0 24 24"><circle cx="9.5" cy="12" r="5.5"/><circle cx="14.5" cy="12" r="5.5"/></symbol>
+    <symbol id="i-return" viewBox="0 0 24 24"><rect x="3" y="9" width="8" height="11" rx="2"/><path d="M11 14h8"/><path d="M16 11l3 3-3 3"/></symbol>
+    <symbol id="i-bolt" viewBox="0 0 24 24"><path d="M13 3 5 14h5.5L9.5 21 19 10h-5.5z"/></symbol>
+    <symbol id="i-eye" viewBox="0 0 24 24"><path d="M2 12s3.6-6.5 10-6.5S22 12 22 12s-3.6 6.5-10 6.5S2 12 2 12z"/><circle cx="12" cy="12" r="2.8"/></symbol>
+    <symbol id="i-shield" viewBox="0 0 24 24"><path d="M12 3l7.5 3v6c0 4.6-3.2 7.7-7.5 9-4.3-1.3-7.5-4.4-7.5-9V6z"/><path d="M8.5 12l2.6 2.6 4.4-4.6"/></symbol>
+    <symbol id="i-star" viewBox="0 0 24 24"><path d="m12 3.5 2.6 5.3 5.9.9-4.3 4.1 1 5.8-5.2-2.8-5.2 2.8 1-5.8L3.5 9.7l5.9-.9z"/></symbol>
+    <symbol id="i-sun" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4.2"/><path d="M12 2.5v2M12 19.5v2M2.5 12h2M19.5 12h2M5.3 5.3l1.4 1.4M17.3 17.3l1.4 1.4M18.7 5.3l-1.4 1.4M6.7 17.3l-1.4 1.4"/></symbol>
+    <symbol id="i-moon" viewBox="0 0 24 24"><path d="M20 14.5A8.5 8.5 0 0 1 9.5 4a8.5 8.5 0 1 0 10.5 10.5z"/></symbol>
+    <symbol id="i-sound" viewBox="0 0 24 24"><path d="M4 9.5h3.5L12 6v12L7.5 14.5H4z"/><path d="M15.5 9.2a4 4 0 0 1 0 5.6M18 6.6a7.5 7.5 0 0 1 0 10.8"/></symbol>
+    <symbol id="i-mute" viewBox="0 0 24 24"><path d="M4 9.5h3.5L12 6v12L7.5 14.5H4z"/><path d="m16 10 4 4M20 10l-4 4"/></symbol>
+    <symbol id="i-hint" viewBox="0 0 24 24"><path d="M9 18h6M10 21h4"/><path d="M12 3a6 6 0 0 0-3.5 10.9c.6.4 1 1.1 1 1.8V16h5v-.3c0-.7.4-1.4 1-1.8A6 6 0 0 0 12 3z"/></symbol>
+    <symbol id="i-object" viewBox="0 0 24 24"><path d="M9 3H8a3 3 0 0 0-3 3v2a2 2 0 0 1-2 2 2 2 0 0 1 2 2v2a3 3 0 0 0 3 3h1"/><path d="M15 3h1a3 3 0 0 1 3 3v2a2 2 0 0 0 2 2 2 2 0 0 0-2 2v2a3 3 0 0 1-3 3h-1"/></symbol>
+    <symbol id="i-arrow" viewBox="0 0 24 24"><path d="M4 9h14"/><path d="M14 5l4 4-4 4"/><path d="M4 19h9"/></symbol>
+    <symbol id="i-case" viewBox="0 0 24 24"><path d="M5.5 19 12 5l6.5 14"/><path d="M8.4 13.5h7.2"/></symbol>
+    <symbol id="i-nested" viewBox="0 0 24 24"><rect x="3.5" y="3.5" width="11" height="11" rx="2"/><rect x="9.5" y="9.5" width="11" height="11" rx="2"/></symbol>
+    <symbol id="i-sort" viewBox="0 0 24 24"><path d="M4 6.5h12M4 12h8M4 17.5h5"/><path d="M18 7v10"/><path d="M15.2 14.2 18 17l2.8-2.8"/></symbol>
+    <symbol id="i-template" viewBox="0 0 24 24"><path d="M10 5 6.5 10M16 5l-3.5 5"/><path d="M4 14h16M4 18h10"/></symbol>
+    <symbol id="i-filter" viewBox="0 0 24 24"><path d="M3.5 5h17l-6.5 7.5V19l-4 2v-8.5z"/></symbol>
+    <symbol id="i-parse" viewBox="0 0 24 24"><path d="M4 9V4h5M15 4h5v5M20 15v5h-5M9 20H4v-5"/><path d="M9 12h6"/></symbol>
+    <symbol id="i-nullish" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8"/><path d="M6.4 17.6 17.6 6.4"/></symbol>
+    <symbol id="i-empty" viewBox="0 0 24 24"><rect x="4.5" y="4.5" width="15" height="15" rx="3"/><path d="M9 12h6"/></symbol>
+    <symbol id="i-class" viewBox="0 0 24 24"><path d="M12 3 4 7.5v9L12 21l8-4.5v-9L12 3Z"/><path d="M4 7.5 12 12l8-4.5"/><path d="M12 12v9"/></symbol>
+    <symbol id="i-map" viewBox="0 0 24 24"><rect x="3.5" y="5" width="17" height="14" rx="2.5"/><path d="M3.5 10.5h17"/><path d="M9 10.5V19"/></symbol>
+    <symbol id="i-set" viewBox="0 0 24 24"><circle cx="9.5" cy="12" r="5.5"/><circle cx="14.5" cy="12" r="5.5"/></symbol>
+    <symbol id="i-storage" viewBox="0 0 24 24"><rect x="3.5" y="4.5" width="17" height="15" rx="3"/><path d="M7.5 9.5h9"/><path d="M7.5 14.5h5"/></symbol>
+    <symbol id="i-bind" viewBox="0 0 24 24"><path d="M9.5 14.5 14.5 9.5"/><path d="M11 7.5 12.6 6a3.2 3.2 0 0 1 4.5 4.5L15.5 12"/><path d="M13 16.5 11.4 18a3.2 3.2 0 0 1-4.5-4.5L8.5 12"/></symbol>
+    <symbol id="i-classroom" viewBox="0 0 24 24"><circle cx="9" cy="8" r="3.2"/><path d="M3.5 19c0-3 2.5-5 5.5-5s5.5 2 5.5 5"/><path d="M16.5 6.5h4"/><path d="M18.5 4.5v4"/><path d="M15.5 19h5"/></symbol>
+    <symbol id="i-close" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6 6 18"/></symbol>
+  </svg>
+
+  <header class="topbar">
+    <div class="wrap topbar__inner">
+      <span class="brand">
+        <svg class="brand__mark" viewBox="0 0 32 32" aria-hidden="true" focusable="false">
+          <g fill="currentColor">
+            <circle cx="16" cy="9" r="3.4"></circle>
+            <ellipse cx="16" cy="19.5" rx="7.5" ry="8.5"></ellipse>
+          </g>
+          <g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+            <path d="M13.2 6.4 10.4 3.8M18.8 6.4 21.6 3.8"></path>
+          </g>
+        </svg>
+        BugPark
+      </span>
+
+      <div class="topbar__status" id="topbarStatus" hidden>
+        <ol class="rail" id="rail" aria-hidden="true"></ol>
+        <span class="rail__label" id="railLabel">Bölüm 1/5</span>
+      </div>
+
+      <div class="topbar__tools">
+        <button class="icon-btn" type="button" id="soundBtn" data-action="toggle-sound" aria-pressed="false" aria-label="Ses kapalı" title="Ses">
+          <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><use href="#i-mute" id="soundIcon"></use></svg>
+        </button>
+        <button class="icon-btn" type="button" id="themeBtn" data-action="toggle-theme" aria-pressed="false" aria-label="Karanlık temaya geç" title="Tema">
+          <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><use href="#i-moon" id="themeIcon"></use></svg>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <main id="main" class="wrap">
+
+    <section class="screen screen--intro" id="screenIntro" hidden aria-labelledby="introTitle">
+      <div class="intro-grid">
+        <div class="intro-main">
+          <p class="eyebrow">JavaScript · 25 görev</p>
+          <h1 class="display" id="introTitle" tabindex="-1">
+            <span class="display__line">Kodu oku.</span>
+            <span class="display__line">Çıktıyı tahmin et.</span>
+            <span class="display__line">Hatayı düzelt.</span>
+          </h1>
+          <p class="lede">Her görevde bozuk bir kod parçası var. Önce ne yazdırdığını tahmin et, sonra tek bir değişiklikle düzelt.</p>
+          <p class="meta-line">25 kısa görev · süre yok · puan yok</p>
+          <ol class="steps">
+            <li><span class="steps__n" aria-hidden="true">1</span> Oku</li>
+            <li><span class="steps__n" aria-hidden="true">2</span> Tahmin et</li>
+            <li><span class="steps__n" aria-hidden="true">3</span> Düzelt</li>
+          </ol>
+
+          <div class="mode" role="group" aria-label="Oyun modu">
+            <button class="mode__btn" type="button" data-action="mode-guided" aria-pressed="true">Sıralı</button>
+            <button class="mode__btn" type="button" data-action="mode-free" aria-pressed="false">Serbest</button>
+          </div>
+          <p class="mode__note" id="modeNote">Sıralı mod: görevler sırayla, tahminler çoktan seçmeli.</p>
+
+          <p class="teacher-link">
+            <svg class="icon icon--sm" aria-hidden="true"><use href="#i-classroom"></use></svg>
+            <span>Öğretmen misin?</span>
+            <button class="link-btn" type="button" data-action="classroom-open">Sınıf panelini aç</button>
+          </p>
+
+          <div class="start-block" id="startBlock">
+            <button class="btn btn--primary btn--lg" type="button" data-action="start">Başla</button>
+          </div>
+
+          <div class="resume" id="resumeBlock" hidden>
+            <p class="resume__text" id="resumeText"></p>
+            <div class="resume__actions">
+              <button class="btn btn--primary btn--lg" type="button" data-action="resume">Devam et</button>
+              <button class="btn btn--ghost btn--lg" type="button" data-action="start">Baştan başla</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="intro-side">
+          <figure class="hero">
+            <svg class="hero__art" viewBox="0 0 320 240" role="img" aria-label="Bir kod penceresinin üstünde duran kırmızı hata böceği">
+              <circle cx="164" cy="104" r="88" fill="var(--warn-soft)" opacity=".5"></circle>
+              <g transform="rotate(-4 160 158)">
+                <rect x="46" y="130" width="216" height="88" rx="10" fill="#14161A" stroke="var(--line-ui)" stroke-width="2"></rect>
+                <path d="M46 146a10 10 0 0 1 10-10h196a10 10 0 0 1 10 10v10H46z" fill="#1B1E24"></path>
+                <circle cx="62" cy="143" r="3" fill="#F2877A"></circle>
+                <circle cx="74" cy="143" r="3" fill="#E8A76B"></circle>
+                <circle cx="86" cy="143" r="3" fill="#5FC79B"></circle>
+                <g stroke="#8A93A3" stroke-width="3" stroke-linecap="round">
+                  <path d="M64 172h84"></path>
+                  <path d="M64 186h58"></path>
+                  <path d="M64 200h104"></path>
+                </g>
+              </g>
+              <g>
+                <ellipse cx="210" cy="90" rx="30" ry="34" fill="var(--bad)"></ellipse>
+                <circle cx="210" cy="46" r="14" fill="var(--bad)"></circle>
+                <path d="M210 56v62" stroke="var(--paper)" stroke-width="3"></path>
+                <g stroke="var(--ink)" stroke-width="4" stroke-linecap="round">
+                  <path d="M200 38 190 26"></path>
+                  <path d="M220 38 230 26"></path>
+                  <path d="M181 78 163 70"></path>
+                  <path d="M181 98 161 98"></path>
+                  <path d="M181 114 163 122"></path>
+                  <path d="M239 78 257 70"></path>
+                  <path d="M239 98 259 98"></path>
+                  <path d="M239 114 257 122"></path>
+                </g>
+              </g>
+              <path d="M24 228h272" stroke="var(--line-ui)" stroke-width="2" stroke-dasharray="6 8" stroke-linecap="round"></path>
+            </svg>
+          </figure>
+
+          <div class="pass">
+            <div class="pass__head">
+              <span class="eyebrow">Giriş bileti</span>
+              <span class="pass__no" id="passCount">25 görev</span>
+            </div>
+            <ol class="pass__list" id="passList"></ol>
+            <p class="pass__foot">Süre yok · puan yok</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="screen" id="screenLoading" hidden aria-labelledby="loadingTitle">
+      <p class="eyebrow">Yükleniyor</p>
+      <h1 class="title" id="loadingTitle" tabindex="-1">Görevler hazırlanıyor</h1>
+      <div class="editor editor--skeleton" aria-hidden="true">
+        <div class="editor__bar">
+          <span class="skeleton skeleton--short"></span>
+          <span class="skeleton skeleton--tiny"></span>
+        </div>
+        <div class="editor__code">
+          <span class="skeleton skeleton--long"></span>
+          <span class="skeleton skeleton--mid"></span>
+          <span class="skeleton skeleton--short"></span>
+        </div>
+      </div>
+    </section>
+
+    <section class="screen" id="screenLevel" hidden aria-labelledby="levelTitle">
+      <div class="level-head">
+        <p class="eyebrow">
+          <span id="levelPos">Bölüm 1/5</span>
+          <span class="dot" aria-hidden="true">·</span>
+          <button class="chip-btn" type="button" id="conceptBtn" data-action="glossary">
+            <svg class="icon icon--sm" viewBox="0 0 24 24" aria-hidden="true"><use href="#i-loop" id="conceptIcon"></use></svg>
+            <span id="concept">Döngü koşulu</span>
+            <span class="chip-btn__more" aria-hidden="true">?</span>
+          </button>
+        </p>
+        <h1 class="title" id="levelTitle" tabindex="-1"></h1>
+      </div>
+
+      <div class="brief">
+        <p class="eyebrow">Hedef</p>
+        <p class="brief__text" id="goal"></p>
+        <span class="stamp" id="stamp" aria-hidden="true">Düzeltildi</span>
+      </div>
+
+      <div class="grid">
+        <article class="editor">
+          <div class="editor__bar">
+            <span class="editor__file">main.js</span>
+            <span class="editor__meta" id="codeMeta">JavaScript · 3 satır</span>
+          </div>
+          <div class="editor__code" id="codeList" role="group" aria-label="Kod, main.js" tabindex="0"></div>
+          <p class="editor__divider" id="consoleLabel">Konsol</p>
+          <div class="editor__console" id="consoleList" role="group" aria-label="Konsol çıktısı"></div>
+        </article>
+
+        <div class="pane">
+          <fieldset class="q" id="predictField">
+            <legend class="q__legend" id="predictQuestion">Bu kod şu anda ne yazdırır?</legend>
+            <div class="typed" id="typedBlock" hidden>
+              <label class="typed__label" for="typedInput">Çıktıyı yaz</label>
+              <input class="typed__input" id="typedInput" type="text" autocomplete="off" spellcheck="false" aria-describedby="typedNote">
+              <p class="typed__note" id="typedNote">Çok satırlı çıktıyı virgülle ayırabilirsin.</p>
+            </div>
+            <div class="options" id="predictOptions"></div>
+            <p class="q__hint" id="predictHint" hidden>Bir seçenek seç.</p>
+          </fieldset>
+
+          <div class="banner" id="predictBanner" hidden></div>
+
+          <fieldset class="q" id="fixField" hidden>
+            <legend class="q__legend" id="fixQuestion">Hedefe ulaşmak için hangi değişiklik gerekli?</legend>
+            <p class="patch">
+              <span class="patch__line" id="patchLine" aria-hidden="true">1</span>
+              <code class="patch__code" id="patchCode"></code>
+            </p>
+            <div class="options" id="fixOptions"></div>
+            <p class="q__hint" id="fixHint" hidden>Bir seçenek seç.</p>
+          </fieldset>
+
+          <div class="hint" id="hintBox" hidden>
+            <svg class="icon icon--sm" viewBox="0 0 24 24" aria-hidden="true"><use href="#i-hint"></use></svg>
+            <p><span class="hint__label">İpucu</span> <span id="hintText"></span></p>
+          </div>
+
+          <div class="banner" id="fixBanner" hidden></div>
+
+          <div class="actionbar">
+            <button class="btn btn--primary" type="button" id="primaryBtn" data-action="predict-submit">Tahminimi kontrol et</button>
+            <button class="btn btn--ghost" type="button" id="hintBtn" data-action="hint" hidden>İpucu</button>
+            <button class="btn btn--ghost" type="button" id="solutionBtn" data-action="solution" hidden>Çözümü göster</button>
+          </div>
+
+          <p class="keys" aria-hidden="true">
+            <kbd>1</kbd><kbd>2</kbd><kbd>3</kbd> seç · <kbd>Enter</kbd> gönder · <kbd>N</kbd> sonraki
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <section class="screen" id="screenSummary" hidden aria-labelledby="summaryTitle">
+      <p class="eyebrow">Özet</p>
+      <h1 class="title" id="summaryTitle" tabindex="-1">Park turu tamam</h1>
+      <p class="lede" id="summaryMeta"></p>
+
+      <ul class="badges" id="badges" aria-label="Kazanılan rozetler"></ul>
+
+      <h2 class="section-title">Karnem</h2>
+      <ul class="takeaways" id="takeaways"></ul>
+
+      <h2 class="section-title">Görevler</h2>
+      <ol class="results" id="results"></ol>
+
+      <div class="report-box">
+        <p class="eyebrow">Öğretmen için</p>
+        <div class="report-box__row">
+          <label class="sr-only" for="reportName">Adın (isteğe bağlı)</label>
+          <input class="typed__input" id="reportName" type="text" maxlength="24" autocomplete="off" placeholder="Adın (isteğe bağlı)">
+          <button class="btn btn--ghost" type="button" data-action="report-link">Rapor bağlantısı oluştur</button>
+        </div>
+        <p class="report-box__note" id="reportLinkNote">Bağlantı yalnızca sonuçları taşır; sunucuya hiçbir şey gönderilmez.</p>
+      </div>
+
+      <div class="actionbar actionbar--plain">
+        <button class="btn btn--primary" type="button" data-action="restart">Yeniden oyna</button>
+        <button class="btn btn--ghost" type="button" data-action="share">Sonucu paylaş</button>
+        <button class="btn btn--ghost" type="button" data-action="home">Giriş ekranı</button>
+        <span class="share-note" id="shareNote" role="status"></span>
+      </div>
+    </section>
+
+    <section class="screen" id="screenReport" hidden aria-labelledby="reportTitle">
+      <p class="eyebrow">Öğretmen görünümü</p>
+      <h1 class="title" id="reportTitle" tabindex="-1">İlerleme raporu</h1>
+      <p class="lede" id="reportMeta"></p>
+      <ul class="report-stats" id="reportStats"></ul>
+      <h2 class="section-title">Görevler</h2>
+      <ol class="results" id="reportResults"></ol>
+      <p class="detail" id="reportNote">Bu rapor öğrencinin tarayıcısında oluşturuldu; sunucuya hiçbir veri gönderilmedi.</p>
+      <div class="actionbar actionbar--plain">
+        <button class="btn btn--primary" type="button" data-action="report-close">Oyunu aç</button>
+        <button class="btn btn--ghost" type="button" data-action="report-class">Sınıf paneline ekle</button>
+      </div>
+    </section>
+
+    <section class="screen" id="screenClass" hidden aria-labelledby="classTitle">
+      <p class="eyebrow">Sınıf modu</p>
+      <h1 class="title" id="classTitle" tabindex="-1">Sınıf paneli</h1>
+      <p class="lede">
+        Öğrenciler bitirince rapor bağlantısını sana iletir. Bağlantıları ya da yalnızca kodları
+        buraya yapıştır; panel hepsini tek tabloda toplar. Veriler yalnızca bu tarayıcıda kalır.
+      </p>
+
+      <div class="class-input">
+        <label class="typed__label" for="classInput">Rapor bağlantısı veya kodu</label>
+        <textarea class="class-input__area" id="classInput" rows="3" spellcheck="false"
+          placeholder="https://…/bugpark/#rapor=djF8…  ·  her satıra bir bağlantı ya da kod"></textarea>
+        <div class="class-input__row">
+          <button class="btn btn--primary" type="button" data-action="class-add">Kodu ekle</button>
+          <button class="btn btn--ghost" type="button" data-action="class-csv">CSV indir</button>
+          <button class="btn btn--ghost" type="button" data-action="class-clear">Listeyi temizle</button>
+          <span class="share-note" id="classNote" role="status"></span>
+        </div>
+      </div>
+
+      <ul class="report-stats" id="classStats"></ul>
+
+      <h2 class="section-title">Öğrenciler</h2>
+      <div class="table-wrap" tabindex="0" role="region" aria-label="Sınıf tablosu, yatay kaydırılabilir">
+        <table class="class-table">
+          <caption class="sr-only">Sınıftaki öğrenci raporları</caption>
+          <thead>
+            <tr>
+              <th scope="col">Ad</th>
+              <th scope="col">Tarih</th>
+              <th scope="col">Mod</th>
+              <th scope="col">Tamamlanan</th>
+              <th scope="col">Çözülen</th>
+              <th scope="col">Gösterilen</th>
+              <th scope="col">Doğru tahmin</th>
+              <th scope="col">Rozet</th>
+            </tr>
+          </thead>
+          <tbody id="classRows"></tbody>
+        </table>
+      </div>
+
+      <h2 class="section-title">Görev bazında</h2>
+      <p class="class-legend">✓ çözüldü · ! çözüm gösterildi · — yapılmadı</p>
+      <ol class="results class-levels" id="classLevels"></ol>
+
+      <p class="detail" id="classDetail">Henüz kod eklenmedi.</p>
+
+      <div class="actionbar actionbar--plain">
+        <button class="btn btn--primary" type="button" data-action="class-close">Giriş ekranı</button>
+      </div>
+    </section>
+
+    <section class="screen" id="screenError" hidden aria-labelledby="errorTitle">
+      <p class="eyebrow">Hata</p>
+      <h1 class="title" id="errorTitle" tabindex="-1">Görevler yüklenemedi</h1>
+      <p class="lede">Görev dosyası okunamadı. Sayfayı yenilemeyi dene; dosyayı indirip çift tıkladıysan <a href="./BugPark.html">tek dosyalık sürümü</a> kullan.</p>
+      <p class="detail" id="errorDetail"></p>
+      <div class="actionbar actionbar--plain">
+        <button class="btn btn--primary" type="button" data-action="retry">Yeniden dene</button>
+      </div>
+    </section>
+
+  </main>
+
+  <dialog class="sheet" id="glossary" aria-labelledby="glossaryTitle">
+    <div class="sheet__head">
+      <h2 class="sheet__title" id="glossaryTitle">Kavram sözlüğü</h2>
+      <button class="icon-btn" type="button" data-action="glossary-close" aria-label="Kapat">
+        <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><use href="#i-close"></use></svg>
+      </button>
+    </div>
+    <ul class="glossary" id="glossaryList"></ul>
+  </dialog>
+
+  <p class="sr-only" id="status" role="status" aria-live="polite"></p>
+
+  <script>
+window.__BUGPARK_LEVELS__ = {"version":1,"levels":[{"id":"loop-boundary","order":1,"title":"Eksik tur","concept":"Döngü koşulu","goal":"1, 2 ve 3 sayılarını ayrı satırlara yazdır.","code":"for (let i = 1; i \u003c 3; i++) {\n  console.log(i);\n}","explain":"Koşul 3 \u003c 3 olduğunda false döner, üçüncü tur hiç başlamaz.","hint":"Döngü 3'te de çalışmalı: koşul son değeri kapsıyor mu?","takeaway":"Bitiş koşulu son değeri de kapsamalı: \u003c yerine \u003c= gerekebilir.","prediction":{"question":"Bu kod şu anda ne yazdırır?","answerId":"p1","output":"1\n2","choices":[{"id":"p1","label":"1\n2","feedback":"Sayaç 1 ve 2'de çalışır, 3'te koşul false olur."},{"id":"p2","label":"1\n2\n3","feedback":"3 \u003c 3 yanlış olduğu için üçüncü tur başlamaz."},{"id":"p3","label":"0\n1\n2","feedback":"Sayaç 0'dan değil, 1'den başlıyor."}]},"fix":{"question":"Hedefe ulaşmak için hangi değişiklik gerekli?","answerId":"f2","target":{"line":1,"snippet":"i \u003c 3"},"solution":"i \u003c= 3","output":"1\n2\n3","choices":[{"id":"f1","label":"i \u003c 2","feedback":"Yalnızca 1 yazdırılır; aralık daha da daralır."},{"id":"f2","label":"i \u003c= 3","feedback":"Eşitlik de kabul edilir, üçüncü tur çalışır."},{"id":"f3","label":"i \u003c= 4","feedback":"4 de yazdırılır; hedefte fazladan bir sayı var."}]}},{"id":"first-fruit","order":2,"title":"İlk meyve","concept":"Dizi indeksi","goal":"Konsola elma yazdır.","code":"const meyveler = ['elma', 'armut', 'kiraz'];\nconsole.log(meyveler[1]);","explain":"Dizi indeksleri 0'dan başlar; [1] ikinci elemanı verir.","hint":"İlk elemanın indeksi 0'dır; 1 değil.","takeaway":"Diziler 0'dan sayılır; son eleman uzunluk - 1 indeksindedir.","prediction":{"question":"Bu kod şu anda ne yazdırır?","answerId":"p2","output":"armut","choices":[{"id":"p1","label":"elma","feedback":"İndeks 1'den başlamaz; ilk elemanın indeksi 0'dır."},{"id":"p2","label":"armut","feedback":"İndeks 1 ikinci elemanı verir: armut."},{"id":"p3","label":"kiraz","feedback":"Kiraz üçüncü eleman, indeksi 2."}]},"fix":{"question":"Hedefe ulaşmak için hangi değişiklik gerekli?","answerId":"f1","target":{"line":2,"snippet":"meyveler[1]"},"solution":"meyveler[0]","output":"elma","choices":[{"id":"f1","label":"meyveler[0]","feedback":"İlk elemanın indeksi 0: elma."},{"id":"f2","label":"meyveler[2]","feedback":"Bu kirazı yazdırır."},{"id":"f3","label":"meyveler[3]","feedback":"Dizide dördüncü eleman yok; çıktı undefined olur."}]}},{"id":"string-plus-number","order":3,"title":"Yan yana sayılar","concept":"Tip dönüşümü","goal":"Konsola 7 yazdır.","code":"const metin = '5';\nconst sayi = 2;\nconsole.log(metin + sayi);","explain":"Bir tarafı string ise + işareti toplamaz, değerleri yan yana ekler.","hint":"Toplama için iki taraf da sayı olmalı; metin önce çevrilmeli.","takeaway":"+ iki taraf da sayıysa toplar, biri string ise birleştirir.","prediction":{"question":"Bu kod şu anda ne yazdırır?","answerId":"p1","output":"52","choices":[{"id":"p1","label":"52","feedback":"5 ve 2 metin gibi birleşir, sayı toplanmaz."},{"id":"p2","label":"7","feedback":"Toplama için iki tarafın da sayı olması gerekir."},{"id":"p3","label":"NaN","feedback":"NaN, sayıya çevrilemeyen bir değerle işlem yapılırsa çıkar."}]},"fix":{"question":"Hedefe ulaşmak için hangi değişiklik gerekli?","answerId":"f1","target":{"line":3,"snippet":"metin + sayi"},"solution":"Number(metin) + sayi","output":"7","choices":[{"id":"f1","label":"Number(metin) + sayi","feedback":"metin önce sayıya çevrilir: 5 + 2 = 7."},{"id":"f2","label":"Number(sayi) + metin","feedback":"İlk taraf sayı ama ikinci hâlâ string: 25."},{"id":"f3","label":"metin + Number(sayi)","feedback":"İlk taraf string kaldığı için yine birleşir: 52."}]}},{"id":"club-gate","order":4,"title":"Kulüp kapısı","concept":"Mantık operatörü","goal":"Kural: girmek için 18 yaşından büyük ve veli izni olmalı. Bu kişi için konsola Giremez yazdır.","code":"const yas = 20;\nconst izinVar = false;\n\nif (yas >= 18 || izinVar) {\n  console.log('Girebilir');\n} else {\n  console.log('Giremez');\n}","explain":"|| iki şarttan birini yeterli sayar; izin yokken de içeri alıyor.","hint":"İki şartın birlikte doğru olması gerekiyorsa hangi bağlaç?","takeaway":"&& iki şartı da ister; || birinin doğru olmasını yeterli sayar.","prediction":{"question":"Bu kod şu anda ne yazdırır?","answerId":"p1","output":"Girebilir","choices":[{"id":"p1","label":"Girebilir","feedback":"Yaş şartı tek başına yetti, izin hiç kontrol edilmedi."},{"id":"p2","label":"Giremez","feedback":"|| bir şartın doğru olmasını yeterli görür; yaş şartı doğru."},{"id":"p3","label":"true","feedback":"console.log ifadenin sonucunu değil, yazdırılan metni gösterir."}]},"fix":{"question":"Hedefe ulaşmak için hangi değişiklik gerekli?","answerId":"f1","target":{"line":4,"snippet":"yas >= 18 || izinVar"},"solution":"yas >= 18 && izinVar","output":"Giremez","choices":[{"id":"f1","label":"yas >= 18 && izinVar","feedback":"İki şart birlikte aranır; izin yok, çıktı Giremez."},{"id":"f2","label":"yas >= 18 || !izinVar","feedback":"İzin tersine döndü ama bağlaç hâlâ veya: yine Girebilir."},{"id":"f3","label":"yas >= 18 && !izinVar","feedback":"İzni tersine çeviriyor: izin yokken içeri alır."}]}},{"id":"missing-return","order":5,"title":"Kayıp sonuç","concept":"return","goal":"Konsola 6 yazdır.","code":"function ikiKat(n) {\n  n * 2;\n}\n\nconsole.log(ikiKat(3));","explain":"Fonksiyon 6 hesaplıyor ama return olmadığı için dışarı undefined çıkıyor.","hint":"Hesaplanan değeri çağıran yere kim taşıyacak?","takeaway":"return olmayan fonksiyon undefined döndürür; hesap kaybolur.","prediction":{"question":"Bu kod şu anda ne yazdırır?","answerId":"p1","output":"undefined","choices":[{"id":"p1","label":"undefined","feedback":"Değer hesaplanıyor ama return olmadığı için dışarı çıkmıyor."},{"id":"p2","label":"6","feedback":"6 ancak return ile dönerse konsola ulaşır."},{"id":"p3","label":"NaN","feedback":"n * 2 geçerli bir sayı üretir: 6."}]},"fix":{"question":"Hedefe ulaşmak için hangi değişiklik gerekli?","answerId":"f1","target":{"line":2,"snippet":"n * 2"},"solution":"return n * 2","output":"6","choices":[{"id":"f1","label":"return n * 2","feedback":"Değer döndürülür ve console.log 6 yazdırır."},{"id":"f2","label":"console.log(n * 2)","feedback":"Fonksiyon içinde 6 yazdırılır, dışarı yine undefined döner."},{"id":"f3","label":"return n + 2","feedback":"Toplama yapıldığı için 5 döner."}]}},{"id":"object-key","order":6,"title":"Yanlış adres","concept":"Nesne alanı","goal":"Konsola Ece yazdır.","code":"const kullanici = { ad: 'Ece', yas: 17 };\nconsole.log(kullanici.isim);","explain":"Nesnede isim diye bir alan yok; tanımlı olan alan ad.","hint":"Nesnenin içinde hangi anahtarlar tanımlı?","takeaway":"Olmayan bir alan hata vermez, undefined döndürür.","prediction":{"question":"Bu kod şu anda ne yazdırır?","answerId":"p1","output":"undefined","choices":[{"id":"p1","label":"undefined","feedback":"isim alanı tanımlı değil; eksik alan undefined döndürür."},{"id":"p2","label":"Ece","feedback":"Ece, ad alanında duruyor; isim diye bir alan yok."},{"id":"p3","label":"hata","feedback":"Olmayan alan erişimi hata fırlatmaz, undefined verir."}]},"fix":{"question":"Hedefe ulaşmak için hangi değişiklik gerekli?","answerId":"f1","target":{"line":2,"snippet":"kullanici.isim"},"solution":"kullanici.ad","output":"Ece","choices":[{"id":"f1","label":"kullanici.ad","feedback":"ad anahtarı tanımlı; Ece yazdırılır."},{"id":"f2","label":"kullanici['isim']","feedback":"Köşeli parantez anahtarın adını değiştirmez; yine undefined."},{"id":"f3","label":"kullanici.Ad","feedback":"JavaScript büyük küçük harfe duyarlı; Ad ile ad farklı anahtarlar."}]}},{"id":"arrow-braces","order":7,"title":"Sessiz hesap","concept":"Ok fonksiyonu","goal":"Konsola 1 yazdır.","code":"const sayilar = [2, 4, 6];\nconst ilk = sayilar.map(n => { n / 2; })[0];\nconsole.log(ilk);","explain":"Süslü parantezli ok fonksiyonu değeri kendiliğinden döndürmez; return gerekir.","hint":"Süslü parantez varsa değer dışarı nasıl çıkar?","takeaway":"Ok fonksiyonunda { } varsa return yazılmalı; yoksa undefined döner.","prediction":{"question":"Bu kod şu anda ne yazdırır?","answerId":"p1","output":"undefined","choices":[{"id":"p1","label":"undefined","feedback":"map her eleman için undefined üretir; ilk eleman da undefined olur."},{"id":"p2","label":"1","feedback":"Bölme yapılıyor ama sonuç döndürülmüyor."},{"id":"p3","label":"[1, 2, 3]","feedback":"Değerler hesaplanmıyor bile: fonksiyon bir şey döndürmüyor."}]},"fix":{"question":"Hedefe ulaşmak için hangi değişiklik gerekli?","answerId":"f1","target":{"line":2,"snippet":"n => { n / 2; }"},"solution":"n => n / 2","output":"1","choices":[{"id":"f1","label":"n => n / 2","feedback":"Süslü parantez kalkınca ifade doğrudan döner: 2 / 2 = 1."},{"id":"f2","label":"n => n * 2","feedback":"Bu kez 4 döner; hedefteki değer 1."},{"id":"f3","label":"() => n / 2","feedback":"Parametre kalmadığı için n tanımsız olur: ReferenceError."}]}},{"id":"method-name","order":8,"title":"Büyük harf","concept":"Metot çağrısı","goal":"Konsola ECE yazdır.","code":"const ad = 'ece';\nconsole.log(ad.toUpperCas());","explain":"Yöntem adı yanlış yazılmış; doğrusu toUpperCase.","hint":"Metot adları büyük küçük harfe duyarlı.","takeaway":"Yanlış metot adı TypeError verir; parantezler de gerekir.","prediction":{"question":"Bu kod şu anda ne yazdırır?","answerId":"p1","output":"TypeError: ad.toUpperCas is not a function","choices":[{"id":"p1","label":"TypeError: ad.toUpperCas is not a function","feedback":"Metinlerde böyle bir metot yok; çağrı hata verir."},{"id":"p2","label":"ECE","feedback":"Harf dönüşümü çalışmıyor çünkü metot adı yanlış."},{"id":"p3","label":"ece","feedback":"Metin olduğu gibi kalır sanılıyor; oysa çağrı hata verir."}]},"fix":{"question":"Hedefe ulaşmak için hangi değişiklik gerekli?","answerId":"f1","target":{"line":2,"snippet":"ad.toUpperCas()"},"solution":"ad.toUpperCase()","output":"ECE","choices":[{"id":"f1","label":"ad.toUpperCase()","feedback":"Metot adı doğru; sonuç ECE."},{"id":"f2","label":"ad.toUpperCase","feedback":"Parantez yok: metot çağrılmaz, fonksiyonun kendisi yazdırılır."},{"id":"f3","label":"ad.toPointCase()","feedback":"Bu metot da yok; yine TypeError alınır."}]}},{"id":"nested-index","order":9,"title":"İç içe dizi","concept":"İç içe indeks","goal":"Konsola 3 yazdır.","code":"const matris = [[1, 2], [3, 4]];\nconsole.log(matris[2][0]);","explain":"Dış dizide 2 indeksi yok; ikinci satır 1 indeksinde duruyor.","hint":"Dış dizi iki elemanlı: indeksler 0 ve 1.","takeaway":"İç içe dizide önce dış indeks, sonra iç indeks okunur.","prediction":{"question":"Bu kod şu anda ne yazdırır?","answerId":"p1","output":"TypeError: Cannot read properties of undefined (reading '0')","choices":[{"id":"p1","label":"TypeError: Cannot read properties of undefined (reading '0')","feedback":"matris[2] undefined; ondan [0] okumak hata verir."},{"id":"p2","label":"3","feedback":"3, ikinci satırın ilk elemanı; indeksi 1."},{"id":"p3","label":"undefined","feedback":"Dış indeks yoksa önce undefined gelir, sonra ondan okumak hata verir."}]},"fix":{"question":"Hedefe ulaşmak için hangi değişiklik gerekli?","answerId":"f1","target":{"line":2,"snippet":"matris[2][0]"},"solution":"matris[1][0]","output":"3","choices":[{"id":"f1","label":"matris[1][0]","feedback":"İkinci satır 1 indeksinde; ilk elemanı 3."},{"id":"f2","label":"matris[0][1]","feedback":"Bu ilk satırın ikinci elemanı: 2."},{"id":"f3","label":"matris[2][1]","feedback":"Dış indeks hâlâ yok; TypeError devam eder."}]}},{"id":"default-sort","order":10,"title":"Metin gibi sıralama","concept":"sort karşılaştırıcısı","goal":"Konsola 9, 10, 100 yazdır.","code":"const sayilar = [10, 9, 100];\nsayilar.sort();\nconsole.log(sayilar.join(', '));","explain":"Karşılaştırıcı verilmezse sort değerleri metin gibi sıralar: 10, 100, 9.","hint":"Sıralama ölçütünü sayı olarak kim söyleyecek?","takeaway":"sort() metne göre sıralar; sayılar için (a, b) => a - b gerekir.","prediction":{"question":"Bu kod şu anda ne yazdırır?","answerId":"p1","output":"10, 100, 9","choices":[{"id":"p1","label":"10, 100, 9","feedback":"Metin karşılaştırmasında 10, 100'den önce gelir; 9 en sona kalır."},{"id":"p2","label":"9, 10, 100","feedback":"Bu, sayıya göre sıralamanın sonucu."},{"id":"p3","label":"100, 10, 9","feedback":"Ters sıralama değil; sort varsayılan olarak metne bakar."}]},"fix":{"question":"Hedefe ulaşmak için hangi değişiklik gerekli?","answerId":"f1","target":{"line":2,"snippet":"sayilar.sort()"},"solution":"sayilar.sort((a, b) => a - b)","output":"9, 10, 100","choices":[{"id":"f1","label":"sayilar.sort((a, b) => a - b)","feedback":"Karşılaştırıcı farkı verince sayı gibi küçükten büyüğe sıralanır."},{"id":"f2","label":"sayilar.sort((a, b) => b - a)","feedback":"Bu ters sıralar: 100, 10, 9."},{"id":"f3","label":"sayilar.reverse()","feedback":"reverse sıralamaz, diziyi olduğu gibi çevirir: 100, 9, 10."}]}},{"id":"template-literal","order":11,"title":"Düz metin","concept":"Şablon metni","goal":"Konsola Merhaba, Ece! yazdır.","code":"const ad = 'Ece';\nconsole.log('Merhaba, ${ad}!');","explain":"Tek tırnak içindeki ${} düz metindir; yerine değişken yerleştirilmez.","hint":"Değişkeni metnin içine hangi tırnak türü yerleştirir?","takeaway":"Değişken gömülecekse ters tırnak kullan; tek/çift tırnakta ${} düz metindir.","prediction":{"question":"Bu kod şu anda ne yazdırır?","answerId":"p1","output":"Merhaba, ${ad}!","choices":[{"id":"p1","label":"Merhaba, ${ad}!","feedback":"Tek tırnak içindeki ${} yorumlanmaz, olduğu gibi yazılır."},{"id":"p2","label":"Merhaba, Ece!","feedback":"Bunun için ters tırnak (template literal) gerekir."},{"id":"p3","label":"Merhaba, ad!","feedback":"Değişkenin adı yazılmaz; ya değeri gelir ya da metin aynen kalır."}]},"fix":{"question":"Hedefe ulaşmak için hangi değişiklik gerekli?","answerId":"f1","target":{"line":2,"snippet":"'Merhaba, ${ad}!'"},"solution":"`Merhaba, ${ad}!`","output":"Merhaba, Ece!","choices":[{"id":"f1","label":"`Merhaba, ${ad}!`","feedback":"Ters tırnak değişkeni metne yerleştirir: Merhaba, Ece!"},{"id":"f2","label":"\"Merhaba, ${ad}!\"","feedback":"Çift tırnak da düz metindir; ${} yine yorumlanmaz."},{"id":"f3","label":"'Merhaba, ad!'","feedback":"Bu kez değişkenin adı harf harf yazılır."}]}},{"id":"filter-parity","order":12,"title":"Çift sayılar","concept":"filter","goal":"Konsola 2, 4 yazdır.","code":"const sayilar = [1, 2, 3, 4];\nconst ciftler = sayilar.filter(n => n % 2);\nconsole.log(ciftler.join(', '));","explain":"filter koşulu doğru olanları tutar; tek sayılarda kalan 1 olduğu için onlar kalıyor.","hint":"Çift sayının 2'ye bölümünden kalan kaçtır?","takeaway":"filter koşulu doğru olanları tutar; map ise her elemanı dönüştürür.","prediction":{"question":"Bu kod şu anda ne yazdırır?","answerId":"p1","output":"1, 3","choices":[{"id":"p1","label":"1, 3","feedback":"Kalan 1 olduğu için tek sayılar koşulu sağlıyor."},{"id":"p2","label":"2, 4","feedback":"Bu, koşul tersine çevrilirse çıkar."},{"id":"p3","label":"1, 0, 1, 0","feedback":"Bu çıktı map kullanılırsa oluşur; filter elemanları dönüştürmez."}]},"fix":{"question":"Hedefe ulaşmak için hangi değişiklik gerekli?","answerId":"f1","target":{"line":2,"snippet":"sayilar.filter(n => n % 2)"},"solution":"sayilar.filter(n => n % 2 === 0)","output":"2, 4","choices":[{"id":"f1","label":"sayilar.filter(n => n % 2 === 0)","feedback":"Kalan 0 olanlar, yani çift sayılar kalır: 2, 4."},{"id":"f2","label":"sayilar.filter(n => n % 2 === 1)","feedback":"Bu koşul tek sayıları tutar: 1, 3."},{"id":"f3","label":"sayilar.map(n => n % 2)","feedback":"map her elemanı dönüştürür; kalanları yazdırır: 1, 0, 1, 0."}]}},{"id":"parse-int","order":13,"title":"Piksel değeri","concept":"parseInt","goal":"Konsola 12 yazdır.","code":"const genislik = '12.7px';\nconsole.log(Number(genislik));","explain":"Number metnin tamamını çevirmeye çalışır; px yüzünden NaN döner.","hint":"Baştaki sayıyı alıp gerisini yok sayan fonksiyon hangisi?","takeaway":"parseInt baştaki tam sayıyı alır; parseFloat ondalığı korur, Number tamamını ister.","prediction":{"question":"Bu kod şu anda ne yazdırır?","answerId":"p1","output":"NaN","choices":[{"id":"p1","label":"NaN","feedback":"Number tüm metni sayı sayar; px kalınca sonuç NaN olur."},{"id":"p2","label":"12","feedback":"Bunun için baştaki sayıyı ayıklamak gerekir."},{"id":"p3","label":"12.7","feedback":"Bu, ondalık kısmı koruyan bir çevrimde çıkar."}]},"fix":{"question":"Hedefe ulaşmak için hangi değişiklik gerekli?","answerId":"f1","target":{"line":2,"snippet":"Number(genislik)"},"solution":"parseInt(genislik)","output":"12","choices":[{"id":"f1","label":"parseInt(genislik)","feedback":"Baştaki tam sayıyı alır, px kısmını yok sayar: 12."},{"id":"f2","label":"parseFloat(genislik)","feedback":"Ondalığı korur: 12.7."},{"id":"f3","label":"Math.round(genislik)","feedback":"Math.round sayı bekler; metin verilince NaN döner."}]}},{"id":"nullish-zero","order":14,"title":"Sıfır indirim","concept":"?? operatörü","goal":"Konsola 100 yazdır.","code":"function indirimli(fiyat, indirim) {\n  const oran = indirim || 0.1;\n  return fiyat * (1 - oran);\n}\n\nconsole.log(indirimli(100, 0));","explain":"|| sıfırı da yok sayar; indirim 0 iken varsayılan oran devreye giriyor.","hint":"0 geçerli bir değerse hangi operatör yalnızca null/undefined'da devreye girer?","takeaway":"?? yalnızca null/undefined'da varsayılana düşer; || 0 ve boş metinde de düşer.","prediction":{"question":"Bu kod şu anda ne yazdırır?","answerId":"p1","output":"90","choices":[{"id":"p1","label":"90","feedback":"indirim 0 ama || onu yok sayıp 0.1 oranını uyguluyor."},{"id":"p2","label":"100","feedback":"Bu, 0 indirimin geçerli sayıldığı durum."},{"id":"p3","label":"10","feedback":"İndirim uygulanmış hâli 10 değil; oran 0.1, fiyat 100."}]},"fix":{"question":"Hedefe ulaşmak için hangi değişiklik gerekli?","answerId":"f1","target":{"line":2,"snippet":"indirim || 0.1"},"solution":"indirim ?? 0.1","output":"100","choices":[{"id":"f1","label":"indirim ?? 0.1","feedback":"0 null değil, geçerli sayılır; oran 0 olur ve fiyat değişmez: 100."},{"id":"f2","label":"indirim === 0 ? 0.1 : indirim","feedback":"Sıfırı yine varsayılana çeviriyor: 90."},{"id":"f3","label":"Number(indirim) || 0.1","feedback":"Sayıya çevirmek 0'ı değiştirmez; || hâlâ 0.1'i seçer: 90."}]}},{"id":"string-null","order":15,"title":"Boş değer","concept":"String()","goal":"Konsola null yazdır.","code":"const deger = null;\nconsole.log(deger.toString());","explain":"null üzerinde metot çağrılamaz; önce metne çevirmek gerekir.","hint":"null bir nesne değil; metne çevirmenin güvenli yolu hangisi?","takeaway":"null/undefined üzerinde metot çağırmak hata verir; String() güvenlidir.","prediction":{"question":"Bu kod şu anda ne yazdırır?","answerId":"p1","output":"TypeError: Cannot read properties of null (reading 'toString')","choices":[{"id":"p1","label":"TypeError: Cannot read properties of null (reading 'toString')","feedback":"null üzerinde özellik okunamaz; çağrı hata verir."},{"id":"p2","label":"null","feedback":"Metne çevirmeden önce null üzerinde metot çağrılamaz."},{"id":"p3","label":"undefined","feedback":"Hata fırlatılır; konsola undefined yazılmaz."}]},"fix":{"question":"Hedefe ulaşmak için hangi değişiklik gerekli?","answerId":"f1","target":{"line":2,"snippet":"deger.toString()"},"solution":"String(deger)","output":"null","choices":[{"id":"f1","label":"String(deger)","feedback":"String her değeri güvenle metne çevirir: null."},{"id":"f2","label":"deger?.toString()","feedback":"İsteğe bağlı zincir hatayı önler ama undefined döndürür."},{"id":"f3","label":"deger.toString","feedback":"Parantez olmadan da null üzerinde özellik okunamaz: TypeError."}]}},{"id":"await-missing","order":16,"title":"Beklemeden okuma","concept":"await","goal":"Konsola hazır yazdır.","code":"async function veri() {\n  return 'hazır';\n}\n\nasync function calistir() {\n  const sonuc = veri();\n  console.log(sonuc);\n}\n\ncalistir();","explain":"async fonksiyon Promise döndürür; await olmadan değer değil, Promise yazdırılır.","hint":"Promise'in içindeki değeri almak için hangi anahtar kelime gerekir?","takeaway":"async fonksiyonun değerini await ile al; yoksa Promise yazdırılır.","prediction":{"question":"Bu kod şu anda ne yazdırır?","answerId":"p1","output":"Promise { \u003cpending> }","choices":[{"id":"p1","label":"Promise { \u003cpending> }","feedback":"veri() bir Promise döndürür; sonuç beklenmeden yazdırılıyor."},{"id":"p2","label":"hazır","feedback":"Bunun için await gerekir."},{"id":"p3","label":"undefined","feedback":"Fonksiyon bir değer döndürüyor; eksik olan bekleme."}]},"fix":{"question":"Hedefe ulaşmak için hangi değişiklik gerekli?","answerId":"f1","target":{"line":6,"snippet":"veri()"},"solution":"await veri()","output":"hazır","choices":[{"id":"f1","label":"await veri()","feedback":"await Promise çözülene kadar bekler, sonra hazır yazdırılır."},{"id":"f2","label":"veri().then(v => v)","feedback":"then yeni bir Promise döndürür; yine Promise yazdırılır."},{"id":"f3","label":"Promise.resolve(veri())","feedback":"Promise'i Promise'e sarar; değer yine dışarı çıkmaz."}]}},{"id":"reduce-start","order":17,"title":"Fazla başlangıç","concept":"reduce","goal":"Konsola 6 yazdır.","code":"const sayilar = [1, 2, 3];\nconst toplam = sayilar.reduce((acc, n) => acc + n, 10);\nconsole.log(toplam);","explain":"reduce'un ikinci argümanı başlangıç değeridir; toplam 10'dan başlıyor.","hint":"Toplam hangi değerden başlıyor? Başlangıç değeri gerekli mi?","takeaway":"reduce(fn, başlangıç) toplamı başlangıçtan başlatır; boş dizi için de gerekir.","prediction":{"question":"Bu kod şu anda ne yazdırır?","answerId":"p1","output":"16","choices":[{"id":"p1","label":"16","feedback":"10 + 1 + 2 + 3: toplam verilen başlangıç değerinden başlıyor."},{"id":"p2","label":"6","feedback":"Bu, başlangıç değeri verilmezse çıkar."},{"id":"p3","label":"60","feedback":"Bu, toplama yerine çarpma yapılırsa çıkar."}]},"fix":{"question":"Hedefe ulaşmak için hangi değişiklik gerekli?","answerId":"f1","target":{"line":2,"snippet":"acc + n, 10"},"solution":"acc + n","output":"6","choices":[{"id":"f1","label":"acc + n","feedback":"Başlangıç değeri kalkınca toplam 1 + 2 + 3 = 6 olur."},{"id":"f2","label":"acc + n, 1","feedback":"Başlangıç bu kez 1: sonuç 7."},{"id":"f3","label":"acc * n","feedback":"Çarpım yapılıyor: 10 × 1 × 2 × 3 = 60."}]}},{"id":"object-entries","order":18,"title":"Nesne döngüsü","concept":"Object.entries","goal":"Konsola önce Ece, sonra 17 yazdır (iki satır).","code":"const kullanici = { ad: 'Ece', yas: 17 };\nfor (const [anahtar, deger] of kullanici) {\n  console.log(deger);\n}","explain":"Nesne doğrudan yinelenemez; anahtar-değer çiftleri Object.entries ile alınır.","hint":"Nesnenin anahtar-değer çiftlerini diziye çeviren metot hangisi?","takeaway":"Nesneler için Object.entries, anahtarlar için Object.keys kullan.","prediction":{"question":"Bu kod şu anda ne yazdırır?","answerId":"p1","output":"TypeError: kullanici is not iterable","choices":[{"id":"p1","label":"TypeError: kullanici is not iterable","feedback":"Düz nesneler yinelenebilir değildir; for...of hata verir."},{"id":"p2","label":"Ece\n17","feedback":"Bunun için çiftleri Object.entries ile almak gerekir."},{"id":"p3","label":"ad\nyas","feedback":"Bu, anahtarlar üzerinde dönülürse çıkar."}]},"fix":{"question":"Hedefe ulaşmak için hangi değişiklik gerekli?","answerId":"f1","target":{"line":2,"snippet":"of kullanici"},"solution":"of Object.entries(kullanici)","output":"Ece\n17","choices":[{"id":"f1","label":"of Object.entries(kullanici)","feedback":"Her turda [anahtar, değer] gelir; değerler yazdırılır."},{"id":"f2","label":"of Object.keys(kullanici)","feedback":"Yalnızca anahtarlar gelir: ad, yas. İkinci eleman tanımsız olur."},{"id":"f3","label":"of kullanici.entries()","feedback":"Nesnelerde entries metodu yoktur; TypeError sürer."}]}},{"id":"month-index","order":19,"title":"Ay numarası","concept":"Date","goal":"Konsola 5 yazdır.","code":"const tarih = new Date('2024-05-01');\nconsole.log(tarih.getMonth());","explain":"getMonth Ocak için 0 döner; Mayıs bu yüzden 4.","hint":"Aylar hangi sayıdan başlıyor?","takeaway":"getMonth 0 tabanlıdır; insan ayı için +1 ekle, gün için getDate kullan.","prediction":{"question":"Bu kod şu anda ne yazdırır?","answerId":"p1","output":"4","choices":[{"id":"p1","label":"4","feedback":"Ocak 0 olduğu için Mayıs 4'e denk gelir."},{"id":"p2","label":"5","feedback":"Bu, 1 tabanlı ay numarası; getMonth böyle çalışmaz."},{"id":"p3","label":"1","feedback":"1, getDate'in bu tarih için döndürdüğü gün."}]},"fix":{"question":"Hedefe ulaşmak için hangi değişiklik gerekli?","answerId":"f1","target":{"line":2,"snippet":"tarih.getMonth()"},"solution":"tarih.getMonth() + 1","output":"5","choices":[{"id":"f1","label":"tarih.getMonth() + 1","feedback":"0 tabanlı değere 1 eklenince Mayıs 5 olur."},{"id":"f2","label":"tarih.getDate()","feedback":"Bu ayı değil, ayın gününü verir: 1."},{"id":"f3","label":"tarih.getDay()","feedback":"Bu haftanın gününü verir: 3 (Çarşamba)."}]}},{"id":"throw-or-return","order":20,"title":"Sıfıra bölme","concept":"try/catch","goal":"Konsola 0 yazdır.","code":"function bol(a, b) {\n  if (b === 0) {\n    throw new Error('sıfıra bölme');\n  }\n  return a / b;\n}\n\ntry {\n  console.log(bol(6, 0));\n} catch (hata) {\n  console.log(hata);\n}","explain":"Hata fırlatmak akışı catch'e atar; varsayılan değer döndürmek için return gerekir.","hint":"Hata fırlatmak yerine güvenli bir değer döndürebilir misin?","takeaway":"throw akışı catch'e atar; beklenen durumlarda varsayılan değer döndürmek daha sade.","prediction":{"question":"Bu kod şu anda ne yazdırır?","answerId":"p1","output":"Error: sıfıra bölme","choices":[{"id":"p1","label":"Error: sıfıra bölme","feedback":"Hata fırlatılıyor, catch yakalıyor ve hatayı yazdırıyor."},{"id":"p2","label":"0","feedback":"Bunun için hata yerine varsayılan değer döndürülmeli."},{"id":"p3","label":"Infinity","feedback":"Infinity, sıfıra bölme koruması olmasaydı çıkardı."}]},"fix":{"question":"Hedefe ulaşmak için hangi değişiklik gerekli?","answerId":"f1","target":{"line":3,"snippet":"throw new Error('sıfıra bölme')"},"solution":"return 0","output":"0","choices":[{"id":"f1","label":"return 0","feedback":"Hata yerine 0 dönünce catch devreye girmez, konsola 0 yazılır."},{"id":"f2","label":"return null","feedback":"Akış düzelir ama yazdırılan değer null olur."},{"id":"f3","label":"console.log('sıfıra bölme')","feedback":"İçeride metin yazdırılır, sonra a / b çalışır: Infinity."}]}},{"id":"class-new","order":21,"title":"Kütüphane kaydı","concept":"sınıf","goal":"Konsola Kısa Hikâye yazdır.","code":"class Kitap {\n  constructor(ad) {\n    this.ad = ad;\n  }\n}\n\nconst kitap = Kitap('Kısa Hikâye');\nconsole.log(kitap.ad);","explain":"Sınıflar new olmadan çağrılamaz; çağrılmadan nesne oluşmaz.","hint":"Sınıftan nesne üretirken hangi anahtar kelime gerekir?","takeaway":"class bir kalıptır; örneğini new ile üretmeden alanlarına erişemezsin.","prediction":{"question":"Bu kod şu anda ne yazdırır?","answerId":"p1","output":"TypeError: Class constructor Kitap cannot be invoked without 'new'","choices":[{"id":"p1","label":"TypeError: Class constructor Kitap cannot be invoked without 'new'","feedback":"Sınıf fonksiyonu new olmadan çağrılınca hata verir."},{"id":"p2","label":"Kısa Hikâye","feedback":"Bunun için nesne new ile üretilmeli."},{"id":"p3","label":"undefined","feedback":"Kod hiç bu noktaya gelemiyor; çağrı anında hata var."}]},"fix":{"question":"Hedefe ulaşmak için hangi değişiklik gerekli?","answerId":"f1","target":{"line":7,"snippet":"Kitap('Kısa Hikâye')"},"solution":"new Kitap('Kısa Hikâye')","output":"Kısa Hikâye","choices":[{"id":"f1","label":"new Kitap('Kısa Hikâye')","feedback":"new örnek üretir; constructor adı kitaba yazar."},{"id":"f2","label":"new Kitap","feedback":"Nesne oluşur ama ad verilmez: undefined yazdırılır."},{"id":"f3","label":"Kitap.call(null, 'Kısa Hikâye')","feedback":"call da new'in yerini tutmaz; aynı TypeError sürer."}]}},{"id":"map-get","order":22,"title":"Not defteri","concept":"Map","goal":"Konsola 90 yazdır.","code":"const puanlar = new Map();\npuanlar.set('Ece', 90);\nconsole.log(puanlar.Ece);","explain":"Map bir koleksiyondur; değerler anahtarla get() üzerinden okunur.","hint":"Map'te değeri okumak için hangi metot kullanılır?","takeaway":"Map'te değer get(anahtar) ile okunur; nokta notasyonu sıradan nesneler içindir.","prediction":{"question":"Bu kod şu anda ne yazdırır?","answerId":"p1","output":"undefined","choices":[{"id":"p1","label":"undefined","feedback":"Map'in kendi alanları yoktur; Ece diye bir özellik tanımlı değil."},{"id":"p2","label":"90","feedback":"Bunun için get('Ece') gerekir."},{"id":"p3","label":"Map(1) { 'Ece' => 90 }","feedback":"Bu, Map'in kendisi yazdırılırsa çıkar."}]},"fix":{"question":"Hedefe ulaşmak için hangi değişiklik gerekli?","answerId":"f1","target":{"line":3,"snippet":"puanlar.Ece"},"solution":"puanlar.get('Ece')","output":"90","choices":[{"id":"f1","label":"puanlar.get('Ece')","feedback":"get anahtarı arar, bulduğu değeri döndürür: 90."},{"id":"f2","label":"puanlar['Ece']","feedback":"Köşeli parantez de Map'te çalışmaz; yine undefined."},{"id":"f3","label":"puanlar.has('Ece')","feedback":"has yalnızca var mı diye bakar: true."}]}},{"id":"set-add","order":23,"title":"Tekil renkler","concept":"Set","goal":"Konsola 2 yazdır.","code":"const renkler = new Set(['kırmızı']);\nrenkler.push('mavi');\nconsole.log(renkler.size);","explain":"Set'te eleman eklemek için add kullanılır; push dizilere aittir.","hint":"Set'e eleman ekleyen metot hangisi?","takeaway":"Set tekrarı kabul etmez; eklemek için add, saymak için size kullan.","prediction":{"question":"Bu kod şu anda ne yazdırır?","answerId":"p1","output":"TypeError: renkler.push is not a function","choices":[{"id":"p1","label":"TypeError: renkler.push is not a function","feedback":"Set'te push yok; hata satır 2'de fırlar."},{"id":"p2","label":"2","feedback":"Bunun için add kullanılmalı."},{"id":"p3","label":"1","feedback":"Ekleme hiç yapılamadığı için kod buraya ulaşmaz."}]},"fix":{"question":"Hedefe ulaşmak için hangi değişiklik gerekli?","answerId":"f1","target":{"line":2,"snippet":"renkler.push"},"solution":"renkler.add","output":"2","choices":[{"id":"f1","label":"renkler.add","feedback":"mavi eklenir; Set iki elemanlı olur."},{"id":"f2","label":"renkler.set","feedback":"Set'te set metodu yok: TypeError."},{"id":"f3","label":"renkler.append","feedback":"append de yok: TypeError."}]}},{"id":"storage-stringify","order":24,"title":"Kalıcı ayar","concept":"localStorage","goal":"Konsola {\"tema\":\"koyu\"} yazdır.","code":"const ayarlar = { tema: 'koyu' };\nlocalStorage.setItem('ayarlar', ayarlar);\nconsole.log(localStorage.getItem('ayarlar'));","explain":"localStorage yalnızca metin saklar; nesne doğrudan verilirse [object Object] olur.","hint":"Nesneyi metne çeviren hangi araç var?","takeaway":"localStorage'a nesne yazarken JSON.stringify, okurken JSON.parse kullan.","prediction":{"question":"Bu kod şu anda ne yazdırır?","answerId":"p1","output":"[object Object]","choices":[{"id":"p1","label":"[object Object]","feedback":"Nesne metne zorlanınca bu çıktıya dönüşür."},{"id":"p2","label":"{\"tema\":\"koyu\"}","feedback":"Bunun için JSON.stringify gerekir."},{"id":"p3","label":"undefined","feedback":"Anahtar kaydedildi; değer boş değil."}]},"fix":{"question":"Hedefe ulaşmak için hangi değişiklik gerekli?","answerId":"f1","target":{"line":2,"snippet":", ayarlar)"},"solution":", JSON.stringify(ayarlar))","output":"{\"tema\":\"koyu\"}","choices":[{"id":"f1","label":", JSON.stringify(ayarlar))","feedback":"Nesne JSON metnine dönüşür; okunduğunda aynı metin gelir."},{"id":"f2","label":", String(ayarlar))","feedback":"String de aynı [object Object] metnini üretir."},{"id":"f3","label":", Object.keys(ayarlar))","feedback":"Yalnızca anahtarlar kaydedilir: tema."}]}},{"id":"this-bind","order":25,"title":"Kayıp sayaç","concept":"this / bind","goal":"Konsola 1 yazdır.","code":"class Sayac {\n  constructor() {\n    this.deger = 0;\n  }\n\n  artir() {\n    this.deger += 1;\n  }\n}\n\nconst sayac = new Sayac();\nconst artir = sayac.artir;\nartir();\nconsole.log(sayac.deger);","explain":"Metot ayrı bir değişkene alınınca this bağını kaybeder; bind ile bağlanmalıdır.","hint":"Metodu başka bir değişkene alırken this'i neye bağlaman gerekir?","takeaway":"this çağrı yerine göre belirlenir; metodu ayırırken bind(sayac) ile sabitle.","prediction":{"question":"Bu kod şu anda ne yazdırır?","answerId":"p1","output":"TypeError: Cannot read properties of undefined (reading 'deger')","choices":[{"id":"p1","label":"TypeError: Cannot read properties of undefined (reading 'deger')","feedback":"artir() this'siz çağrılır; this undefined olur."},{"id":"p2","label":"1","feedback":"Bunun için metot sayaca bağlanmalı."},{"id":"p3","label":"0","feedback":"Hata fırlatıldığı için sayaç yazdırılamaz."}]},"fix":{"question":"Hedefe ulaşmak için hangi değişiklik gerekli?","answerId":"f1","target":{"line":12,"snippet":"sayac.artir;"},"solution":"sayac.artir.bind(sayac);","output":"1","choices":[{"id":"f1","label":"sayac.artir.bind(sayac);","feedback":"bind this'i sayaca sabitler; artir() sayacı artırır."},{"id":"f2","label":"sayac.artir();","feedback":"Metot hemen çağrılır, artir değişkeni undefined olur: TypeError."},{"id":"f3","label":"sayac.artir.bind(null);","feedback":"this null olur; aynı okuma hatası sürer."}]}}]};
+
+(function () {
+'use strict';
+
+/* ---- js/tokenize.js ---- */
+/**
+ * Küçük ve güvenli sözdizimi ayırıcı.
+ * DOM'a yazmaz; yalnızca { text, type } listesi üretir.
+ * Değişmez (test edilir): token metinleri birleşince girdi metnini birebir verir.
+ */
+
+const KEYWORDS =
+  'const|let|var|function|return|if|else|for|while|of|in|new|typeof|true|false|null|undefined';
+
+const KEYWORD_RE = new RegExp(`^(?:${KEYWORDS})$`);
+
+const PATTERN = new RegExp(
+  [
+    String.raw`\/\/[^\n]*`,
+    String.raw`'(?:\\.|[^'\\])*'`,
+    String.raw`"(?:\\.|[^"\\])*"`,
+    '`(?:\\\\.|[^`\\\\])*`',
+    String.raw`\b\d+(?:\.\d+)?\b`,
+    String.raw`\b(?:` + KEYWORDS + String.raw`)\b`,
+    String.raw`[A-Za-z_$][\w$]*(?=\s*\()`,
+  ].join('|'),
+  'g'
+);
+
+function classify(token) {
+  if (token.startsWith('//') || token.startsWith('/*')) return 'comment';
+  if (token[0] === "'" || token[0] === '"' || token[0] === '`') return 'str';
+  if (/^\d/.test(token)) return 'num';
+  if (KEYWORD_RE.test(token)) return 'kw';
+  return 'name';
+}
+
+/**
+ * @param {string} line
+ * @returns {Array<{text: string, type: 'plain'|'comment'|'str'|'num'|'kw'|'name'}>}
+ */
+function tokenize(line) {
+  const tokens = [];
+  if (typeof line !== 'string' || line.length === 0) return tokens;
+
+  let cursor = 0;
+  PATTERN.lastIndex = 0;
+
+  let match;
+  while ((match = PATTERN.exec(line)) !== null) {
+    if (match[0].length === 0) {
+      PATTERN.lastIndex += 1;
+      continue;
+    }
+    if (match.index > cursor) {
+      tokens.push({ text: line.slice(cursor, match.index), type: 'plain' });
+    }
+    tokens.push({ text: match[0], type: classify(match[0]) });
+    cursor = match.index + match[0].length;
+  }
+
+  if (cursor < line.length) {
+    tokens.push({ text: line.slice(cursor), type: 'plain' });
+  }
+  return tokens;
+}
+
+/* ---- js/storage.js ---- */
+/**
+ * Yerel tercih ve ilerleme kaydı. Bozuk/erişilemeyen depolamada sessizce
+ * devre dışı kalır; oyun kayıt özelliğine bağımlı değildir.
+ */
+
+
+const PROGRESS_KEY = 'bugpark.progress.v1';
+const PREFS_KEY = 'bugpark.prefs.v1';
+const CLASS_KEY = 'bugpark.class.v1';
+
+function read(key) {
+  try {
+    const raw = window.localStorage.getItem(key);
+    return raw ? JSON.parse(raw) : null;
+  } catch {
+    return null;
+  }
+}
+
+function write(key, value) {
+  try {
+    window.localStorage.setItem(key, JSON.stringify(value));
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+function loadProgress() {
+  const data = read(PROGRESS_KEY);
+  if (!data || data.version !== 1 || !Array.isArray(data.completed)) return null;
+  return data;
+}
+
+function saveProgress(state) {
+  if (state.phase === 'loading' || state.phase === 'error' || state.levels.length === 0) return false;
+  return write(PROGRESS_KEY, { version: 1, ...progressSnapshot(state) });
+}
+
+function clearProgress() {
+  try {
+    window.localStorage.removeItem(PROGRESS_KEY);
+  } catch {
+    /* yoksay */
+  }
+}
+
+function loadPrefs() {
+  const data = read(PREFS_KEY);
+  return {
+    theme: data && data.theme === 'dark' ? 'dark' : 'light',
+    sound: Boolean(data && data.sound),
+    mode: data && data.mode === 'free' ? 'free' : 'guided',
+  };
+}
+
+function savePrefs(prefs) {
+  write(PREFS_KEY, {
+    version: 1,
+    theme: prefs.theme,
+    sound: prefs.sound,
+    mode: prefs.mode === 'free' ? 'free' : 'guided',
+  });
+}
+
+function loadClassCodes() {
+  const data = read(CLASS_KEY);
+  if (!data || data.version !== 1 || !Array.isArray(data.codes)) return [];
+  return data.codes.filter((code) => typeof code === 'string');
+}
+
+function saveClassCodes(codes) {
+  return write(CLASS_KEY, { version: 1, codes: Array.isArray(codes) ? codes : [] });
+}
+
+/* ---- js/game.js ---- */
+/**
+ * Oyun kuralları. DOM'a erişmez; test edilebilir saf fonksiyonlar içerir.
+ * Fazlar: loading | error | intro | predict | fix | solved | summary
+ */
+
+const LEVEL_COUNT = 25;
+
+const ACHIEVEMENTS = [
+  { id: 'ilk-adim', title: 'İlk adım', description: 'İlk hatayı düzelttin.', icon: 'bolt' },
+  { id: 'keskin-goz', title: 'Keskin göz', description: 'Sekiz tahminin doğru çıktı.', icon: 'eye' },
+  { id: 'temiz-tur', title: 'Temiz tur', description: 'Tüm görevleri çözüm göstermeden bitirdin.', icon: 'shield' },
+  { id: 'ipucusuz', title: 'İpucusuz', description: 'Hiç ipucu kullanmadın.', icon: 'star' },
+];
+
+const LEVEL_TEXT_FIELDS = ['id', 'title', 'concept', 'goal', 'code', 'explain', 'hint', 'takeaway'];
+const CHOICE_TEXT_FIELDS = ['id', 'label', 'feedback'];
+
+const isText = (value) => typeof value === 'string' && value.trim().length > 0;
+
+/**
+ * Serbest modda yazılan çıktıyı beklenen çıktıyla karşılaştırır.
+ * Boşluklar ve satır sonları normalize edilir; çok satırlı çıktı virgülle de yazılabilir.
+ */
+function matchesPrediction(level, text) {
+  if (!level || !isText(text)) return false;
+
+  const normalize = (value) => value
+    .replace(/\r/g, '')
+    .split('\n')
+    .map((line) => line.trim())
+    .filter((line) => line.length > 0)
+    .join('\n');
+
+  const expected = normalize(level.prediction.output);
+  const given = normalize(text);
+
+  if (expected === given) return true;
+  if (!expected.includes('\n')) return false;
+
+  const asComma = expected.split('\n').join(', ');
+  return given.replace(/\s*,\s*/g, ', ') === asComma;
+}
+
+/**
+ * levels.json dosyasını doğrular. Uygulama açılışta bunu çağırır,
+ * bozuk veri sessizce oyuna dönüşmez.
+ * @returns {{ok: boolean, errors: string[]}}
+ */
+function validateLevels(data) {
+  const errors = [];
+
+  if (!data || typeof data !== 'object' || Array.isArray(data)) {
+    return { ok: false, errors: ['Kök değer bir nesne olmalı.'] };
+  }
+  if (data.version !== 1) {
+    errors.push('version 1 olmalı.');
+  }
+  if (!Array.isArray(data.levels)) {
+    errors.push('levels bir dizi olmalı.');
+    return { ok: false, errors };
+  }
+  if (data.levels.length !== LEVEL_COUNT) {
+    errors.push(`levels ${LEVEL_COUNT} bölüm içermeli (şu an ${data.levels.length}).`);
+  }
+
+  const seen = new Set();
+
+  data.levels.forEach((level, index) => {
+    const at = `levels[${index}]`;
+    if (!level || typeof level !== 'object') {
+      errors.push(`${at} bir nesne değil.`);
+      return;
+    }
+
+    for (const field of LEVEL_TEXT_FIELDS) {
+      if (!isText(level[field])) errors.push(`${at}.${field} eksik veya boş.`);
+    }
+
+    if (isText(level.id)) {
+      if (seen.has(level.id)) errors.push(`${at}.id tekrar ediyor: ${level.id}`);
+      seen.add(level.id);
+    }
+    if (level.order !== index + 1) {
+      errors.push(`${at}.order ${index + 1} olmalı.`);
+    }
+
+    for (const phase of ['prediction', 'fix']) {
+      const part = level[phase];
+      if (!part || typeof part !== 'object') {
+        errors.push(`${at}.${phase} eksik.`);
+        continue;
+      }
+      if (!isText(part.question)) errors.push(`${at}.${phase}.question eksik.`);
+      if (!isText(part.output)) errors.push(`${at}.${phase}.output eksik.`);
+
+      if (!Array.isArray(part.choices) || part.choices.length !== 3) {
+        errors.push(`${at}.${phase}.choices tam 3 seçenek içermeli.`);
+        continue;
+      }
+
+      part.choices.forEach((choice, choiceIndex) => {
+        const choiceAt = `${at}.${phase}.choices[${choiceIndex}]`;
+        if (!choice || typeof choice !== 'object') {
+          errors.push(`${choiceAt} bir nesne değil.`);
+          return;
+        }
+        for (const field of CHOICE_TEXT_FIELDS) {
+          if (!isText(choice[field])) errors.push(`${choiceAt}.${field} eksik.`);
+        }
+      });
+
+      const ids = part.choices.map((choice) => choice && choice.id);
+      if (new Set(ids).size !== ids.length) {
+        errors.push(`${at}.${phase}.choices içinde tekrar eden id var.`);
+      }
+      if (!ids.includes(part.answerId)) {
+        errors.push(`${at}.${phase}.answerId seçenekler arasında yok.`);
+      }
+    }
+
+    const fix = level.fix;
+    if (fix && typeof fix === 'object') {
+      const target = fix.target;
+      if (!target || typeof target !== 'object') {
+        errors.push(`${at}.fix.target eksik.`);
+      } else if (!Number.isInteger(target.line) || !isText(target.snippet)) {
+        errors.push(`${at}.fix.target line (sayı) ve snippet (metin) içermeli.`);
+      } else if (isText(level.code)) {
+        const lines = level.code.split('\n');
+        const targetLine = lines[target.line - 1];
+        if (targetLine === undefined) {
+          errors.push(`${at}.fix.target.line kod aralığının dışında.`);
+        } else if (!targetLine.includes(target.snippet)) {
+          errors.push(`${at}.fix.target.snippet ${target.line}. satırda bulunamadı.`);
+        }
+      }
+      if (!isText(fix.solution)) errors.push(`${at}.fix.solution eksik.`);
+    }
+  });
+
+  return { ok: errors.length === 0, errors };
+}
+
+function createGame() {
+  return {
+    levels: [],
+    levelIndex: 0,
+    phase: 'loading',
+    mode: 'guided',
+    predictionChoiceId: null,
+    predictionTyped: null,
+    predictionCorrect: null,
+    fixChoiceId: null,
+    fixAttempts: 0,
+    wrongFixIds: [],
+    revealed: false,
+    hintVisible: false,
+    hintUsedEver: false,
+    predictionsCorrect: 0,
+    completed: [],
+    achievements: [],
+    error: null,
+  };
+}
+
+function resetLevel(state) {
+  return {
+    ...state,
+    predictionChoiceId: null,
+    predictionTyped: null,
+    predictionCorrect: null,
+    fixChoiceId: null,
+    fixAttempts: 0,
+    wrongFixIds: [],
+    revealed: false,
+    hintVisible: false,
+  };
+}
+
+function withAchievements(state) {
+  if (state.phase === 'loading' || state.phase === 'error') return state;
+
+  const earned = new Set(state.achievements);
+  if (state.completed.length >= 1) earned.add('ilk-adim');
+  if (state.predictionsCorrect >= 8) earned.add('keskin-goz');
+
+  const allDone = state.levels.length > 0 && state.completed.length === state.levels.length;
+  if (allDone && state.completed.every((item) => item.outcome === 'solved')) {
+    earned.add('temiz-tur');
+    if (!state.hintUsedEver) earned.add('ipucusuz');
+  }
+
+  if (earned.size === state.achievements.length) return state;
+  return { ...state, achievements: [...earned] };
+}
+
+function nextState(state, action) {
+  const level = state.levels[state.levelIndex];
+
+  switch (action.type) {
+    case 'LOADED':
+      return { ...createGame(), levels: action.levels, phase: 'intro' };
+
+    case 'LOAD_FAILED':
+      return { ...createGame(), phase: 'error', error: String(action.error ?? 'Bilinmeyen hata') };
+
+    case 'START': {
+      if (state.phase !== 'intro' || state.levels.length === 0) return state;
+      const levels = Array.isArray(action.levels) && action.levels.length === state.levels.length
+        ? action.levels
+        : state.levels;
+      return {
+        ...resetLevel(state),
+        levels,
+        mode: action.mode === 'free' ? 'free' : 'guided',
+        phase: 'predict',
+        levelIndex: 0,
+        completed: [],
+        achievements: [],
+        predictionsCorrect: 0,
+        hintUsedEver: false,
+      };
+    }
+
+    case 'RESUME': {
+      if (state.phase !== 'intro' || state.levels.length === 0) return state;
+      const progress = action.progress || {};
+      const done = Array.isArray(progress.completed)
+        ? progress.completed.filter((item) => item && typeof item.id === 'string' && typeof item.outcome === 'string')
+        : [];
+      const capped = done.slice(0, state.levels.length);
+
+      return {
+        ...resetLevel(state),
+        phase: capped.length >= state.levels.length ? 'summary' : 'predict',
+        levelIndex: Math.min(capped.length, state.levels.length - 1),
+        completed: capped,
+        predictionsCorrect: Number.isInteger(progress.predictionsCorrect) ? progress.predictionsCorrect : 0,
+        hintUsedEver: Boolean(progress.hintUsedEver),
+        achievements: Array.isArray(progress.achievements)
+          ? progress.achievements.filter((id) => ACHIEVEMENTS.some((item) => item.id === id))
+          : [],
+      };
+    }
+
+    case 'SUBMIT_PREDICTION': {
+      if (state.phase !== 'predict' || !level) return state;
+      const choice = level.prediction.choices.find((item) => item.id === action.choiceId);
+      if (!choice) return state;
+      const correct = choice.id === level.prediction.answerId;
+      return {
+        ...state,
+        phase: 'fix',
+        predictionChoiceId: choice.id,
+        predictionCorrect: correct,
+        predictionsCorrect: state.predictionsCorrect + (correct ? 1 : 0),
+      };
+    }
+
+    case 'SUBMIT_TYPED_PREDICTION': {
+      if (state.phase !== 'predict' || !level) return state;
+      if (!isText(action.text)) return state;
+      const correct = matchesPrediction(level, action.text);
+      return {
+        ...state,
+        phase: 'fix',
+        predictionTyped: action.text.trim(),
+        predictionCorrect: correct,
+        predictionsCorrect: state.predictionsCorrect + (correct ? 1 : 0),
+      };
+    }
+
+    case 'SHOW_HINT': {
+      if (state.phase !== 'fix' || !level || state.hintVisible) return state;
+      return { ...state, hintVisible: true, hintUsedEver: true };
+    }
+
+    case 'SUBMIT_FIX': {
+      if (state.phase !== 'fix' || !level) return state;
+      const choice = level.fix.choices.find((item) => item.id === action.choiceId);
+      if (!choice) return state;
+      if (state.wrongFixIds.includes(choice.id)) return state;
+
+      if (choice.id === level.fix.answerId) {
+        return {
+          ...state,
+          phase: 'solved',
+          fixChoiceId: choice.id,
+          fixAttempts: state.fixAttempts + 1,
+          completed: [...state.completed, { id: level.id, outcome: 'solved' }],
+        };
+      }
+
+      return {
+        ...state,
+        fixChoiceId: choice.id,
+        fixAttempts: state.fixAttempts + 1,
+        wrongFixIds: [...state.wrongFixIds, choice.id],
+      };
+    }
+
+    case 'SHOW_SOLUTION': {
+      if (state.phase !== 'fix' || !level) return state;
+      if (state.fixAttempts < 2) return state;
+      return {
+        ...state,
+        phase: 'solved',
+        revealed: true,
+        fixChoiceId: null,
+        completed: [...state.completed, { id: level.id, outcome: 'revealed' }],
+      };
+    }
+
+    case 'NEXT_LEVEL': {
+      if (state.phase !== 'solved') return state;
+      const nextIndex = state.levelIndex + 1;
+      if (nextIndex >= state.levels.length) return { ...state, phase: 'summary' };
+      return { ...resetLevel(state), phase: 'predict', levelIndex: nextIndex };
+    }
+
+    case 'HOME': {
+      if (state.phase === 'intro' || state.phase === 'loading') return state;
+      return {
+        ...resetLevel(state),
+        phase: 'intro',
+        levelIndex: 0,
+        levels: [...state.levels].sort((a, b) => a.order - b.order),
+        completed: [],
+        achievements: [],
+        predictionsCorrect: 0,
+        hintUsedEver: false,
+      };
+    }
+
+    case 'RESTART': {
+      if (state.levels.length === 0) return state;
+      const levels = Array.isArray(action.levels) && action.levels.length === state.levels.length
+        ? action.levels
+        : state.levels;
+      return {
+        ...resetLevel(state),
+        levels,
+        phase: 'predict',
+        levelIndex: 0,
+        completed: [],
+        achievements: [],
+        predictionsCorrect: 0,
+        hintUsedEver: false,
+      };
+    }
+
+    default:
+      return state;
+  }
+}
+
+/**
+ * @param {ReturnType<typeof createGame>} state
+ * @param {{type: string, [key: string]: any}} action
+ * @returns {ReturnType<typeof createGame>} geçersiz eylemde aynı referans döner
+ */
+function reduce(state, action) {
+  const next = nextState(state, action);
+  return next === state ? state : withAchievements(next);
+}
+
+/** Düzeltme uygulanmış kodu üretir (gösterim için). */
+function fixedCode(level) {
+  const lines = level.code.split('\n');
+  const index = level.fix.target.line - 1;
+  if (lines[index] === undefined) return level.code;
+  lines[index] = lines[index].replace(level.fix.target.snippet, level.fix.solution);
+  return lines.join('\n');
+}
+
+/** Kalıcılık için yalnızca gerekli alanları dışa aktarır. */
+function progressSnapshot(state) {
+  return {
+    completed: state.completed,
+    predictionsCorrect: state.predictionsCorrect,
+    hintUsedEver: state.hintUsedEver,
+    achievements: state.achievements,
+  };
+}
+
+function hasProgress(progress) {
+  return Boolean(progress && Array.isArray(progress.completed) && progress.completed.length > 0);
+}
+
+/* ---- js/report.js ---- */
+/**
+ * Öğretmen raporu: sunucu yok, veritabanı yok.
+ * Sonuç, bağlantının hash kısmına sıkıştırılmış bir metne dönüşür;
+ * öğretmen bağlantıyı açtığında rapor tarayıcıda çözülür.
+ */
+
+const VERSION = 'v1';
+const MAX_NAME = 24;
+
+function toBase64Url(text) {
+  const bytes = new TextEncoder().encode(text);
+  let binary = '';
+  for (const byte of bytes) binary += String.fromCharCode(byte);
+  return btoa(binary).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+}
+
+function fromBase64Url(code) {
+  const normalized = code.replace(/-/g, '+').replace(/_/g, '/');
+  const padded = normalized + '='.repeat((4 - (normalized.length % 4)) % 4);
+  const binary = atob(padded);
+  const bytes = Uint8Array.from(binary, (char) => char.charCodeAt(0));
+  return new TextDecoder().decode(bytes);
+}
+
+function cleanName(name) {
+  return String(name || '')
+    .replace(/[|;:]/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim()
+    .slice(0, MAX_NAME);
+}
+
+const STATUS_CODE = { solved: '1', revealed: '2' };
+const CODE_STATUS = { 1: 'solved', 2: 'revealed' };
+
+/**
+ * @param {{name?: string, completed: Array<{id: string, outcome: string}>, predictionsCorrect: number,
+ *          hintUsedEver: boolean, achievements: string[], mode?: string, date?: string}} report
+ */
+function encodeReport(report) {
+  const statuses = report.completed
+    .filter((item) => item && STATUS_CODE[item.outcome])
+    .map((item) => `${item.id}=${STATUS_CODE[item.outcome]}`)
+    .join(';');
+
+  const payload = [
+    VERSION,
+    cleanName(report.name),
+    String(report.predictionsCorrect || 0),
+    report.hintUsedEver ? '1' : '0',
+    (report.achievements || []).join(','),
+    report.mode === 'free' ? 'free' : 'guided',
+    report.date || new Date().toISOString().slice(0, 10),
+    statuses,
+  ].join('|');
+
+  return toBase64Url(payload);
+}
+
+/**
+ * @returns {{name: string, predictionsCorrect: number, hintUsedEver: boolean,
+ *            achievements: string[], mode: string, date: string,
+ *            completed: Array<{id: string, outcome: string}>} | null}
+ */
+function decodeReport(code) {
+  if (typeof code !== 'string' || code.length === 0 || code.length > 2000) return null;
+
+  let payload;
+  try {
+    payload = fromBase64Url(code);
+  } catch {
+    return null;
+  }
+
+  const parts = payload.split('|');
+  if (parts.length !== 8 || parts[0] !== VERSION) return null;
+
+  const [, name, correct, hint, achievements, mode, date, statuses] = parts;
+  const completed = [];
+
+  if (statuses) {
+    for (const entry of statuses.split(';')) {
+      const [id, status] = entry.split('=');
+      if (!id || !CODE_STATUS[status]) return null;
+      completed.push({ id, outcome: CODE_STATUS[status] });
+    }
+  }
+
+  const predictionsCorrect = Number.parseInt(correct, 10);
+  if (!Number.isInteger(predictionsCorrect) || predictionsCorrect < 0) return null;
+
+  return {
+    name: cleanName(name),
+    predictionsCorrect,
+    hintUsedEver: hint === '1',
+    achievements: achievements ? achievements.split(',').filter(Boolean) : [],
+    mode: mode === 'free' ? 'free' : 'guided',
+    date: /^\d{4}-\d{2}-\d{2}$/.test(date) ? date : '',
+    completed,
+  };
+}
+
+function reportLink(baseUrl, code) {
+  return `${baseUrl}#rapor=${code}`;
+}
+
+function readReportCode(hash) {
+  const match = /^#rapor=([A-Za-z0-9_-]+)$/.exec(hash || '');
+  return match ? match[1] : null;
+}
+
+/* ---- js/classroom.js ---- */
+/**
+ * Sınıf paneli: sunucu yok. Öğrenci rapor kodlarını (bağlantı ya da çıplak kod)
+ * öğretmen yapıştırır; panel kodları çözer, tek tabloda toplar ve özet üretir.
+ */
+
+
+const MAX_CLASS_SIZE = 120;
+
+const CODE_PATTERN = /[A-Za-z0-9_-]{20,}/g;
+const LINK_PATTERN = /#rapor=([A-Za-z0-9_-]+)/g;
+
+/** Metinden rapor kodlarını çıkarır (satır, boşluk, virgül veya tam bağlantı). */
+function extractCodes(text) {
+  const source = String(text || '');
+  const found = [];
+
+  for (const match of source.matchAll(LINK_PATTERN)) found.push(match[1]);
+  if (found.length === 0) {
+    for (const match of source.matchAll(CODE_PATTERN)) found.push(match[0]);
+  }
+
+  return [...new Set(found)];
+}
+
+/**
+ * Yeni yapıştırılan metni mevcut raporlarla birleştirir.
+ * @param {Array<{code: string, data: object}>} existing
+ */
+function addReports(existing, text) {
+  const codes = extractCodes(text);
+  const known = new Set(existing.map((report) => report.code));
+  const added = [];
+  let duplicate = 0;
+  let invalid = 0;
+
+  for (const code of codes) {
+    if (known.has(code)) {
+      duplicate += 1;
+      continue;
+    }
+
+    const data = decodeReport(code);
+    if (!data) {
+      invalid += 1;
+      continue;
+    }
+
+    known.add(code);
+    added.push({ code, data });
+  }
+
+  return {
+    reports: [...existing, ...added].slice(0, MAX_CLASS_SIZE),
+    added: added.length,
+    duplicate,
+    invalid,
+  };
+}
+
+/**
+ * Öğrenci listesinden sınıf özeti üretir.
+ * @param {Array<object>} levels
+ * @param {Array<{code: string, data: object}>} reports
+ */
+function summarize(levels, reports) {
+  const total = levels.length;
+  const perLevel = levels.map((level) => ({
+    id: level.id,
+    title: level.title,
+    concept: level.concept,
+    solved: 0,
+    revealed: 0,
+    missing: 0,
+  }));
+  const byId = new Map(perLevel.map((row) => [row.id, row]));
+
+  let completedSum = 0;
+  let correctSum = 0;
+
+  for (const report of reports) {
+    completedSum += report.data.completed.length;
+    correctSum += report.data.predictionsCorrect;
+
+    const statuses = new Map(report.data.completed.map((item) => [item.id, item.outcome]));
+    for (const row of perLevel) {
+      const outcome = statuses.get(row.id);
+      if (outcome === 'solved') row.solved += 1;
+      else if (outcome === 'revealed') row.revealed += 1;
+      else row.missing += 1;
+    }
+  }
+
+  let hardest = null;
+  for (const row of perLevel) {
+    if (row.revealed === 0) continue;
+    const participants = row.solved + row.revealed;
+    const score = row.revealed * 10000 + participants;
+    if (!hardest || score > hardest.score) {
+      hardest = { id: row.id, title: row.title, revealed: row.revealed, score };
+    }
+  }
+
+  const count = reports.length;
+  return {
+    students: count,
+    total,
+    perLevel,
+    hardest: hardest ? { id: hardest.id, title: hardest.title, revealed: hardest.revealed } : null,
+    avgCompleted: count === 0 ? null : completedSum / count,
+    avgCorrect: count === 0 ? null : correctSum / count,
+    rows: reports.map((report) => ({
+      code: report.code,
+      name: report.data.name || 'İsimsiz',
+      date: report.data.date,
+      mode: report.data.mode,
+      solved: report.data.completed.filter((item) => item.outcome === 'solved').length,
+      revealed: report.data.completed.filter((item) => item.outcome === 'revealed').length,
+      correct: report.data.predictionsCorrect,
+      badges: report.data.achievements.length,
+      completed: report.data.completed.length,
+    })),
+  };
+}
+
+function csvField(value) {
+  const text = String(value ?? '');
+  return /[;"\n]/.test(text) ? `"${text.replace(/"/g, '""')}"` : text;
+}
+
+const MODE_LABEL = { guided: 'Sıralı', free: 'Serbest' };
+
+/** Excel'in Türkçe yerel ayarına uygun, noktalı virgüllü CSV. */
+function toCsv(summary) {
+  const lines = [
+    ['Ad', 'Tarih', 'Mod', 'Tamamlanan', 'Çözülen', 'Gösterilen', 'Doğru tahmin', 'Rozet'],
+  ];
+
+  for (const row of summary.rows) {
+    lines.push([
+      csvField(row.name),
+      row.date || '',
+      MODE_LABEL[row.mode] || 'Sıralı',
+      `${row.completed}/${summary.total}`,
+      row.solved,
+      row.revealed,
+      row.correct,
+      row.badges,
+    ]);
+  }
+
+  return `\uFEFF${lines.map((cells) => cells.join(';')).join('\r\n')}\r\n`;
+}
+
+/* ---- js/ui.js ---- */
+/**
+ * Ekran katmanı. Oyun kurallarını bilmez; yalnızca durumu DOM'a yazar.
+ * Güvenlik kuralı: innerHTML yok, tüm metinler textContent ile basılır.
+ */
+
+
+
+const byId = (id) => document.getElementById(id);
+
+const CONCEPT_ICONS = [
+  'i-loop', 'i-array', 'i-type', 'i-logic', 'i-return',
+  'i-object', 'i-arrow', 'i-case', 'i-nested', 'i-sort',
+  'i-template', 'i-filter', 'i-parse', 'i-nullish', 'i-empty',
+  'i-class', 'i-map', 'i-set', 'i-storage', 'i-bind',
+];
+
+const dom = {
+  intro: byId('screenIntro'),
+  loading: byId('screenLoading'),
+  level: byId('screenLevel'),
+  summary: byId('screenSummary'),
+  error: byId('screenError'),
+  topbarStatus: byId('topbarStatus'),
+  rail: byId('rail'),
+  railLabel: byId('railLabel'),
+  themeBtn: byId('themeBtn'),
+  themeIcon: byId('themeIcon'),
+  soundBtn: byId('soundBtn'),
+  soundIcon: byId('soundIcon'),
+  passList: byId('passList'),
+  passCount: byId('passCount'),
+  startBlock: byId('startBlock'),
+  resumeBlock: byId('resumeBlock'),
+  resumeText: byId('resumeText'),
+  levelPos: byId('levelPos'),
+  conceptBtn: byId('conceptBtn'),
+  concept: byId('concept'),
+  conceptIcon: byId('conceptIcon'),
+  levelTitle: byId('levelTitle'),
+  goal: byId('goal'),
+  brief: null,
+  stamp: byId('stamp'),
+  codeMeta: byId('codeMeta'),
+  codeList: byId('codeList'),
+  consoleLabel: byId('consoleLabel'),
+  consoleList: byId('consoleList'),
+  predictField: byId('predictField'),
+  predictQuestion: byId('predictQuestion'),
+  predictOptions: byId('predictOptions'),
+  predictHint: byId('predictHint'),
+  predictBanner: byId('predictBanner'),
+  fixField: byId('fixField'),
+  fixQuestion: byId('fixQuestion'),
+  patchLine: byId('patchLine'),
+  patchCode: byId('patchCode'),
+  fixOptions: byId('fixOptions'),
+  fixHint: byId('fixHint'),
+  fixBanner: byId('fixBanner'),
+  hintBox: byId('hintBox'),
+  hintText: byId('hintText'),
+  primaryBtn: byId('primaryBtn'),
+  hintBtn: byId('hintBtn'),
+  solutionBtn: byId('solutionBtn'),
+  badges: byId('badges'),
+  takeaways: byId('takeaways'),
+  summaryMeta: byId('summaryMeta'),
+  results: byId('results'),
+  shareNote: byId('shareNote'),
+  errorDetail: byId('errorDetail'),
+  glossary: byId('glossary'),
+  glossaryList: byId('glossaryList'),
+  typedBlock: byId('typedBlock'),
+  typedInput: byId('typedInput'),
+  modeNote: byId('modeNote'),
+  reportName: byId('reportName'),
+  reportLinkNote: byId('reportLinkNote'),
+  report: byId('screenReport'),
+  reportMeta: byId('reportMeta'),
+  reportStats: byId('reportStats'),
+  reportResults: byId('reportResults'),
+  classScreen: byId('screenClass'),
+  classInput: byId('classInput'),
+  classNote: byId('classNote'),
+  classStats: byId('classStats'),
+  classRows: byId('classRows'),
+  classLevels: byId('classLevels'),
+  classDetail: byId('classDetail'),
+  keys: null,
+  status: byId('status'),
+};
+
+dom.keys = document.querySelector('.keys');
+
+dom.brief = dom.goal.closest('.brief');
+
+const screens = {
+  intro: dom.intro,
+  loading: dom.loading,
+  level: dom.level,
+  summary: dom.summary,
+  report: dom.report,
+  class: dom.classScreen,
+  error: dom.error,
+};
+
+const HEADING = {
+  intro: byId('introTitle'),
+  loading: byId('loadingTitle'),
+  level: dom.levelTitle,
+  summary: byId('summaryTitle'),
+  report: byId('reportTitle'),
+  class: byId('classTitle'),
+  error: byId('errorTitle'),
+};
+
+let lastScreen = null;
+let lastLevel = -1;
+let firstRender = true;
+let announceTimer = 0;
+
+dom.codeList.addEventListener('scroll', () => {
+  const node = dom.codeList;
+  const atEnd = node.scrollLeft + node.clientWidth >= node.scrollWidth - 2;
+  node.classList.toggle('is-end', atEnd);
+});
+
+function el(tag, className, text) {
+  const node = document.createElement(tag);
+  if (className) node.className = className;
+  if (text !== undefined) node.textContent = text;
+  return node;
+}
+
+function icon(symbolId, className = 'icon') {
+  const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+  svg.setAttribute('class', className);
+  svg.setAttribute('viewBox', '0 0 24 24');
+  svg.setAttribute('aria-hidden', 'true');
+  const use = document.createElementNS('http://www.w3.org/2000/svg', 'use');
+  use.setAttribute('href', `#${symbolId}`);
+  svg.append(use);
+  return svg;
+}
+
+function screenNameFor(state) {
+  switch (state.phase) {
+    case 'loading': return 'loading';
+    case 'error': return 'error';
+    case 'intro': return 'intro';
+    case 'summary': return 'summary';
+    default: return 'level';
+  }
+}
+
+/* ---------------------------------------------------------------- genel */
+
+function render(state, view = {}) {
+  if (view.report && state.levels.length > 0) {
+    for (const [name, node] of Object.entries(screens)) node.hidden = name !== 'report';
+    renderTools(view);
+    dom.topbarStatus.hidden = true;
+    renderReport(view.report, state.levels);
+    const heading = HEADING.report;
+    if (heading && (firstRender || lastScreen !== 'report')) heading.focus();
+    firstRender = false;
+    lastScreen = 'report';
+    return;
+  }
+
+  if (view.classroom && state.levels.length > 0) {
+    for (const [name, node] of Object.entries(screens)) node.hidden = name !== 'class';
+    renderTools(view);
+    dom.topbarStatus.hidden = true;
+    renderClassroom(view.classroom, state.levels);
+    const heading = HEADING.class;
+    if (heading && (firstRender || lastScreen !== 'class')) heading.focus();
+    firstRender = false;
+    lastScreen = 'class';
+    return;
+  }
+
+  const screen = screenNameFor(state);
+
+  for (const [name, node] of Object.entries(screens)) {
+    node.hidden = name !== screen;
+  }
+
+  renderTools(view);
+  if (screen === 'level') renderLevel(state);
+  if (screen === 'intro') renderIntro(state, view);
+  if (screen === 'summary') renderSummary(state, view);
+  if (screen === 'error') renderError(state);
+  renderChrome(state, screen);
+
+  const screenChanged = screen !== lastScreen;
+  const levelChanged = state.levelIndex !== lastLevel;
+  if (!firstRender && (screenChanged || (screen === 'level' && levelChanged))) {
+    const heading = HEADING[screen];
+    if (heading) heading.focus();
+  }
+  firstRender = false;
+  lastScreen = screen;
+  lastLevel = state.levelIndex;
+}
+
+function announce(text) {
+  window.clearTimeout(announceTimer);
+  dom.status.textContent = '';
+  announceTimer = window.setTimeout(() => {
+    dom.status.textContent = text;
+  }, 60);
+}
+
+function showHint(which, message) {
+  const hint = which === 'predict' ? dom.predictHint : dom.fixHint;
+  if (message) hint.textContent = message;
+  if (which === 'predict') {
+    dom.predictHint.hidden = false;
+    dom.predictField.setAttribute('aria-describedby', 'predictHint');
+    dom.predictField.tabIndex = -1;
+    dom.predictField.focus();
+  } else {
+    dom.fixHint.hidden = false;
+    dom.fixField.setAttribute('aria-describedby', 'fixHint');
+    dom.fixField.tabIndex = -1;
+    dom.fixField.focus();
+  }
+}
+
+function clearHints() {
+  dom.predictHint.hidden = true;
+  dom.fixHint.hidden = true;
+  dom.predictField.removeAttribute('aria-describedby');
+  dom.fixField.removeAttribute('aria-describedby');
+}
+
+function checkedChoice(containerId) {
+  const input = byId(containerId).querySelector('input[type="radio"]:checked');
+  return input ? input.value : null;
+}
+
+function openGlossary(state) {
+  dom.glossaryList.textContent = '';
+  const currentIndex = state.levels.length ? state.levelIndex : -1;
+
+  state.levels.forEach((level, index) => {
+    const row = document.createElement('li');
+    if (index === currentIndex && state.phase !== 'summary') row.classList.add('is-current');
+
+    const term = el('p', 'glossary__term');
+    term.append(icon(CONCEPT_ICONS[index] || 'i-loop', 'icon icon--sm'), el('span', null, level.concept));
+
+    row.append(term, el('p', 'glossary__body', level.takeaway));
+    dom.glossaryList.append(row);
+  });
+
+  if (typeof dom.glossary.showModal === 'function') dom.glossary.showModal();
+  else dom.glossary.setAttribute('open', '');
+}
+
+function closeGlossary() {
+  if (typeof dom.glossary.close === 'function') dom.glossary.close();
+  else dom.glossary.removeAttribute('open');
+}
+
+function isGlossaryOpen() {
+  return dom.glossary.hasAttribute('open');
+}
+
+function setShareNote(text) {
+  dom.shareNote.textContent = text;
+}
+
+function setReportNote(text) {
+  dom.reportLinkNote.textContent = text;
+}
+
+function typedAnswer() {
+  return dom.typedInput.value;
+}
+
+function isTypedInput(node) {
+  return node === dom.typedInput;
+}
+
+function reportNameValue() {
+  return dom.reportName.value;
+}
+
+function classInputValue() {
+  return dom.classInput.value;
+}
+
+function clearClassInput() {
+  dom.classInput.value = '';
+}
+
+function setClassNote(text) {
+  dom.classNote.textContent = text;
+}
+
+function revealHint() {
+  if (dom.hintBox.hidden) return;
+  const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  dom.hintBox.scrollIntoView({ block: 'center', behavior: reduceMotion ? 'auto' : 'smooth' });
+}
+
+/* --------------------------------------------------------------- topbar */
+
+function renderTools(view) {
+  const theme = view.theme === 'dark' ? 'dark' : 'light';
+  dom.themeIcon.setAttribute('href', theme === 'dark' ? '#i-sun' : '#i-moon');
+  dom.themeBtn.setAttribute('aria-pressed', theme === 'dark' ? 'true' : 'false');
+  dom.themeBtn.setAttribute('aria-label', theme === 'dark' ? 'Aydınlık temaya geç' : 'Karanlık temaya geç');
+
+  const sound = Boolean(view.sound);
+  dom.soundIcon.setAttribute('href', sound ? '#i-sound' : '#i-mute');
+  dom.soundBtn.setAttribute('aria-pressed', sound ? 'true' : 'false');
+  dom.soundBtn.setAttribute('aria-label', sound ? 'Sesi kapat' : 'Sesi aç');
+}
+
+function renderChrome(state, screen) {
+  dom.topbarStatus.hidden = !(screen === 'level' || screen === 'summary');
+
+  dom.rail.textContent = '';
+  for (let index = 0; index < state.levels.length; index += 1) {
+    const item = document.createElement('li');
+    const done = state.completed[index];
+    if (done) {
+      item.classList.add(done.outcome === 'solved' ? 'is-done' : 'is-revealed');
+    } else if (screen === 'level' && index === state.levelIndex) {
+      item.classList.add('is-current');
+    }
+    dom.rail.append(item);
+  }
+
+  dom.railLabel.textContent = screen === 'summary'
+    ? 'Özet'
+    : `Bölüm ${state.levelIndex + 1}/${state.levels.length}`;
+}
+
+/* ---------------------------------------------------------------- giriş */
+
+function renderIntro(state, view) {
+  dom.passCount.textContent = `${state.levels.length} görev`;
+  dom.passList.textContent = '';
+
+  state.levels.forEach((level, index) => {
+    const row = document.createElement('li');
+    row.append(
+      el('span', null, String(index + 1).padStart(2, '0')),
+      document.createTextNode(level.title),
+    );
+    dom.passList.append(row);
+  });
+
+  const free = view.mode === 'free';
+  for (const button of document.querySelectorAll('[data-action^="mode-"]')) {
+    const isFree = button.dataset.action === 'mode-free';
+    button.setAttribute('aria-pressed', String(isFree === free));
+  }
+  dom.modeNote.textContent = free
+    ? 'Serbest mod: görevler karışık sırada, tahminleri kendin yazarsın. İlerleme kaydedilmez.'
+    : 'Sıralı mod: görevler sırayla, tahminler çoktan seçmeli. İlerlemen kaydedilir.';
+
+  const hasResume = Boolean(view.hasResume) && !free;
+  dom.startBlock.hidden = hasResume;
+  dom.resumeBlock.hidden = !hasResume;
+  if (hasResume) {
+    dom.resumeText.textContent = view.resumeLabel || '';
+  }
+}
+
+/* ---------------------------------------------------------------- bölüm */
+
+function renderLevel(state) {
+  const level = state.levels[state.levelIndex];
+  if (!level) return;
+
+  const solved = state.phase === 'solved';
+  const total = state.levels.length;
+  const position = `Bölüm ${state.levelIndex + 1}/${total}`;
+
+  dom.levelPos.textContent = position;
+  dom.concept.textContent = level.concept;
+  dom.conceptIcon.setAttribute('href', `#${CONCEPT_ICONS[state.levelIndex] || 'i-loop'}`);
+
+  dom.levelTitle.textContent = '';
+  dom.levelTitle.append(
+    el('span', 'sr-only', `${position}. `),
+    document.createTextNode(level.title),
+  );
+
+  dom.goal.textContent = level.goal;
+  dom.brief.classList.toggle('is-solved', solved && !state.revealed);
+
+  /* Kod */
+  const code = solved ? fixedCode(level) : level.code;
+  const lineCount = code.split('\n').length;
+  const changedLine = solved ? level.fix.target.line : 0;
+  dom.codeMeta.textContent = changedLine
+    ? `JavaScript · ${lineCount} satır · değişen satır ${changedLine}`
+    : `JavaScript · ${lineCount} satır`;
+  renderCode(code, changedLine, lineCount);
+
+  /* Konsol */
+  const typedMode = state.mode === 'free';
+  const answered = state.predictionChoiceId !== null || state.predictionTyped !== null;
+  if (!answered) {
+    dom.consoleLabel.textContent = 'Konsol';
+    dom.consoleList.classList.remove('console--good', 'console--bad');
+    dom.consoleList.textContent = '';
+    dom.consoleList.append(el('p', 'console__idle', 'Çıktı tahminden sonra görünür.'));
+  } else {
+    const tone = solved ? 'good' : (state.predictionCorrect ? 'good' : 'bad');
+    dom.consoleLabel.textContent = solved ? 'Konsol · düzeltilmiş çıktı' : 'Konsol · gerçek çıktı';
+    renderConsole(solved ? level.fix.output : level.prediction.output, tone);
+  }
+
+  /* Tahmin */
+  dom.predictQuestion.textContent = level.prediction.question;
+
+  dom.typedBlock.hidden = !typedMode;
+  dom.predictOptions.hidden = typedMode;
+  dom.keys.hidden = typedMode;
+  if (typedMode) {
+    dom.typedInput.value = state.predictionTyped ?? '';
+    dom.typedInput.disabled = answered;
+  }
+
+  const predictionMarks = {};
+  if (answered && !typedMode) {
+    predictionMarks[level.prediction.answerId] = 'good';
+    if (!state.predictionCorrect) predictionMarks[state.predictionChoiceId] = 'bad';
+  }
+
+  if (!typedMode) {
+    renderOptions(dom.predictOptions, level.prediction.choices, {
+      name: 'prediction',
+      selectedId: state.predictionChoiceId,
+      marks: predictionMarks,
+      allLocked: answered,
+    });
+  } else {
+    dom.predictOptions.textContent = '';
+  }
+
+  if (answered) {
+    const chosen = level.prediction.choices.find((item) => item.id === state.predictionChoiceId);
+    const body = typedMode
+      ? `Senin cevabın: ${state.predictionTyped ?? ''}`
+      : (chosen ? chosen.feedback : '');
+
+    dom.predictBanner.hidden = solved;
+    if (!solved) {
+      showBanner(
+        dom.predictBanner,
+        state.predictionCorrect ? 'good' : 'bad',
+        state.predictionCorrect ? 'Doğru tahmin' : 'Tahmin tutmadı',
+        body,
+        level.explain,
+      );
+    }
+  } else {
+    dom.predictBanner.hidden = true;
+  }
+
+  /* Düzeltme */
+  dom.fixField.hidden = !answered || solved;
+  dom.fixQuestion.textContent = level.fix.question;
+
+  if (answered && !solved) {
+    renderPatch(level);
+    const marks = {};
+    for (const id of state.wrongFixIds) marks[id] = 'bad';
+    renderOptions(dom.fixOptions, level.fix.choices, {
+      name: 'fix',
+      selectedId: state.fixChoiceId,
+      marks,
+      lockedIds: state.wrongFixIds,
+    });
+
+    if (state.fixChoiceId && state.wrongFixIds.includes(state.fixChoiceId)) {
+      const chosenFix = level.fix.choices.find((item) => item.id === state.fixChoiceId);
+      showBanner(
+        dom.fixBanner,
+        'bad',
+        'Bu düzeltme hedefe ulaşmıyor',
+        chosenFix ? chosenFix.feedback : '',
+      );
+    } else {
+      dom.fixBanner.hidden = true;
+    }
+  } else if (solved) {
+    const change = `Satır ${level.fix.target.line}: ${level.fix.solution}`;
+    if (state.revealed) {
+      showBanner(
+        dom.fixBanner,
+        'warn',
+        'Çözüm gösterildi',
+        change,
+        'Bu bölüm "çözüldü" sayılmaz; özette ayrı işaretlenir.',
+      );
+    } else {
+      showBanner(dom.fixBanner, 'good', 'Düzeltildi', change, level.explain);
+    }
+  } else {
+    dom.fixBanner.hidden = true;
+  }
+
+  /* İpucu */
+  dom.hintBox.hidden = !(state.hintVisible && !solved);
+  if (state.hintVisible) dom.hintText.textContent = level.hint;
+
+  /* Eylem çubuğu */
+  const isLast = state.levelIndex === total - 1;
+  if (state.phase === 'predict') {
+    dom.primaryBtn.textContent = 'Tahminimi kontrol et';
+    dom.primaryBtn.dataset.action = 'predict-submit';
+  } else if (state.phase === 'fix') {
+    dom.primaryBtn.textContent = 'Düzeltmeyi dene';
+    dom.primaryBtn.dataset.action = 'fix-submit';
+  } else {
+    dom.primaryBtn.textContent = isLast ? 'Sonuçları gör' : 'Sonraki bölüm';
+    dom.primaryBtn.dataset.action = 'next';
+  }
+  dom.primaryBtn.removeAttribute('aria-disabled');
+  dom.hintBtn.hidden = !(state.phase === 'fix' && !state.hintVisible);
+  dom.solutionBtn.hidden = !(state.phase === 'fix' && state.fixAttempts >= 2);
+}
+
+function renderCode(code, changedLine, lineCount) {
+  dom.codeList.textContent = '';
+  dom.codeList.setAttribute('aria-label', `Kod, main.js, ${lineCount} satır`);
+
+  const fragment = document.createDocumentFragment();
+  code.split('\n').forEach((line, index) => {
+    const row = el('div', 'row');
+    if (changedLine === index + 1) row.classList.add('is-changed');
+
+    const num = el('span', 'row__num', String(index + 1));
+    num.setAttribute('aria-hidden', 'true');
+
+    const codeCell = el('span', 'row__code');
+    for (const token of tokenize(line)) {
+      codeCell.append(el('span', `tok tok--${token.type}`, token.text));
+    }
+
+    row.append(num, codeCell);
+    fragment.append(row);
+  });
+  dom.codeList.append(fragment);
+
+  const overflowing = dom.codeList.scrollWidth > dom.codeList.clientWidth + 1;
+  dom.codeList.classList.toggle('is-scrollable', overflowing);
+  dom.codeList.classList.toggle('is-end', !overflowing);
+}
+
+function renderConsole(text, tone) {
+  dom.consoleList.textContent = '';
+  dom.consoleList.classList.toggle('console--good', tone === 'good');
+  dom.consoleList.classList.toggle('console--bad', tone === 'bad');
+
+  for (const line of text.split('\n')) {
+    const row = el('p', 'console__row');
+    const caret = el('span', 'console__caret', '›');
+    caret.setAttribute('aria-hidden', 'true');
+    row.append(caret, el('span', null, line));
+    dom.consoleList.append(row);
+  }
+}
+
+function renderOptions(container, choices, options) {
+  const { name, selectedId, marks = {}, lockedIds = [], allLocked = false } = options;
+  container.textContent = '';
+
+  for (const choice of choices) {
+    const wrapper = el('label', 'option');
+
+    const input = document.createElement('input');
+    input.type = 'radio';
+    input.name = name;
+    input.value = choice.id;
+    if (choice.id === selectedId) input.checked = true;
+
+    const locked = allLocked || lockedIds.includes(choice.id);
+    if (locked) {
+      input.disabled = true;
+      wrapper.classList.add('is-locked');
+    }
+
+    const body = el('span', 'option__body');
+    if (locked) body.classList.add('is-locked');
+
+    const mark = el('span', 'option__mark');
+    mark.setAttribute('aria-hidden', 'true');
+
+    const label = el('span', 'option__label');
+    const lines = choice.label.split('\n');
+    for (const line of lines) {
+      label.append(el('span', 'option__line', line));
+    }
+    if (lines.length > 1) body.classList.add('has-lines');
+
+    const iconEl = el('span', 'option__icon');
+    iconEl.setAttribute('aria-hidden', 'true');
+
+    const markState = marks[choice.id];
+    if (markState === 'good') {
+      body.classList.add('is-good');
+      iconEl.textContent = '✓';
+      body.append(mark, label, iconEl, el('span', 'sr-only', ' (doğru cevap)'));
+    } else if (markState === 'bad') {
+      body.classList.add('is-bad');
+      iconEl.textContent = '✕';
+      body.append(mark, label, iconEl, el('span', 'sr-only', ' (yanlış cevap)'));
+    } else {
+      body.append(mark, label, iconEl);
+    }
+
+    wrapper.append(input, body);
+    container.append(wrapper);
+  }
+}
+
+function renderPatch(level) {
+  const { line, snippet } = level.fix.target;
+  const text = level.code.split('\n')[line - 1] || '';
+
+  dom.patchLine.textContent = String(line);
+  dom.patchCode.textContent = '';
+
+  const at = text.indexOf(snippet);
+  if (at === -1) {
+    dom.patchCode.textContent = text;
+    return;
+  }
+
+  const mark = document.createElement('mark');
+  mark.textContent = snippet;
+
+  dom.patchCode.append(
+    document.createTextNode(text.slice(0, at)),
+    mark,
+    document.createTextNode(text.slice(at + snippet.length)),
+  );
+}
+
+function showBanner(node, tone, title, body, note) {
+  node.hidden = false;
+  node.className = `banner banner--${tone}`;
+  node.textContent = '';
+
+  const heading = el('p', 'banner__title');
+  const glyph = el('span', 'banner__icon', tone === 'good' ? '✓' : tone === 'bad' ? '✕' : '!');
+  glyph.setAttribute('aria-hidden', 'true');
+  heading.append(glyph, document.createTextNode(title));
+
+  node.append(heading);
+
+  if (body) node.append(el('p', 'banner__body', body));
+  if (note) node.append(el('p', 'banner__note', note));
+}
+
+/* ---------------------------------------------------------------- özet */
+
+function renderSummary(state, view) {
+  const total = state.levels.length;
+  const solvedCount = state.completed.filter((item) => item.outcome === 'solved').length;
+  const revealedCount = state.completed.length - solvedCount;
+
+  dom.summaryMeta.textContent = `${state.completed.length}/${total} görev tamamlandı`
+    + (revealedCount > 0 ? ` · ${revealedCount} görevde çözüm gösterildi` : '')
+    + (state.mode === 'free' ? ' · Serbest mod' : '');
+
+  /* Rozetler */
+  dom.badges.textContent = '';
+  for (const achievement of ACHIEVEMENTS) {
+    const earned = state.achievements.includes(achievement.id);
+    const item = document.createElement('li');
+    item.className = earned ? 'badge' : 'badge badge--locked';
+
+    const badgeIcon = el('span', 'badge__icon');
+    badgeIcon.append(icon(`i-${achievement.icon}`));
+
+    const text = el('span', 'badge__text');
+    text.append(
+      el('span', 'badge__title', achievement.title),
+      el('span', 'badge__desc', earned ? achievement.description : 'Henüz kazanılmadı'),
+    );
+    text.style.display = 'grid';
+
+    item.append(badgeIcon, text);
+    dom.badges.append(item);
+  }
+
+  /* Karne */
+  const doneById = new Map(state.completed.map((item) => [item.id, item.outcome]));
+  dom.takeaways.textContent = '';
+  state.levels.forEach((level, index) => {
+    const done = doneById.get(level.id);
+    const row = document.createElement('li');
+    const glyph = icon(CONCEPT_ICONS[index] || 'i-loop', 'icon icon--sm');
+    if (!done) glyph.style.color = 'var(--ink-mute)';
+    row.append(glyph, el('span', null, level.takeaway));
+    dom.takeaways.append(row);
+  });
+
+  /* Görev listesi */
+  dom.results.textContent = '';
+  state.levels.forEach((level, index) => {
+    const done = doneById.get(level.id);
+    const row = document.createElement('li');
+
+    const num = el('span', 'results__n', String(index + 1));
+    num.setAttribute('aria-hidden', 'true');
+
+    const main = el('span', 'results__main');
+    main.append(
+      el('span', 'results__title', level.title),
+      el('span', 'results__concept', level.concept),
+    );
+
+    const revealed = done === 'revealed';
+    const chip = el(
+      'span',
+      `chip chip--${revealed ? 'revealed' : 'solved'}`,
+      revealed ? '! Çözüm gösterildi' : '✓ Çözüldü',
+    );
+
+    row.append(num, main, chip);
+    dom.results.append(row);
+  });
+
+  dom.shareNote.textContent = view.shareNote || '';
+}
+
+function renderError(state) {
+  dom.errorDetail.textContent = state.error ? `Teknik ayrıntı: ${state.error}` : '';
+}
+
+/* -------------------------------------------------------- öğretmen raporu */
+
+function renderReport(report, levels) {
+  const total = levels.length;
+  const doneById = new Map(report.completed.map((item) => [item.id, item.outcome]));
+  const solved = report.completed.filter((item) => item.outcome === 'solved').length;
+  const revealed = report.completed.length - solved;
+
+  dom.reportMeta.textContent = [
+    report.name || 'İsimsiz öğrenci',
+    report.date || 'tarih yok',
+    report.mode === 'free' ? 'Serbest mod' : 'Sıralı mod',
+  ].join(' · ');
+
+  const stats = [
+    ['Tamamlanan', `${report.completed.length}/${total}`],
+    ['Çözüldü', String(solved)],
+    ['Çözüm gösterildi', String(revealed)],
+    ['Doğru tahmin', `${report.predictionsCorrect}/${total}`],
+    ['Rozet', `${report.achievements.length}/${ACHIEVEMENTS.length}`],
+    ['İpucu', report.hintUsedEver ? 'Kullanıldı' : 'Kullanılmadı'],
+  ];
+
+  dom.reportStats.textContent = '';
+  for (const [label, value] of stats) {
+    const item = document.createElement('li');
+    if (!/^[\d/]+$/.test(value)) item.classList.add('is-text');
+    item.append(
+      el('span', 'report-stats__label', label),
+      el('span', 'report-stats__value', value),
+    );
+    dom.reportStats.append(item);
+  }
+
+  dom.reportResults.textContent = '';
+  levels.forEach((level, index) => {
+    const outcome = doneById.get(level.id);
+    const row = document.createElement('li');
+
+    const num = el('span', 'results__n', String(index + 1));
+    num.setAttribute('aria-hidden', 'true');
+
+    const main = el('span', 'results__main');
+    main.append(
+      el('span', 'results__title', level.title),
+      el('span', 'results__concept', level.concept),
+    );
+
+    const chipClass = outcome === 'solved' ? 'solved' : outcome === 'revealed' ? 'revealed' : 'none';
+    const chipText = outcome === 'solved'
+      ? '✓ Çözüldü'
+      : outcome === 'revealed'
+        ? '! Çözüm gösterildi'
+        : '— Yapılmadı';
+
+    row.append(num, main, el('span', `chip chip--${chipClass}`, chipText));
+    dom.reportResults.append(row);
+  });
+}
+
+/* ------------------------------------------------------------ sınıf paneli */
+
+function formatAverage(value) {
+  if (value === null) return '—';
+  return Number.isInteger(value) ? String(value) : value.toFixed(1).replace('.', ',');
+}
+
+function renderClassroom(classroom, levels) {
+  const { summary } = classroom;
+
+  const stats = [
+    ['Öğrenci', String(summary.students)],
+    ['Ortalama tamamlama', summary.avgCompleted === null ? '—' : `${formatAverage(summary.avgCompleted)}/${summary.total}`],
+    ['Ortalama doğru tahmin', formatAverage(summary.avgCorrect)],
+    ['En çok çözüm gösterilen', summary.hardest ? summary.hardest.title : '—'],
+  ];
+
+  dom.classStats.textContent = '';
+  for (const [label, value] of stats) {
+    const item = document.createElement('li');
+    if (!/^[\d/]+$/.test(value)) item.classList.add('is-text');
+    item.append(
+      el('span', 'report-stats__label', label),
+      el('span', 'report-stats__value', value),
+    );
+    dom.classStats.append(item);
+  }
+
+  dom.classRows.textContent = '';
+  if (summary.rows.length === 0) {
+    const row = document.createElement('tr');
+    row.className = 'class-table__empty';
+    const cell = document.createElement('td');
+    cell.colSpan = 8;
+    cell.textContent = 'Henüz rapor yok. Yukarıdaki alana bir bağlantı yapıştırıp “Kodu ekle”ye bas.';
+    row.append(cell);
+    dom.classRows.append(row);
+  } else {
+    for (const student of summary.rows) {
+      const row = document.createElement('tr');
+
+      const name = document.createElement('th');
+      name.scope = 'row';
+      name.textContent = student.name;
+      row.append(name);
+
+      const cells = [
+        student.date || '—',
+        student.mode === 'free' ? 'Serbest' : 'Sıralı',
+        `${student.completed}/${summary.total}`,
+        student.solved,
+        student.revealed,
+        student.correct,
+        student.badges,
+      ];
+
+      for (const value of cells) {
+        row.append(el('td', null, String(value)));
+      }
+
+      dom.classRows.append(row);
+    }
+  }
+
+  dom.classLevels.textContent = '';
+  summary.perLevel.forEach((level, index) => {
+    const row = document.createElement('li');
+    const num = el('span', 'results__n', String(index + 1));
+    num.setAttribute('aria-hidden', 'true');
+
+    const main = el('span', 'results__main');
+    main.append(
+      el('span', 'results__title', level.title),
+      el('span', 'results__concept', level.concept),
+    );
+
+    const counts = el('span', 'class-counts', `✓ ${level.solved} · ! ${level.revealed} · — ${level.missing}`);
+    counts.setAttribute('title', `${level.solved} çözüldü, ${level.revealed} çözüm gösterildi, ${level.missing} yapılmadı`);
+
+    row.append(num, main, counts);
+    dom.classLevels.append(row);
+  });
+
+  dom.classDetail.textContent = summary.students === 0
+    ? 'Henüz kod eklenmedi. Sınıf listesi bu tarayıcıda saklanır; sayfayı kapatsan da kaybolmaz.'
+    : `${summary.students} öğrenci · ${levels.length} görev · liste bu tarayıcıda saklanır.`;
+}
+
+/* ---- js/app.js ---- */
+/**
+ * Uygulama kabuğu: JSON yükler, eylemleri çalıştırır, ui.js'e render ettirir.
+ * Tercihler, ilerleme ve sınıf listesi storage.js üzerinden yerelde tutulur.
+ */
+
+
+
+
+
+
+const DATA_URL = './data/levels.json';
+const THEME_COLOR = { light: '#F5F2EA', dark: '#12141A' };
+
+let state = createGame();
+let savedProgress = null;
+let baseLevels = [];
+let classReports = [];
+
+const view = {
+  theme: 'light',
+  sound: false,
+  mode: 'guided',
+  hasResume: false,
+  resumeLabel: '',
+  shareNote: '',
+  report: null,
+  classroom: null,
+};
+
+let audioContext = null;
+let shareTimer = 0;
+
+/* ------------------------------------------------------------- yardımcı */
+
+function applyTheme(theme) {
+  view.theme = theme === 'dark' ? 'dark' : 'light';
+  document.documentElement.dataset.theme = view.theme;
+  document.documentElement.style.colorScheme = view.theme;
+  const meta = document.querySelector('meta[name="theme-color"]');
+  if (meta) meta.setAttribute('content', THEME_COLOR[view.theme]);
+}
+
+function savePrefsNow() {
+  savePrefs({ theme: view.theme, sound: view.sound, mode: view.mode });
+}
+
+function siteBase() {
+  if (window.location.protocol === 'file:') return null;
+  return `${window.location.origin}${window.location.pathname}`;
+}
+
+function refreshResume() {
+  view.hasResume = Boolean(savedProgress && hasProgress(savedProgress));
+  if (!view.hasResume) {
+    view.resumeLabel = '';
+    return;
+  }
+  const done = Math.min(savedProgress.completed.length, state.levels.length);
+  view.resumeLabel = done >= state.levels.length
+    ? `Tüm görevleri bitirdin (${done}/${state.levels.length}). Sonucu yeniden görebilirsin.`
+    : `Kaldığın yer: Bölüm ${done + 1}/${state.levels.length} · ${done} görev tamamlandı.`;
+}
+
+function persist() {
+  if (state.phase === 'intro' || state.phase === 'loading' || state.phase === 'error') return;
+  if (state.mode === 'free') return;
+  saveProgress(state);
+  savedProgress = loadProgress();
+}
+
+function renderAll() {
+  render(state, view);
+}
+
+function shuffled(list) {
+  const copy = [...list];
+  for (let index = copy.length - 1; index > 0; index -= 1) {
+    const pick = Math.floor(Math.random() * (index + 1));
+    [copy[index], copy[pick]] = [copy[pick], copy[index]];
+  }
+  return copy;
+}
+
+function beep(kind) {
+  if (!view.sound) return;
+  try {
+    const AudioCtx = window.AudioContext || window.webkitAudioContext;
+    if (!AudioCtx) return;
+    audioContext = audioContext || new AudioCtx();
+
+    const notes = kind === 'good' ? [523.25, 783.99] : [207.65, 174.61];
+    const start = audioContext.currentTime;
+
+    notes.forEach((frequency, index) => {
+      const oscillator = audioContext.createOscillator();
+      const gain = audioContext.createGain();
+      const at = start + index * 0.09;
+
+      oscillator.type = 'sine';
+      oscillator.frequency.value = frequency;
+      gain.gain.setValueAtTime(0.0001, at);
+      gain.gain.exponentialRampToValueAtTime(0.06, at + 0.012);
+      gain.gain.exponentialRampToValueAtTime(0.0001, at + 0.19);
+
+      oscillator.connect(gain);
+      gain.connect(audioContext.destination);
+      oscillator.start(at);
+      oscillator.stop(at + 0.2);
+    });
+  } catch {
+    /* ses desteklenmiyorsa sessizce devam et */
+  }
+}
+
+async function copyText(text) {
+  try {
+    if (navigator.clipboard && window.isSecureContext) {
+      await navigator.clipboard.writeText(text);
+      return true;
+    }
+  } catch {
+    /* aşağıdaki yedeğe geç */
+  }
+
+  try {
+    const field = document.createElement('textarea');
+    field.value = text;
+    field.setAttribute('readonly', '');
+    field.style.position = 'fixed';
+    field.style.top = '-1000px';
+    document.body.append(field);
+    field.select();
+    const copied = document.execCommand('copy');
+    field.remove();
+    return copied;
+  } catch {
+    return false;
+  }
+}
+
+function shareText() {
+  const total = state.levels.length;
+  const solved = state.completed.filter((item) => item.outcome === 'solved').length;
+  const earned = state.achievements.length;
+  const mode = state.mode === 'free' ? ' · serbest mod' : '';
+  const url = siteBase() || 'BugPark (tek dosya)';
+
+  return [
+    `BugPark — ${total} görevden ${solved} tanesini çözüm göstermeden bitirdim.`,
+    `${state.predictionsCorrect}/${total} tahmin doğru · ${earned}/${ACHIEVEMENTS.length} rozet${mode}`,
+    url,
+  ].join('\n');
+}
+
+async function copyShare() {
+  const copied = await copyText(shareText());
+
+  view.shareNote = copied
+    ? 'Sonuç panoya kopyalandı.'
+    : 'Kopyalanamadı; metni seçip elle kopyalayabilirsin.';
+  announce(copied ? 'Sonuç panoya kopyalandı.' : 'Sonuç kopyalanamadı.');
+
+  setShareNote(view.shareNote);
+  window.clearTimeout(shareTimer);
+  shareTimer = window.setTimeout(() => {
+    view.shareNote = '';
+    setShareNote('');
+  }, 4000);
+}
+
+async function makeReportLink() {
+  const code = encodeReport({
+    name: reportNameValue(),
+    completed: state.completed,
+    predictionsCorrect: state.predictionsCorrect,
+    hintUsedEver: state.hintUsedEver,
+    achievements: state.achievements,
+    mode: state.mode,
+  });
+
+  const base = siteBase();
+  const text = base ? reportLink(base, code) : code;
+  const copied = await copyText(text);
+
+  if (!base) {
+    setReportNote(copied
+      ? `Bağlantı yerine kodu paylaş (sınıf paneli kodu okur): ${code}`
+      : `Kodu elle kopyala: ${code}`);
+    announce(copied ? 'Rapor kodu kopyalandı.' : 'Rapor kodu hazır.');
+    return;
+  }
+
+  setReportNote(copied
+    ? `Bağlantı kopyalandı: ${text}`
+    : `Bağlantı hazır (kopyalanamadı, elle seç): ${text}`);
+  announce(copied ? 'Rapor bağlantısı kopyalandı.' : 'Rapor bağlantısı hazırlandı.');
+}
+
+function refreshClassroom() {
+  if (!view.classroom) return;
+  view.classroom = { summary: summarize(state.levels, classReports) };
+}
+
+function saveClass() {
+  saveClassCodes(classReports.map((report) => report.code));
+  refreshClassroom();
+}
+
+function downloadCsv() {
+  const csv = toCsv(summarize(state.levels, classReports));
+  const blob = new Blob([csv], { type: 'text/csv;charset=utf-8' });
+  const url = URL.createObjectURL(blob);
+  const anchor = document.createElement('a');
+  anchor.href = url;
+  anchor.download = `bugpark-sinif-${new Date().toISOString().slice(0, 10)}.csv`;
+  document.body.append(anchor);
+  anchor.click();
+  anchor.remove();
+  window.setTimeout(() => URL.revokeObjectURL(url), 1000);
+}
+
+/* ---------------------------------------------------------------- yükleme */
+
+async function loadLevels() {
+  const inline = globalThis.__BUGPARK_LEVELS__;
+  if (inline) return inline;
+
+  const response = await fetch(DATA_URL, { cache: 'no-cache' });
+  if (!response.ok) throw new Error(`levels.json → HTTP ${response.status}`);
+  return response.json();
+}
+
+async function boot() {
+  state = { ...createGame(), phase: 'loading' };
+  renderAll();
+
+  try {
+    const data = await loadLevels();
+    const check = validateLevels(data);
+    if (!check.ok) throw new Error(check.errors.join(' · '));
+
+    state = reduce(state, { type: 'LOADED', levels: data.levels });
+    baseLevels = data.levels;
+    refreshResume();
+    view.hasResume = Boolean(savedProgress && hasProgress(savedProgress))
+      && savedProgress.completed.length <= data.levels.length;
+
+    classReports = loadClassCodes()
+      .map((code) => ({ code, data: decodeReport(code) }))
+      .filter((report) => report.data);
+    refreshClassroom();
+    syncRoutes();
+  } catch (error) {
+    console.error('[BugPark]', error);
+    state = reduce(state, { type: 'LOAD_FAILED', error: error.message || String(error) });
+  }
+
+  renderAll();
+}
+
+/* ----------------------------------------------------------------- rotalar */
+
+function clearHash() {
+  history.replaceState(null, '', window.location.pathname + window.location.search);
+}
+
+/** Adresteki #rapor=… ve #sinif yollarını view durumuna yansıtır. */
+function syncRoutes() {
+  const code = readReportCode(window.location.hash);
+
+  if (code) {
+    const decoded = decodeReport(code);
+    view.report = decoded;
+    view.classroom = null;
+    if (!decoded) {
+      console.warn('[BugPark] Rapor bağlantısı okunamadı, oyun açılıyor.');
+      clearHash();
+    }
+    return;
+  }
+
+  view.report = null;
+  if (window.location.hash === '#sinif' && state.levels.length > 0) {
+    view.classroom = { summary: summarize(state.levels, classReports) };
+  } else {
+    view.classroom = null;
+  }
+}
+
+/* ---------------------------------------------------------------- eylemler */
+
+function submitPrediction() {
+  if (state.mode === 'free') {
+    const text = typedAnswer();
+    if (!text.trim()) {
+      showHint('predict', 'Çıktıyı yaz.');
+      announce('Önce çıktıyı yaz.');
+      return false;
+    }
+    const next = reduce(state, { type: 'SUBMIT_TYPED_PREDICTION', text });
+    if (next === state) return false;
+    state = next;
+  } else {
+    const choiceId = checkedChoice('predictOptions');
+    if (!choiceId) {
+      showHint('predict', 'Bir seçenek seç.');
+      announce('Bir seçenek seç.');
+      return false;
+    }
+    const next = reduce(state, { type: 'SUBMIT_PREDICTION', choiceId });
+    if (next === state) return false;
+    state = next;
+  }
+
+  clearHints();
+  beep(state.predictionCorrect ? 'good' : 'bad');
+  announce(state.predictionCorrect
+    ? 'Doğru tahmin. Şimdi kodu düzelt.'
+    : 'Tahmin tutmadı. Gerçek çıktı konsolda.');
+  return true;
+}
+
+function addToClass(text, code) {
+  const result = addReports(classReports, text ?? code ?? '');
+  classReports = result.reports;
+  saveClass();
+
+  const parts = [];
+  if (result.added) parts.push(`${result.added} rapor eklendi`);
+  if (result.duplicate) parts.push(`${result.duplicate} zaten listede`);
+  if (result.invalid) parts.push(`${result.invalid} kod okunamadı`);
+  const message = parts.join(' · ') || 'Yeni rapor bulunamadı.';
+
+  setClassNote(message);
+  announce(message);
+  return result;
+}
+
+function run(action) {
+  switch (action) {
+    case 'start': {
+      const source = baseLevels.length > 0 ? baseLevels : state.levels;
+      const levels = view.mode === 'free' ? shuffled(source) : source;
+      const next = reduce(state, { type: 'START', levels, mode: view.mode });
+      if (next === state) return;
+      state = next;
+      view.hasResume = false;
+      clearHints();
+      clearProgress();
+      if (view.mode === 'free') announce('Serbest mod başladı. Görevler karışık.');
+      break;
+    }
+
+    case 'resume': {
+      const next = reduce(state, { type: 'RESUME', progress: savedProgress || {} });
+      if (next === state) return;
+      state = next;
+      view.hasResume = false;
+      clearHints();
+      announce('Kaldığın yerden devam ediyorsun.');
+      break;
+    }
+
+    case 'predict-submit':
+      if (!submitPrediction()) return;
+      break;
+
+    case 'fix-submit': {
+      const choiceId = checkedChoice('fixOptions');
+      if (!choiceId) {
+        showHint('fix', 'Bir seçenek seç.');
+        announce('Bir seçenek seç.');
+        return;
+      }
+      const next = reduce(state, { type: 'SUBMIT_FIX', choiceId });
+      if (next === state) return;
+      const solved = next.phase === 'solved';
+      state = next;
+      clearHints();
+      beep(solved ? 'good' : 'bad');
+      announce(solved ? 'Düzeltildi.' : 'Bu düzeltme hedefe ulaşmıyor.');
+      break;
+    }
+
+    case 'hint': {
+      const next = reduce(state, { type: 'SHOW_HINT' });
+      if (next === state) return;
+      state = next;
+      announce('İpucu açıldı.');
+      window.setTimeout(revealHint, 0);
+      break;
+    }
+
+    case 'solution': {
+      const next = reduce(state, { type: 'SHOW_SOLUTION' });
+      if (next === state) return;
+      state = next;
+      announce('Çözüm gösterildi. Bu bölüm çözüldü sayılmadı.');
+      break;
+    }
+
+    case 'next': {
+      const next = reduce(state, { type: 'NEXT_LEVEL' });
+      if (next === state) return;
+      state = next;
+      if (state.phase === 'summary') window.clearTimeout(shareTimer);
+      break;
+    }
+
+    case 'restart': {
+      const source = baseLevels.length > 0 ? baseLevels : state.levels;
+      const levels = state.mode === 'free' ? shuffled(source) : source;
+      const next = reduce(state, { type: 'RESTART', levels });
+      if (next === state) return;
+      state = next;
+      view.shareNote = '';
+      clearHints();
+      clearProgress();
+      setReportNote('Bağlantı yalnızca sonuçları taşır; sunucuya hiçbir şey gönderilmez.');
+      announce('Baştan başlıyorsun.');
+      break;
+    }
+
+    case 'home': {
+      const next = reduce(state, { type: 'HOME' });
+      if (next === state) return;
+      state = next;
+      view.shareNote = '';
+      setShareNote('');
+      clearHints();
+      savedProgress = loadProgress();
+      refreshResume();
+      announce('Giriş ekranındasın.');
+      break;
+    }
+
+    case 'retry':
+      boot();
+      return;
+
+    case 'share':
+      copyShare();
+      return;
+
+    case 'report-link':
+      makeReportLink();
+      return;
+
+    case 'report-close': {
+      view.report = null;
+      if (window.location.hash) clearHash();
+      renderAll();
+      announce('Oyun açık.');
+      return;
+    }
+
+    case 'report-class': {
+      const code = readReportCode(window.location.hash);
+      if (!code) return;
+      addToClass(code);
+      view.report = null;
+      view.classroom = { summary: summarize(state.levels, classReports) };
+      history.replaceState(null, '', `${window.location.pathname}${window.location.search}#sinif`);
+      renderAll();
+      return;
+    }
+
+    case 'classroom-open': {
+      view.report = null;
+      view.classroom = { summary: summarize(state.levels, classReports) };
+      if (window.location.hash !== '#sinif') {
+        history.replaceState(null, '', `${window.location.pathname}${window.location.search}#sinif`);
+      }
+      setClassNote(classReports.length
+        ? `${classReports.length} rapor listede.`
+        : 'Henüz rapor yok.');
+      renderAll();
+      announce('Sınıf paneli açıldı.');
+      return;
+    }
+
+    case 'class-add': {
+      const text = classInputValue();
+      if (!text.trim()) {
+        setClassNote('Önce bir bağlantı ya da kod yapıştır.');
+        announce('Kod alanı boş.');
+        return;
+      }
+      addToClass(text);
+      clearClassInput();
+      renderAll();
+      return;
+    }
+
+    case 'class-csv': {
+      if (classReports.length === 0) {
+        setClassNote('CSV için önce en az bir rapor ekle.');
+        announce('Liste boş.');
+        return;
+      }
+      downloadCsv();
+      setClassNote('CSV indirildi.');
+      announce('CSV indirildi.');
+      return;
+    }
+
+    case 'class-clear': {
+      if (classReports.length === 0) {
+        setClassNote('Liste zaten boş.');
+        return;
+      }
+      if (!window.confirm('Sınıf listesindeki tüm raporlar bu tarayıcıdan silinecek. Emin misin?')) return;
+      classReports = [];
+      saveClass();
+      setClassNote('Liste temizlendi.');
+      announce('Sınıf listesi temizlendi.');
+      renderAll();
+      return;
+    }
+
+    case 'class-close': {
+      view.classroom = null;
+      if (window.location.hash === '#sinif') clearHash();
+      renderAll();
+      announce('Giriş ekranındasın.');
+      return;
+    }
+
+    case 'mode-guided':
+    case 'mode-free': {
+      view.mode = action === 'mode-free' ? 'free' : 'guided';
+      savePrefsNow();
+      savedProgress = loadProgress();
+      refreshResume();
+      announce(view.mode === 'free' ? 'Serbest mod seçildi.' : 'Sıralı mod seçildi.');
+      renderAll();
+      return;
+    }
+
+    case 'toggle-theme': {
+      applyTheme(view.theme === 'dark' ? 'light' : 'dark');
+      savePrefsNow();
+      announce(view.theme === 'dark' ? 'Karanlık tema açık.' : 'Aydınlık tema açık.');
+      renderAll();
+      return;
+    }
+
+    case 'toggle-sound': {
+      view.sound = !view.sound;
+      savePrefsNow();
+      announce(view.sound ? 'Ses açık.' : 'Ses kapalı.');
+      renderAll();
+      if (view.sound) beep('good');
+      return;
+    }
+
+    case 'glossary':
+      openGlossary(state);
+      return;
+
+    case 'glossary-close':
+      closeGlossary();
+      return;
+
+    default:
+      return;
+  }
+
+  persist();
+  renderAll();
+}
+
+/* ---------------------------------------------------------------- olaylar */
+
+document.addEventListener('click', (event) => {
+  const trigger = event.target instanceof Element
+    ? event.target.closest('[data-action]')
+    : null;
+  if (!trigger) return;
+  if (trigger.getAttribute('aria-disabled') === 'true') return;
+  event.preventDefault();
+  run(trigger.dataset.action);
+});
+
+/* Radyo seçiminde Enter ile gönderim. */
+document.addEventListener('keydown', (event) => {
+  if (event.key !== 'Enter') return;
+
+  if (isTypedInput(event.target)) {
+    event.preventDefault();
+    run('predict-submit');
+    return;
+  }
+
+  const target = event.target;
+  if (!(target instanceof HTMLInputElement) || target.type !== 'radio') return;
+
+  const action = target.closest('#predictField')
+    ? 'predict-submit'
+    : target.closest('#fixField')
+      ? 'fix-submit'
+      : null;
+
+  if (action) {
+    event.preventDefault();
+    run(action);
+  }
+});
+
+/* Klavye kısayolları: 1-3 seç, N sonraki. */
+document.addEventListener('keydown', (event) => {
+  if (event.ctrlKey || event.altKey || event.metaKey) return;
+  if (isGlossaryOpen()) return;
+  if (view.report || view.classroom) return;
+  if (event.target instanceof HTMLButtonElement) return;
+  if (event.target instanceof HTMLInputElement && event.target.type === 'text') return;
+
+  if (['1', '2', '3'].includes(event.key) && state.mode !== 'free' && ['predict', 'fix'].includes(state.phase)) {
+    const container = state.phase === 'predict' ? 'predictOptions' : 'fixOptions';
+    const inputs = byIdList(container);
+    const target = inputs[Number(event.key) - 1];
+    if (target && !target.disabled) {
+      event.preventDefault();
+      target.checked = true;
+      clearHints();
+    }
+    return;
+  }
+
+  if ((event.key === 'n' || event.key === 'N') && state.phase === 'solved') {
+    event.preventDefault();
+    run('next');
+  }
+});
+
+function byIdList(id) {
+  return [...document.getElementById(id).querySelectorAll('input[type="radio"]')];
+}
+
+document.addEventListener('change', (event) => {
+  if (event.target instanceof HTMLInputElement && event.target.type === 'radio') {
+    clearHints();
+  }
+});
+
+/* ---------------------------------------------------------------- başlat */
+
+const prefs = loadPrefs();
+applyTheme(prefs.theme);
+view.sound = prefs.sound;
+view.mode = prefs.mode;
+savedProgress = loadProgress();
+
+/* Aynı sayfada başka bir rota açılırsa (rapor bağlantısı ya da #sinif) uygula. */
+window.addEventListener('hashchange', () => {
+  if (state.levels.length === 0) {
+    boot();
+    return;
+  }
+  syncRoutes();
+  renderAll();
+});
+
+renderAll();
+boot();
+
+})();
+</script>
+</body>
+</html>
