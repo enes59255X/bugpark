@@ -2699,9 +2699,10 @@ function extractCodes(text) {
   const found = [];
 
   for (const match of source.matchAll(LINK_PATTERN)) found.push(match[1]);
-  if (found.length === 0) {
-    for (const match of source.matchAll(CODE_PATTERN)) found.push(match[0]);
-  }
+
+  /* Bağlantıların içindeki kodlar tekrar sayılmasın diye linkler çıkarılır. */
+  const withoutLinks = source.replace(LINK_PATTERN, ' ');
+  for (const match of withoutLinks.matchAll(CODE_PATTERN)) found.push(match[0]);
 
   return [...new Set(found)];
 }

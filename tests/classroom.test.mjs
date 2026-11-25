@@ -33,6 +33,13 @@ test('extractCodes birden çok kodu ve tekrarları yönetir', () => {
   assert.deepEqual(extractCodes(text), [one, two]);
 });
 
+test('extractCodes bağlantı ve çıplak kodu aynı metinde bulur', () => {
+  const linked = code('Ece', [{ id: 'a', outcome: 'solved' }]);
+  const bare = code('Ali', [{ id: 'b', outcome: 'solved' }]);
+  const text = `https://ornek.test/#rapor=${linked}\n${bare}`;
+  assert.deepEqual(extractCodes(text), [linked, bare]);
+});
+
 test('extractCodes geçersiz metinde boş dizi verir', () => {
   assert.deepEqual(extractCodes(''), []);
   assert.deepEqual(extractCodes('kısa'), []);
