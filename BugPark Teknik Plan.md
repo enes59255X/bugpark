@@ -520,6 +520,8 @@ console.log(ikiKat(3));
 
 ## 9. İş sırası — 5 faz
 
+> **Durum (25.11.2026):** Faz 1 ✅ · Faz 2 ✅ · Faz 3 ✅ · Faz 4 ◐ (klavye, odak, canlı bölge, `forced-colors` hazır; NVDA ve Lighthouse ölçümü bekliyor) · Faz 5 ◐ (hareket, meta, README, elle matrisin 1–6 ve 8–13'ü doğrulandı; tarayıcı matrisi ve yayın bekliyor)
+
 Her faz tek başına çalışır bir çıktı bırakır; faz atlanmaz, faz içinde geri dönülür.
 
 ### Faz 1 — Tasarım sistemi ve görünüm (statik)

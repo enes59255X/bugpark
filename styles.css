@@ -919,7 +919,27 @@ main { padding-block: var(--s6) var(--s8); }
 
   .brief { padding: var(--s3) var(--s4); }
 
-  .row { font-size: .875rem; }
+  /* Mobilde kod kaydırmak yerine alt satıra iner; kod hücresi girintiyi korur. */
+  .editor__code {
+    overflow-x: visible;
+    -webkit-mask-image: none;
+    mask-image: none;
+  }
+
+  .row {
+    grid-template-columns: 1.75rem minmax(0, 1fr);
+    font-size: .875rem;
+  }
+
+  .row__num { padding-right: var(--s2); }
+
+  .row__code {
+    padding-right: var(--s3);
+    padding-left: 2ch;
+    text-indent: -2ch;
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+  }
 
   .option__label { font-size: .9375rem; }
 
