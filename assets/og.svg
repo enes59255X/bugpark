@@ -1,0 +1,55 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630">
+  <rect width="1200" height="630" fill="#F5F2EA"/>
+  <rect x="1" y="1" width="1198" height="628" fill="none" stroke="#DCD6C8" stroke-width="2"/>
+
+  <g font-family="Segoe UI, system-ui, sans-serif">
+    <text x="80" y="152" font-size="19" font-weight="600" letter-spacing="3.2" fill="#5F646D">BUGPARK · JAVASCRIPT HATA AVI</text>
+
+    <g font-size="62" font-weight="700" letter-spacing="-1.6" fill="#14161A">
+      <text x="78" y="248">Kodu oku.</text>
+      <text x="78" y="316">Çıktıyı tahmin et.</text>
+      <text x="78" y="384">Hatayı düzelt.</text>
+    </g>
+
+    <text x="80" y="446" font-size="23" fill="#4B4F58">5 kısa görev · süre yok · puan yok</text>
+    <text x="80" y="486" font-size="19" fill="#5F646D">Tarayıcıda çalışır · kurulum yok · açık kaynak</text>
+
+    <g>
+      <rect x="80" y="524" width="176" height="56" rx="8" fill="#14161A"/>
+      <text x="168" y="560" font-size="21" font-weight="600" fill="#FFFDF8" text-anchor="middle">Başla</text>
+    </g>
+    <text x="284" y="560" font-size="18" fill="#5F646D">enes59255X.github.io/bugpark</text>
+  </g>
+
+  <g transform="translate(700 96) scale(1.4)">
+    <circle cx="164" cy="104" r="88" fill="#FBF0D9" opacity=".55"/>
+    <g transform="rotate(-4 160 158)">
+      <rect x="46" y="130" width="216" height="88" rx="10" fill="#14161A" stroke="#8C8878" stroke-width="2"/>
+      <path d="M46 146a10 10 0 0 1 10-10h196a10 10 0 0 1 10 10v10H46z" fill="#1B1E24"/>
+      <circle cx="62" cy="143" r="3" fill="#F2877A"/>
+      <circle cx="74" cy="143" r="3" fill="#E8A76B"/>
+      <circle cx="86" cy="143" r="3" fill="#5FC79B"/>
+      <g stroke="#8A93A3" stroke-width="3" stroke-linecap="round">
+        <path d="M64 172h84"/>
+        <path d="M64 186h58"/>
+        <path d="M64 200h104"/>
+      </g>
+    </g>
+    <g>
+      <ellipse cx="210" cy="90" rx="30" ry="34" fill="#A5211B"/>
+      <circle cx="210" cy="46" r="14" fill="#A5211B"/>
+      <path d="M210 56v62" stroke="#F5F2EA" stroke-width="3"/>
+      <g stroke="#14161A" stroke-width="4" stroke-linecap="round">
+        <path d="M200 38 190 26"/>
+        <path d="M220 38 230 26"/>
+        <path d="M181 78 163 70"/>
+        <path d="M181 98 161 98"/>
+        <path d="M181 114 163 122"/>
+        <path d="M239 78 257 70"/>
+        <path d="M239 98 259 98"/>
+        <path d="M239 114 257 122"/>
+      </g>
+    </g>
+    <path d="M24 228h272" stroke="#8C8878" stroke-width="2" stroke-dasharray="6 8" stroke-linecap="round"/>
+  </g>
+</svg>

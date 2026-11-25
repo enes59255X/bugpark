@@ -5,7 +5,14 @@
 
 export const LEVEL_COUNT = 5;
 
-const LEVEL_TEXT_FIELDS = ['id', 'title', 'concept', 'goal', 'code', 'explain'];
+export const ACHIEVEMENTS = [
+  { id: 'ilk-adim', title: 'İlk adım', description: 'İlk hatayı düzelttin.', icon: 'bolt' },
+  { id: 'keskin-goz', title: 'Keskin göz', description: 'Üç tahminin doğru çıktı.', icon: 'eye' },
+  { id: 'temiz-tur', title: 'Temiz tur', description: 'Beş görevi çözüm göstermeden bitirdin.', icon: 'shield' },
+  { id: 'ipucusuz', title: 'İpucusuz', description: 'Hiç ipucu kullanmadın.', icon: 'star' },
+];
+
+const LEVEL_TEXT_FIELDS = ['id', 'title', 'concept', 'goal', 'code', 'explain', 'hint', 'takeaway'];
 const CHOICE_TEXT_FIELDS = ['id', 'label', 'feedback'];
 
 const isText = (value) => typeof value === 'string' && value.trim().length > 0;
@@ -121,7 +128,11 @@ export function createGame() {
     fixAttempts: 0,
     wrongFixIds: [],
     revealed: false,
+    hintVisible: false,
+    hintUsedEver: false,
+    predictionsCorrect: 0,
     completed: [],
+    achievements: [],
     error: null,
   };
 }
@@ -135,15 +146,28 @@ function resetLevel(state) {
     fixAttempts: 0,
     wrongFixIds: [],
     revealed: false,
+    hintVisible: false,
   };
 }
 
-/**
- * @param {ReturnType<typeof createGame>} state
- * @param {{type: string, [key: string]: any}} action
- * @returns {ReturnType<typeof createGame>} geçersiz eylemde aynı referans döner
- */
-export function reduce(state, action) {
+function withAchievements(state) {
+  if (state.phase === 'loading' || state.phase === 'error') return state;
+
+  const earned = new Set(state.achievements);
+  if (state.completed.length >= 1) earned.add('ilk-adim');
+  if (state.predictionsCorrect >= 3) earned.add('keskin-goz');
+
+  const allDone = state.levels.length > 0 && state.completed.length === state.levels.length;
+  if (allDone && state.completed.every((item) => item.outcome === 'solved')) {
+    earned.add('temiz-tur');
+    if (!state.hintUsedEver) earned.add('ipucusuz');
+  }
+
+  if (earned.size === state.achievements.length) return state;
+  return { ...state, achievements: [...earned] };
+}
+
+function nextState(state, action) {
   const level = state.levels[state.levelIndex];
 
   switch (action.type) {
@@ -155,18 +179,54 @@ export function reduce(state, action) {
 
     case 'START':
       if (state.phase !== 'intro' || state.levels.length === 0) return state;
-      return { ...resetLevel(state), phase: 'predict', levelIndex: 0, completed: [] };
+      return {
+        ...resetLevel(state),
+        phase: 'predict',
+        levelIndex: 0,
+        completed: [],
+        achievements: [],
+        predictionsCorrect: 0,
+        hintUsedEver: false,
+      };
+
+    case 'RESUME': {
+      if (state.phase !== 'intro' || state.levels.length === 0) return state;
+      const progress = action.progress || {};
+      const done = Array.isArray(progress.completed)
+        ? progress.completed.filter((item) => item && typeof item.id === 'string' && typeof item.outcome === 'string')
+        : [];
+      const capped = done.slice(0, state.levels.length);
+
+      return {
+        ...resetLevel(state),
+        phase: capped.length >= state.levels.length ? 'summary' : 'predict',
+        levelIndex: Math.min(capped.length, state.levels.length - 1),
+        completed: capped,
+        predictionsCorrect: Number.isInteger(progress.predictionsCorrect) ? progress.predictionsCorrect : 0,
+        hintUsedEver: Boolean(progress.hintUsedEver),
+        achievements: Array.isArray(progress.achievements)
+          ? progress.achievements.filter((id) => ACHIEVEMENTS.some((item) => item.id === id))
+          : [],
+      };
+    }
 
     case 'SUBMIT_PREDICTION': {
       if (state.phase !== 'predict' || !level) return state;
       const choice = level.prediction.choices.find((item) => item.id === action.choiceId);
       if (!choice) return state;
+      const correct = choice.id === level.prediction.answerId;
       return {
         ...state,
         phase: 'fix',
         predictionChoiceId: choice.id,
-        predictionCorrect: choice.id === level.prediction.answerId,
+        predictionCorrect: correct,
+        predictionsCorrect: state.predictionsCorrect + (correct ? 1 : 0),
       };
+    }
+
+    case 'SHOW_HINT': {
+      if (state.phase !== 'fix' || !level || state.hintVisible) return state;
+      return { ...state, hintVisible: true, hintUsedEver: true };
     }
 
     case 'SUBMIT_FIX': {
@@ -214,12 +274,30 @@ export function reduce(state, action) {
 
     case 'RESTART': {
       if (state.levels.length === 0) return state;
-      return { ...resetLevel(state), phase: 'predict', levelIndex: 0, completed: [] };
+      return {
+        ...resetLevel(state),
+        phase: 'predict',
+        levelIndex: 0,
+        completed: [],
+        achievements: [],
+        predictionsCorrect: 0,
+        hintUsedEver: false,
+      };
     }
 
     default:
       return state;
   }
+}
+
+/**
+ * @param {ReturnType<typeof createGame>} state
+ * @param {{type: string, [key: string]: any}} action
+ * @returns {ReturnType<typeof createGame>} geçersiz eylemde aynı referans döner
+ */
+export function reduce(state, action) {
+  const next = nextState(state, action);
+  return next === state ? state : withAchievements(next);
 }
 
 /** Düzeltme uygulanmış kodu üretir (gösterim için). */
@@ -229,4 +307,18 @@ export function fixedCode(level) {
   if (lines[index] === undefined) return level.code;
   lines[index] = lines[index].replace(level.fix.target.snippet, level.fix.solution);
   return lines.join('\n');
+}
+
+/** Kalıcılık için yalnızca gerekli alanları dışa aktarır. */
+export function progressSnapshot(state) {
+  return {
+    completed: state.completed,
+    predictionsCorrect: state.predictionsCorrect,
+    hintUsedEver: state.hintUsedEver,
+    achievements: state.achievements,
+  };
+}
+
+export function hasProgress(progress) {
+  return Boolean(progress && Array.isArray(progress.completed) && progress.completed.length > 0);
 }

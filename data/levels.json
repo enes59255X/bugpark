@@ -9,6 +9,8 @@
       "goal": "1, 2 ve 3 sayılarını ayrı satırlara yazdır.",
       "code": "for (let i = 1; i < 3; i++) {\n  console.log(i);\n}",
       "explain": "Koşul 3 < 3 olduğunda false döner, üçüncü tur hiç başlamaz.",
+      "hint": "Döngü 3'te de çalışmalı: koşul son değeri kapsıyor mu?",
+      "takeaway": "Bitiş koşulu son değeri de kapsamalı: < yerine <= gerekebilir.",
       "prediction": {
         "question": "Bu kod şu anda ne yazdırır?",
         "answerId": "p1",
@@ -40,6 +42,8 @@
       "goal": "Konsola elma yazdır.",
       "code": "const meyveler = ['elma', 'armut', 'kiraz'];\nconsole.log(meyveler[1]);",
       "explain": "Dizi indeksleri 0'dan başlar; [1] ikinci elemanı verir.",
+      "hint": "İlk elemanın indeksi 0'dır; 1 değil.",
+      "takeaway": "Diziler 0'dan sayılır; son eleman uzunluk - 1 indeksindedir.",
       "prediction": {
         "question": "Bu kod şu anda ne yazdırır?",
         "answerId": "p2",
@@ -71,6 +75,8 @@
       "goal": "Konsola 7 yazdır.",
       "code": "const metin = '5';\nconst sayi = 2;\nconsole.log(metin + sayi);",
       "explain": "Bir tarafı string ise + işareti toplamaz, değerleri yan yana ekler.",
+      "hint": "Toplama için iki taraf da sayı olmalı; metin önce çevrilmeli.",
+      "takeaway": "+ iki taraf da sayıysa toplar, biri string ise birleştirir.",
       "prediction": {
         "question": "Bu kod şu anda ne yazdırır?",
         "answerId": "p1",
@@ -102,6 +108,8 @@
       "goal": "Kural: girmek için 18 yaşından büyük ve veli izni olmalı. Bu kişi için konsola Giremez yazdır.",
       "code": "const yas = 20;\nconst izinVar = false;\n\nif (yas >= 18 || izinVar) {\n  console.log('Girebilir');\n} else {\n  console.log('Giremez');\n}",
       "explain": "|| iki şarttan birini yeterli sayar; izin yokken de içeri alıyor.",
+      "hint": "İki şartın birlikte doğru olması gerekiyorsa hangi bağlaç?",
+      "takeaway": "&& iki şartı da ister; || birinin doğru olmasını yeterli sayar.",
       "prediction": {
         "question": "Bu kod şu anda ne yazdırır?",
         "answerId": "p1",
@@ -133,6 +141,8 @@
       "goal": "Konsola 6 yazdır.",
       "code": "function ikiKat(n) {\n  n * 2;\n}\n\nconsole.log(ikiKat(3));",
       "explain": "Fonksiyon 6 hesaplıyor ama return olmadığı için dışarı undefined çıkıyor.",
+      "hint": "Hesaplanan değeri çağıran yere kim taşıyacak?",
+      "takeaway": "return olmayan fonksiyon undefined döndürür; hesap kaybolur.",
       "prediction": {
         "question": "Bu kod şu anda ne yazdırır?",
         "answerId": "p1",

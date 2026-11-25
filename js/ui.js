@@ -2,10 +2,12 @@
  * Ekran katmanı. Oyun kurallarını bilmez; yalnızca durumu DOM'a yazar.
  * Güvenlik kuralı: innerHTML yok, tüm metinler textContent ile basılır.
  */
-import { fixedCode } from './game.js';
+import { ACHIEVEMENTS, fixedCode } from './game.js';
 import { tokenize } from './tokenize.js';
 
 const byId = (id) => document.getElementById(id);
+
+const CONCEPT_ICONS = ['i-loop', 'i-array', 'i-type', 'i-logic', 'i-return'];
 
 const dom = {
   intro: byId('screenIntro'),
@@ -16,10 +18,23 @@ const dom = {
   topbarStatus: byId('topbarStatus'),
   rail: byId('rail'),
   railLabel: byId('railLabel'),
+  themeBtn: byId('themeBtn'),
+  themeIcon: byId('themeIcon'),
+  soundBtn: byId('soundBtn'),
+  soundIcon: byId('soundIcon'),
+  passList: byId('passList'),
+  passCount: byId('passCount'),
+  startBlock: byId('startBlock'),
+  resumeBlock: byId('resumeBlock'),
+  resumeText: byId('resumeText'),
   levelPos: byId('levelPos'),
+  conceptBtn: byId('conceptBtn'),
   concept: byId('concept'),
+  conceptIcon: byId('conceptIcon'),
   levelTitle: byId('levelTitle'),
   goal: byId('goal'),
+  brief: null,
+  stamp: byId('stamp'),
   codeMeta: byId('codeMeta'),
   codeList: byId('codeList'),
   consoleLabel: byId('consoleLabel'),
@@ -36,15 +51,23 @@ const dom = {
   fixOptions: byId('fixOptions'),
   fixHint: byId('fixHint'),
   fixBanner: byId('fixBanner'),
+  hintBox: byId('hintBox'),
+  hintText: byId('hintText'),
   primaryBtn: byId('primaryBtn'),
+  hintBtn: byId('hintBtn'),
   solutionBtn: byId('solutionBtn'),
+  badges: byId('badges'),
+  takeaways: byId('takeaways'),
   summaryMeta: byId('summaryMeta'),
   results: byId('results'),
-  passList: byId('passList'),
-  passCount: byId('passCount'),
+  shareNote: byId('shareNote'),
   errorDetail: byId('errorDetail'),
+  glossary: byId('glossary'),
+  glossaryList: byId('glossaryList'),
   status: byId('status'),
 };
+
+dom.brief = dom.goal.closest('.brief');
 
 const screens = {
   intro: dom.intro,
@@ -80,6 +103,17 @@ function el(tag, className, text) {
   return node;
 }
 
+function icon(symbolId, className = 'icon') {
+  const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+  svg.setAttribute('class', className);
+  svg.setAttribute('viewBox', '0 0 24 24');
+  svg.setAttribute('aria-hidden', 'true');
+  const use = document.createElementNS('http://www.w3.org/2000/svg', 'use');
+  use.setAttribute('href', `#${symbolId}`);
+  svg.append(use);
+  return svg;
+}
+
 function screenNameFor(state) {
   switch (state.phase) {
     case 'loading': return 'loading';
@@ -92,16 +126,17 @@ function screenNameFor(state) {
 
 /* ---------------------------------------------------------------- genel */
 
-export function render(state) {
+export function render(state, view = {}) {
   const screen = screenNameFor(state);
 
   for (const [name, node] of Object.entries(screens)) {
     node.hidden = name !== screen;
   }
 
+  renderTools(view);
   if (screen === 'level') renderLevel(state);
-  if (screen === 'intro') renderIntro(state);
-  if (screen === 'summary') renderSummary(state);
+  if (screen === 'intro') renderIntro(state, view);
+  if (screen === 'summary') renderSummary(state, view);
   if (screen === 'error') renderError(state);
   renderChrome(state, screen);
 
@@ -150,7 +185,57 @@ export function checkedChoice(containerId) {
   return input ? input.value : null;
 }
 
+export function openGlossary(state) {
+  dom.glossaryList.textContent = '';
+  const currentIndex = state.levels.length ? state.levelIndex : -1;
+
+  state.levels.forEach((level, index) => {
+    const row = document.createElement('li');
+    if (index === currentIndex && state.phase !== 'summary') row.classList.add('is-current');
+
+    const term = el('p', 'glossary__term');
+    term.append(icon(CONCEPT_ICONS[index] || 'i-loop', 'icon icon--sm'), el('span', null, level.concept));
+
+    row.append(term, el('p', 'glossary__body', level.takeaway));
+    dom.glossaryList.append(row);
+  });
+
+  if (typeof dom.glossary.showModal === 'function') dom.glossary.showModal();
+  else dom.glossary.setAttribute('open', '');
+}
+
+export function closeGlossary() {
+  if (typeof dom.glossary.close === 'function') dom.glossary.close();
+  else dom.glossary.removeAttribute('open');
+}
+
+export function isGlossaryOpen() {
+  return dom.glossary.hasAttribute('open');
+}
+
+export function setShareNote(text) {
+  dom.shareNote.textContent = text;
+}
+
+export function revealHint() {
+  if (dom.hintBox.hidden) return;
+  const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  dom.hintBox.scrollIntoView({ block: 'center', behavior: reduceMotion ? 'auto' : 'smooth' });
+}
+
 /* --------------------------------------------------------------- topbar */
+
+function renderTools(view) {
+  const theme = view.theme === 'dark' ? 'dark' : 'light';
+  dom.themeIcon.setAttribute('href', theme === 'dark' ? '#i-sun' : '#i-moon');
+  dom.themeBtn.setAttribute('aria-pressed', theme === 'dark' ? 'true' : 'false');
+  dom.themeBtn.setAttribute('aria-label', theme === 'dark' ? 'Aydınlık temaya geç' : 'Karanlık temaya geç');
+
+  const sound = Boolean(view.sound);
+  dom.soundIcon.setAttribute('href', sound ? '#i-sound' : '#i-mute');
+  dom.soundBtn.setAttribute('aria-pressed', sound ? 'true' : 'false');
+  dom.soundBtn.setAttribute('aria-label', sound ? 'Sesi kapat' : 'Sesi aç');
+}
 
 function renderChrome(state, screen) {
   dom.topbarStatus.hidden = !(screen === 'level' || screen === 'summary');
@@ -172,9 +257,9 @@ function renderChrome(state, screen) {
     : `Bölüm ${state.levelIndex + 1}/${state.levels.length}`;
 }
 
-/* ---------------------------------------------------------------- bölüm */
+/* ---------------------------------------------------------------- giriş */
 
-function renderIntro(state) {
+function renderIntro(state, view) {
   dom.passCount.textContent = `${state.levels.length} görev`;
   dom.passList.textContent = '';
 
@@ -186,7 +271,16 @@ function renderIntro(state) {
     );
     dom.passList.append(row);
   });
+
+  const hasResume = Boolean(view.hasResume);
+  dom.startBlock.hidden = hasResume;
+  dom.resumeBlock.hidden = !hasResume;
+  if (hasResume) {
+    dom.resumeText.textContent = view.resumeLabel || '';
+  }
 }
+
+/* ---------------------------------------------------------------- bölüm */
 
 function renderLevel(state) {
   const level = state.levels[state.levelIndex];
@@ -198,6 +292,7 @@ function renderLevel(state) {
 
   dom.levelPos.textContent = position;
   dom.concept.textContent = level.concept;
+  dom.conceptIcon.setAttribute('href', `#${CONCEPT_ICONS[state.levelIndex] || 'i-loop'}`);
 
   dom.levelTitle.textContent = '';
   dom.levelTitle.append(
@@ -206,6 +301,7 @@ function renderLevel(state) {
   );
 
   dom.goal.textContent = level.goal;
+  dom.brief.classList.toggle('is-solved', solved && !state.revealed);
 
   /* Kod */
   const code = solved ? fixedCode(level) : level.code;
@@ -224,9 +320,7 @@ function renderLevel(state) {
     dom.consoleList.textContent = '';
     dom.consoleList.append(el('p', 'console__idle', 'Çıktı tahminden sonra görünür.'));
   } else {
-    const tone = solved
-      ? 'good'
-      : (state.predictionCorrect ? 'good' : 'bad');
+    const tone = solved ? 'good' : (state.predictionCorrect ? 'good' : 'bad');
     dom.consoleLabel.textContent = solved ? 'Konsol · düzeltilmiş çıktı' : 'Konsol · gerçek çıktı';
     renderConsole(solved ? level.fix.output : level.prediction.output, tone);
   }
@@ -306,6 +400,10 @@ function renderLevel(state) {
     dom.fixBanner.hidden = true;
   }
 
+  /* İpucu */
+  dom.hintBox.hidden = !(state.hintVisible && !solved);
+  if (state.hintVisible) dom.hintText.textContent = level.hint;
+
   /* Eylem çubuğu */
   const isLast = state.levelIndex === total - 1;
   if (state.phase === 'predict') {
@@ -319,6 +417,7 @@ function renderLevel(state) {
     dom.primaryBtn.dataset.action = 'next';
   }
   dom.primaryBtn.removeAttribute('aria-disabled');
+  dom.hintBtn.hidden = !(state.phase === 'fix' && !state.hintVisible);
   dom.solutionBtn.hidden = !(state.phase === 'fix' && state.fixAttempts >= 2);
 }
 
@@ -344,7 +443,6 @@ function renderCode(code, changedLine, lineCount) {
   });
   dom.codeList.append(fragment);
 
-  /* Uzun satır yatay kaydırma gerektiriyorsa sağ kenarda ipucu göster. */
   const overflowing = dom.codeList.scrollWidth > dom.codeList.clientWidth + 1;
   dom.codeList.classList.toggle('is-scrollable', overflowing);
   dom.codeList.classList.toggle('is-end', !overflowing);
@@ -396,20 +494,20 @@ function renderOptions(container, choices, options) {
     }
     if (lines.length > 1) body.classList.add('has-lines');
 
-    const icon = el('span', 'option__icon');
-    icon.setAttribute('aria-hidden', 'true');
+    const iconEl = el('span', 'option__icon');
+    iconEl.setAttribute('aria-hidden', 'true');
 
     const markState = marks[choice.id];
     if (markState === 'good') {
       body.classList.add('is-good');
-      icon.textContent = '✓';
-      body.append(mark, label, icon, el('span', 'sr-only', ' (doğru cevap)'));
+      iconEl.textContent = '✓';
+      body.append(mark, label, iconEl, el('span', 'sr-only', ' (doğru cevap)'));
     } else if (markState === 'bad') {
       body.classList.add('is-bad');
-      icon.textContent = '✕';
-      body.append(mark, label, icon, el('span', 'sr-only', ' (yanlış cevap)'));
+      iconEl.textContent = '✕';
+      body.append(mark, label, iconEl, el('span', 'sr-only', ' (yanlış cevap)'));
     } else {
-      body.append(mark, label, icon);
+      body.append(mark, label, iconEl);
     }
 
     wrapper.append(input, body);
@@ -446,9 +544,9 @@ function showBanner(node, tone, title, body, note) {
   node.textContent = '';
 
   const heading = el('p', 'banner__title');
-  const icon = el('span', 'banner__icon', tone === 'good' ? '✓' : tone === 'bad' ? '✕' : '!');
-  icon.setAttribute('aria-hidden', 'true');
-  heading.append(icon, document.createTextNode(title));
+  const glyph = el('span', 'banner__icon', tone === 'good' ? '✓' : tone === 'bad' ? '✕' : '!');
+  glyph.setAttribute('aria-hidden', 'true');
+  heading.append(glyph, document.createTextNode(title));
 
   node.append(heading);
 
@@ -458,7 +556,7 @@ function showBanner(node, tone, title, body, note) {
 
 /* ---------------------------------------------------------------- özet */
 
-function renderSummary(state) {
+function renderSummary(state, view) {
   const total = state.levels.length;
   const solvedCount = state.completed.filter((item) => item.outcome === 'solved').length;
   const revealedCount = state.completed.length - solvedCount;
@@ -466,8 +564,40 @@ function renderSummary(state) {
   dom.summaryMeta.textContent = `${state.completed.length}/${total} görev tamamlandı`
     + (revealedCount > 0 ? ` · ${revealedCount} görevde çözüm gösterildi` : '');
 
-  dom.results.textContent = '';
+  /* Rozetler */
+  dom.badges.textContent = '';
+  for (const achievement of ACHIEVEMENTS) {
+    const earned = state.achievements.includes(achievement.id);
+    const item = document.createElement('li');
+    item.className = earned ? 'badge' : 'badge badge--locked';
 
+    const badgeIcon = el('span', 'badge__icon');
+    badgeIcon.append(icon(`i-${achievement.icon}`));
+
+    const text = el('span', 'badge__text');
+    text.append(
+      el('span', 'badge__title', achievement.title),
+      el('span', 'badge__desc', earned ? achievement.description : 'Henüz kazanılmadı'),
+    );
+    text.style.display = 'grid';
+
+    item.append(badgeIcon, text);
+    dom.badges.append(item);
+  }
+
+  /* Karne */
+  dom.takeaways.textContent = '';
+  state.levels.forEach((level, index) => {
+    const done = state.completed[index];
+    const row = document.createElement('li');
+    const glyph = icon(CONCEPT_ICONS[index] || 'i-loop', 'icon icon--sm');
+    if (!done) glyph.style.color = 'var(--ink-mute)';
+    row.append(glyph, el('span', null, level.takeaway));
+    dom.takeaways.append(row);
+  });
+
+  /* Görev listesi */
+  dom.results.textContent = '';
   state.levels.forEach((level, index) => {
     const done = state.completed[index];
     const row = document.createElement('li');
@@ -481,15 +611,18 @@ function renderSummary(state) {
       el('span', 'results__concept', level.concept),
     );
 
+    const revealed = done && done.outcome === 'revealed';
     const chip = el(
       'span',
-      `chip chip--${done && done.outcome === 'revealed' ? 'revealed' : 'solved'}`,
-      done && done.outcome === 'revealed' ? '! Çözüm gösterildi' : '✓ Çözüldü',
+      `chip chip--${revealed ? 'revealed' : 'solved'}`,
+      revealed ? '! Çözüm gösterildi' : '✓ Çözüldü',
     );
 
     row.append(num, main, chip);
     dom.results.append(row);
   });
+
+  dom.shareNote.textContent = view.shareNote || '';
 }
 
 function renderError(state) {

@@ -5,6 +5,8 @@ import assert from 'node:assert/strict';
 import {
   createGame,
   fixedCode,
+  hasProgress,
+  progressSnapshot,
   reduce,
   validateLevels,
 } from '../js/game.js';
@@ -151,4 +153,104 @@ test('fixedCode hedef satırı değiştirir', () => {
   const level = levels[0];
   assert.match(fixedCode(level), /i <= 3/);
   assert.match(fixedCode(levels[4]), /return n \* 2/);
+});
+
+test('İpucu yalnızca düzeltme fazında açılır', () => {
+  const state = started();
+  assert.equal(reduce(state, { type: 'SHOW_HINT' }), state);
+
+  const after = reduce(state, { type: 'SUBMIT_PREDICTION', choiceId: state.levels[0].prediction.answerId });
+  const hinted = reduce(after, { type: 'SHOW_HINT' });
+
+  assert.equal(hinted.hintVisible, true);
+  assert.equal(hinted.hintUsedEver, true);
+  assert.equal(reduce(hinted, { type: 'SHOW_HINT' }), hinted);
+});
+
+test('İlk düzeltmede "İlk adım" rozeti gelir', () => {
+  const state = reduce(started(), {
+    type: 'SUBMIT_PREDICTION',
+    choiceId: levels[0].prediction.answerId,
+  });
+  const solved = reduce(state, { type: 'SUBMIT_FIX', choiceId: levels[0].fix.answerId });
+  assert.ok(solved.achievements.includes('ilk-adim'));
+  assert.equal(solved.predictionsCorrect, 1);
+});
+
+test('Üç doğru tahminde "Keskin göz" açılır', () => {
+  let state = started();
+  for (let index = 0; index < 3; index += 1) {
+    const level = state.levels[state.levelIndex];
+    state = reduce(state, { type: 'SUBMIT_PREDICTION', choiceId: level.prediction.answerId });
+    state = reduce(state, { type: 'SUBMIT_FIX', choiceId: level.fix.answerId });
+    state = reduce(state, { type: 'NEXT_LEVEL' });
+  }
+  assert.equal(state.predictionsCorrect, 3);
+  assert.ok(state.achievements.includes('keskin-goz'));
+});
+
+test('Temiz tur ve ipucusuz rozetleri tamamlanınca gelir', () => {
+  let state = started();
+  for (let index = 0; index < levels.length; index += 1) {
+    const level = state.levels[state.levelIndex];
+    state = reduce(state, { type: 'SUBMIT_PREDICTION', choiceId: level.prediction.answerId });
+    state = reduce(state, { type: 'SUBMIT_FIX', choiceId: level.fix.answerId });
+    state = reduce(state, { type: 'NEXT_LEVEL' });
+  }
+  assert.ok(state.achievements.includes('temiz-tur'));
+  assert.ok(state.achievements.includes('ipucusuz'));
+});
+
+test('İpucu kullanılan turda "ipucusuz" rozeti verilmez', () => {
+  let state = started();
+  const first = state.levels[0];
+  state = reduce(state, { type: 'SUBMIT_PREDICTION', choiceId: first.prediction.answerId });
+  state = reduce(state, { type: 'SHOW_HINT' });
+  state = reduce(state, { type: 'SUBMIT_FIX', choiceId: first.fix.answerId });
+  state = reduce(state, { type: 'NEXT_LEVEL' });
+
+  for (let index = 1; index < levels.length; index += 1) {
+    const level = state.levels[state.levelIndex];
+    state = reduce(state, { type: 'SUBMIT_PREDICTION', choiceId: level.prediction.answerId });
+    state = reduce(state, { type: 'SUBMIT_FIX', choiceId: level.fix.answerId });
+    state = reduce(state, { type: 'NEXT_LEVEL' });
+  }
+
+  assert.ok(state.achievements.includes('temiz-tur'));
+  assert.equal(state.achievements.includes('ipucusuz'), false);
+});
+
+test('RESUME kaydedilen bölümden devam eder', () => {
+  const progress = {
+    completed: [{ id: levels[0].id, outcome: 'solved' }, { id: levels[1].id, outcome: 'solved' }],
+    predictionsCorrect: 2,
+    hintUsedEver: true,
+    achievements: ['ilk-adim'],
+  };
+  const state = reduce(loaded(), { type: 'RESUME', progress });
+
+  assert.equal(state.phase, 'predict');
+  assert.equal(state.levelIndex, 2);
+  assert.equal(state.completed.length, 2);
+  assert.equal(state.predictionsCorrect, 2);
+  assert.equal(state.hintVisible, false);
+});
+
+test('RESUME tüm bölümler bitmişse özete gider', () => {
+  const progress = {
+    completed: levels.map((level) => ({ id: level.id, outcome: 'solved' })),
+    predictionsCorrect: 5,
+    hintUsedEver: false,
+    achievements: ['ilk-adim', 'temiz-tur'],
+  };
+  const state = reduce(loaded(), { type: 'RESUME', progress });
+  assert.equal(state.phase, 'summary');
+});
+
+test('progressSnapshot yalnızca kalıcı alanları taşır', () => {
+  const state = started();
+  const snapshot = progressSnapshot(state);
+  assert.deepEqual(Object.keys(snapshot).sort(), ['achievements', 'completed', 'hintUsedEver', 'predictionsCorrect']);
+  assert.equal(hasProgress(snapshot), false);
+  assert.equal(hasProgress({ completed: [{ id: 'x', outcome: 'solved' }] }), true);
 });
