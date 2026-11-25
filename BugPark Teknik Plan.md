@@ -520,7 +520,7 @@ console.log(ikiKat(3));
 
 ## 9. İş sırası — 5 faz
 
-> **Durum (25.11.2026):** Faz 1 ✅ · Faz 2 ✅ · Faz 3 ✅ · Faz 4 ✅ (axe-core 4.10, WCAG 2.1 A/AA: 7 ekran durumunda 0 ihlal; klavye, odak, `forced-colors` doğrulandı) · Faz 5 ◐ (hareket, meta, README, ekran görüntüleri, OG görseli hazır; tarayıcı matrisi ve yayın bekliyor)
+> **Durum (25.11.2026):** Faz 1 ✅ · Faz 2 ✅ · Faz 3 ✅ · Faz 4 ✅ (axe-core 4.10, WCAG 2.1 A/AA: 7 ekran durumunda 0 ihlal; klavye, odak, `forced-colors` doğrulandı) · Faz 5 ✅ (GitHub Pages yayını: <https://enes59255x.github.io/bugpark/> · build doğrulandı)
 >
 > **GençTek sürümü (v3):** karanlık tema, ses, rozetler, karne, ipucu, kavram sözlüğü, kalıcı ilerleme, paylaşım, klavye kısayolları ve illüstrasyonlar eklendi. `js/storage.js` ve `SHOW_HINT` / `RESUME` eylemleri bu sürümle geldi; test sayısı 20 → 28.
 
