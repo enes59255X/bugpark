@@ -398,7 +398,7 @@ bugpark/
 ### 6.2 Doğrulama
 `validateLevels(data) → {ok, errors[]}` hem `app.js` içinde (açılışta) hem `tests/validate-levels.mjs` içinde çalışır. Kontroller: `version`, `levels.length === 5`, benzersiz id, 3 seçenek, `answerId` seçeneklerde var, `target.snippet` satırda geçiyor, boş metin yok. Hata varsa: `error` ekranı + konsolda madde madde liste.
 
-### 6.3 Beş bölümün tamamı (yayınlanacak içerik)
+### 6.3 On bölümün tamamı (yayınlanacak içerik)
 
 | # | Başlık | Beceri | Hatalı çıktı → hedef |
 |---|---|---|---|
@@ -407,6 +407,11 @@ bugpark/
 | 3 | Yan yana sayılar | Tip dönüşümü | `52` → `7` |
 | 4 | Kulüp kapısı | Mantık operatörü | `Girebilir` → `Giremez` |
 | 5 | Kayıp sonuç | `return` | `undefined` → `6` |
+| 6 | Yanlış adres | Nesne alanı | `undefined` → `Ece` |
+| 7 | Sessiz hesap | Ok fonksiyonu | `undefined` → `1` |
+| 8 | Büyük harf | Metot çağrısı | `TypeError` → `ECE` |
+| 9 | İç içe dizi | İç içe indeks | `TypeError` → `3` |
+| 10 | Metin gibi sıralama | `sort` karşılaştırıcısı | `10, 100, 9` → `9, 10, 100` |
 
 **2 — İlk meyve**
 ```js
@@ -458,6 +463,48 @@ console.log(ikiKat(3));
 - Açıklama: "Fonksiyon değer üretiyor ama `return` olmadığı için dışarı `undefined` çıkıyor."
 - Tahmin: `undefined` ✔ · `6` · `NaN`
 - Düzeltme (satır 2, `n * 2`): `return n * 2` ✔ · `console.log(n * 2)` → 6 ve undefined iki satır · `return n + 2` → 5
+
+**6 — Yanlış adres**
+```js
+const kullanici = { ad: 'Ece', yas: 17 };
+console.log(kullanici.isim);
+```
+- Hedef: "Konsola `Ece` yazdır." · Çıktı: `undefined`
+- Düzeltme (satır 2, `kullanici.isim`): `kullanici.ad` ✔ · `kullanici['isim']` → yine undefined · `kullanici.Ad` → büyük/küçük harf duyarlılığı
+
+**7 — Sessiz hesap**
+```js
+const sayilar = [2, 4, 6];
+const ilk = sayilar.map(n => { n / 2; })[0];
+console.log(ilk);
+```
+- Hedef: "Konsola `1` yazdır." · Çıktı: `undefined`
+- Düzeltme (satır 2, `n => { n / 2; }`): `n => n / 2` ✔ · `n => n * 2` → 4 · `() => n / 2` → ReferenceError
+
+**8 — Büyük harf**
+```js
+const ad = 'ece';
+console.log(ad.toUpperCas());
+```
+- Hedef: "Konsola `ECE` yazdır." · Çıktı: `TypeError: ad.toUpperCas is not a function`
+- Düzeltme (satır 2, `ad.toUpperCas()`): `ad.toUpperCase()` ✔ · `ad.toUpperCase` → fonksiyonun kendisi · `ad.toPointCase()` → TypeError
+
+**9 — İç içe dizi**
+```js
+const matris = [[1, 2], [3, 4]];
+console.log(matris[2][0]);
+```
+- Hedef: "Konsola `3` yazdır." · Çıktı: `TypeError: Cannot read properties of undefined (reading '0')`
+- Düzeltme (satır 2, `matris[2][0]`): `matris[1][0]` ✔ · `matris[0][1]` → 2 · `matris[2][1]` → TypeError
+
+**10 — Metin gibi sıralama**
+```js
+const sayilar = [10, 9, 100];
+sayilar.sort();
+console.log(sayilar.join(', '));
+```
+- Hedef: "Konsola `9, 10, 100` yazdır." · Çıktı: `10, 100, 9`
+- Düzeltme (satır 2, `sayilar.sort()`): `sayilar.sort((a, b) => a - b)` ✔ · `sayilar.sort((a, b) => b - a)` → 100, 10, 9 · `sayilar.reverse()` → 100, 9, 10
 
 ---
 
@@ -523,6 +570,8 @@ console.log(ikiKat(3));
 > **Durum (25.11.2026):** Faz 1 ✅ · Faz 2 ✅ · Faz 3 ✅ · Faz 4 ✅ (axe-core 4.10, WCAG 2.1 A/AA: 7 ekran durumunda 0 ihlal; klavye, odak, `forced-colors` doğrulandı) · Faz 5 ✅ (GitHub Pages yayını: <https://enes59255x.github.io/bugpark/> · build doğrulandı)
 >
 > **GençTek sürümü (v3):** karanlık tema, ses, rozetler, karne, ipucu, kavram sözlüğü, kalıcı ilerleme, paylaşım, klavye kısayolları ve illüstrasyonlar eklendi. `js/storage.js` ve `SHOW_HINT` / `RESUME` eylemleri bu sürümle geldi; test sayısı 20 → 28.
+>
+> **v4:** bölüm sayısı 10'a çıktı (nesne alanı, ok fonksiyonu, metot çağrısı, iç içe indeks, `sort` karşılaştırıcısı). `LEVEL_COUNT` 10, "Keskin göz" eşiği 5 doğru tahmin; test sayısı 30. Girişteki bilet listesi ve ilerleme rayı veriye göre üretildiği için ek JS değişikliği gerekmedi.
 
 Her faz tek başına çalışır bir çıktı bırakır; faz atlanmaz, faz içinde geri dönülür.
 

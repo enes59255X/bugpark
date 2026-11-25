@@ -6,10 +6,10 @@
 
 **Kodu oku, çıktısını tahmin et, hatayı düzelt.**
 
-JavaScript'e yeni başlayanlar için beş kısa görevden oluşan, tarayıcıda çalışan bir hata avı oyunu.
+JavaScript'e yeni başlayanlar için on kısa görevden oluşan, tarayıcıda çalışan bir hata avı oyunu.
 Süre yok, puan yok, üyelik yok — sadece kod, çıktı ve neden.
 
-[![testler](https://img.shields.io/badge/testler-28%20ge%C3%A7ti-0F6B45?style=flat-square&labelColor=14161A)](tests/)
+[![testler](https://img.shields.io/badge/testler-30%20ge%C3%A7ti-0F6B45?style=flat-square&labelColor=14161A)](tests/)
 [![bağımlılık](https://img.shields.io/badge/ba%C4%9F%C4%B1ml%C4%B1l%C4%B1k-0-0F6B45?style=flat-square&labelColor=14161A)](package.json)
 [![erişilebilirlik](https://img.shields.io/badge/axe-0%20ihlal-0F6B45?style=flat-square&labelColor=14161A)](#erişilebilirlik)
 [![lisans](https://img.shields.io/badge/lisans-MIT-14161A?style=flat-square)](LICENSE)
@@ -26,7 +26,7 @@ Her bölümde kasıtlı olarak bozuk bir kod parçası var. Oyuncu önce **bu ko
 sonra tek bir değişiklikle hedefe ulaştırır. Tahmin yanlış olsa da akış kilitlenmez: gerçek çıktı, seçilen
 seçeneğin neden yanlış olduğu ve hatanın nedeni birlikte gösterilir.
 
-Beş görev, JavaScript'te en sık yapılan beş hatayı hedefler:
+On görev, JavaScript'te en sık yapılan on hatayı hedefler:
 
 | # | Görev | Kavram | Hatalı çıktı → hedef |
 | :--: | --- | --- | --- |
@@ -35,6 +35,11 @@ Beş görev, JavaScript'te en sık yapılan beş hatayı hedefler:
 | 3 | Yan yana sayılar | Tip dönüşümü | `52` → `7` |
 | 4 | Kulüp kapısı | Mantık operatörü | `Girebilir` → `Giremez` |
 | 5 | Kayıp sonuç | `return` | `undefined` → `6` |
+| 6 | Yanlış adres | Nesne alanı | `undefined` → `Ece` |
+| 7 | Sessiz hesap | Ok fonksiyonu | `undefined` → `1` |
+| 8 | Büyük harf | Metot çağrısı | `TypeError` → `ECE` |
+| 9 | İç içe dizi | İç içe indeks | `TypeError` → `3` |
+| 10 | Metin gibi sıralama | `sort` karşılaştırıcısı | `10, 100, 9` → `9, 10, 100` |
 
 ## Neden böyle
 
@@ -67,7 +72,7 @@ Tarayıcıda <http://localhost:8000> adresini aç.
 Testler ve şema doğrulaması:
 
 ```bash
-npm test                          # 28 birim testi (game.js + tokenize.js)
+npm test                          # 30 birim testi (game.js + tokenize.js)
 node tests/validate-levels.mjs    # levels.json şema kontrolü
 ```
 
@@ -137,8 +142,8 @@ tek ihlal oyunu sessizce bozmak yerine açıklayıcı hata ekranına düşürür
 
 | Kontrol | Sonuç |
 | --- | --- |
-| Birim testleri (`node --test`) | 28/28 |
-| `levels.json` şema doğrulaması | 5 bölüm · 30 seçenek geçerli |
+| Birim testleri (`node --test`) | 30/30 |
+| `levels.json` şema doğrulaması | 10 bölüm · 60 seçenek geçerli |
 | axe-core 4.10 (WCAG 2.1 A/AA + best-practice) | 7 ekran durumunda 0 ihlal |
 | Elle test matrisi | 16 senaryo (klavye, mobil, %200 yakınlaştırma, ağ hatası, çift tıklama) |
 | Tarayıcılar | Chrome, Edge, Firefox, Safari son iki sürüm · iOS Safari 16+ |
@@ -161,7 +166,8 @@ tek ihlal oyunu sessizce bozmak yerine açıklayıcı hata ekranına düşürür
 
 ## Yol haritası
 
-- [ ] Bölüm 6–10 (nesne, `map`, asenkron)
+- [x] Bölüm 6–10 (nesne, ok fonksiyonu, metot, iç içe dizi, `sort`)
+- [ ] Bölüm 11–15 (asenkron işlemler, `try/catch`, `map`/`filter`)
 - [ ] Serbest mod: rastgele sıra, hatalı çıktıyı kendin yaz
 - [ ] Öğretmen görünümü: sınıf için bağlantı ile paylaşılan ilerleme raporu
 

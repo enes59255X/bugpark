@@ -7,7 +7,10 @@ import { tokenize } from './tokenize.js';
 
 const byId = (id) => document.getElementById(id);
 
-const CONCEPT_ICONS = ['i-loop', 'i-array', 'i-type', 'i-logic', 'i-return'];
+const CONCEPT_ICONS = [
+  'i-loop', 'i-array', 'i-type', 'i-logic', 'i-return',
+  'i-object', 'i-arrow', 'i-case', 'i-nested', 'i-sort',
+];
 
 const dom = {
   intro: byId('screenIntro'),

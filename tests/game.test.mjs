@@ -6,6 +6,7 @@ import {
   createGame,
   fixedCode,
   hasProgress,
+  LEVEL_COUNT,
   progressSnapshot,
   reduce,
   validateLevels,
@@ -177,16 +178,30 @@ test('İlk düzeltmede "İlk adım" rozeti gelir', () => {
   assert.equal(solved.predictionsCorrect, 1);
 });
 
-test('Üç doğru tahminde "Keskin göz" açılır', () => {
+test('Beş doğru tahminde "Keskin göz" açılır', () => {
   let state = started();
-  for (let index = 0; index < 3; index += 1) {
+  for (let index = 0; index < 5; index += 1) {
     const level = state.levels[state.levelIndex];
     state = reduce(state, { type: 'SUBMIT_PREDICTION', choiceId: level.prediction.answerId });
     state = reduce(state, { type: 'SUBMIT_FIX', choiceId: level.fix.answerId });
     state = reduce(state, { type: 'NEXT_LEVEL' });
   }
-  assert.equal(state.predictionsCorrect, 3);
+  assert.equal(state.predictionsCorrect, 5);
   assert.ok(state.achievements.includes('keskin-goz'));
+});
+
+test('Dosya LEVEL_COUNT kadar bölüm içerir', () => {
+  assert.equal(levels.length, LEVEL_COUNT);
+  assert.deepEqual(levels.map((level) => level.order), levels.map((_, index) => index + 1));
+});
+
+test('Her bölümün düzeltmesi kodu gerçekten değiştirir', () => {
+  for (const level of levels) {
+    const fixed = fixedCode(level);
+    assert.notEqual(fixed, level.code, `${level.id}: kod değişmedi`);
+    assert.ok(fixed.includes(level.fix.solution), `${level.id}: çözüm kodda yok`);
+    assert.equal(fixed.split('\n').length, level.code.split('\n').length, `${level.id}: satır sayısı değişti`);
+  }
 });
 
 test('Temiz tur ve ipucusuz rozetleri tamamlanınca gelir', () => {
