@@ -1365,8 +1365,6 @@ kbd {
 
 .pass__list {
   display: grid;
-  grid-auto-flow: column;
-  grid-template-rows: repeat(8, auto);
   grid-template-columns: 1fr 1fr;
   background-image: linear-gradient(
     to right,
@@ -1375,6 +1373,16 @@ kbd {
     var(--line) calc(50% + 0.5px),
     transparent calc(50% + 0.5px)
   );
+}
+
+.pass__col {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.pass__col:only-child {
+  grid-column: 1 / -1;
 }
 
 .pass__list li {
@@ -1396,8 +1404,6 @@ kbd {
 }
 
 /* 20 bölüm: bilet iki sütun, on satır */
-.pass__list { grid-template-rows: repeat(13, auto); }
-
 /* Mod seçimi */
 .steps { margin-block: var(--s7) var(--s5); }
 
@@ -1462,7 +1468,8 @@ kbd {
 
 .typed__input::placeholder { color: var(--ink-mute); }
 
-.typed__input:disabled {
+.typed__input:disabled,
+.typed__input[readonly] {
   background: var(--surface-2);
   color: var(--ink-soft);
   cursor: default;
@@ -1599,6 +1606,18 @@ kbd {
   gap: var(--s2);
 }
 
+@media (max-width: 560px) {
+  .class-input__row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .class-input__row .btn--primary,
+  .class-input__row .share-note {
+    grid-column: 1 / -1;
+  }
+}
+
 .table-wrap {
   margin-top: var(--s4);
   overflow-x: auto;
@@ -1660,6 +1679,41 @@ kbd {
   color: var(--ink-soft);
   white-space: nowrap;
 }
+
+/* Yazdırma: rapor ve sınıf tablosu kâğıda dökülebilsin. */
+@media print {
+  .topbar,
+  .skip-link,
+  .actionbar,
+  .class-input,
+  .report-box {
+    display: none !important;
+  }
+
+  body,
+  .screen {
+    background: #fff;
+    color: #000;
+  }
+
+  .report-stats li,
+  .table-wrap,
+  .results li,
+  .class-table tbody tr:nth-child(even) {
+    background: none !important;
+    box-shadow: none !important;
+  }
+
+  .table-wrap {
+    overflow: visible;
+    border: 0;
+  }
+
+  .results li,
+  .class-table tr {
+    break-inside: avoid;
+  }
+}
 </style>
 </head>
 <body>
@@ -1690,6 +1744,11 @@ kbd {
     <symbol id="i-parse" viewBox="0 0 24 24"><path d="M4 9V4h5M15 4h5v5M20 15v5h-5M9 20H4v-5"/><path d="M9 12h6"/></symbol>
     <symbol id="i-nullish" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8"/><path d="M6.4 17.6 17.6 6.4"/></symbol>
     <symbol id="i-empty" viewBox="0 0 24 24"><rect x="4.5" y="4.5" width="15" height="15" rx="3"/><path d="M9 12h6"/></symbol>
+    <symbol id="i-async" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8"/><path d="M12 7.5V12l3 2"/></symbol>
+    <symbol id="i-reduce" viewBox="0 0 24 24"><path d="M17 5H8l5 7-5 7h9"/></symbol>
+    <symbol id="i-entries" viewBox="0 0 24 24"><path d="M4 7h5M13 7h7"/><path d="M4 17h5M13 17h7"/><circle cx="9" cy="7" r="1.7"/><circle cx="9" cy="17" r="1.7"/></symbol>
+    <symbol id="i-date" viewBox="0 0 24 24"><rect x="3.5" y="5" width="17" height="15" rx="2.5"/><path d="M3.5 10h17"/><path d="M8 3v4M16 3v4"/></symbol>
+    <symbol id="i-error" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8"/><path d="M12 7.8v5"/><circle cx="12" cy="16.2" r=".9"/></symbol>
     <symbol id="i-class" viewBox="0 0 24 24"><path d="M12 3 4 7.5v9L12 21l8-4.5v-9L12 3Z"/><path d="M4 7.5 12 12l8-4.5"/><path d="M12 12v9"/></symbol>
     <symbol id="i-map" viewBox="0 0 24 24"><rect x="3.5" y="5" width="17" height="14" rx="2.5"/><path d="M3.5 10.5h17"/><path d="M9 10.5V19"/></symbol>
     <symbol id="i-set" viewBox="0 0 24 24"><circle cx="9.5" cy="12" r="5.5"/><circle cx="14.5" cy="12" r="5.5"/></symbol>
@@ -1814,7 +1873,7 @@ kbd {
               <span class="eyebrow">Giriş bileti</span>
               <span class="pass__no" id="passCount">25 görev</span>
             </div>
-            <ol class="pass__list" id="passList"></ol>
+            <div class="pass__list" id="passList"></div>
             <p class="pass__foot">Süre yok · puan yok</p>
           </div>
         </div>
@@ -2187,9 +2246,12 @@ function saveClassCodes(codes) {
 
 const LEVEL_COUNT = 25;
 
+/** "Keskin göz" için gereken doğru tahmin sayısı (25 görevin %60'ı). */
+const SHARP_EYE_MIN = 15;
+
 const ACHIEVEMENTS = [
   { id: 'ilk-adim', title: 'İlk adım', description: 'İlk hatayı düzelttin.', icon: 'bolt' },
-  { id: 'keskin-goz', title: 'Keskin göz', description: 'Sekiz tahminin doğru çıktı.', icon: 'eye' },
+  { id: 'keskin-goz', title: 'Keskin göz', description: 'On beş tahminin doğru çıktı.', icon: 'eye' },
   { id: 'temiz-tur', title: 'Temiz tur', description: 'Tüm görevleri çözüm göstermeden bitirdin.', icon: 'shield' },
   { id: 'ipucusuz', title: 'İpucusuz', description: 'Hiç ipucu kullanmadın.', icon: 'star' },
 ];
@@ -2364,11 +2426,11 @@ function withAchievements(state) {
 
   const earned = new Set(state.achievements);
   if (state.completed.length >= 1) earned.add('ilk-adim');
-  if (state.predictionsCorrect >= 8) earned.add('keskin-goz');
+  if (state.predictionsCorrect >= SHARP_EYE_MIN) earned.add('keskin-goz');
 
   const allDone = state.levels.length > 0 && state.completed.length === state.levels.length;
-  if (allDone && state.completed.every((item) => item.outcome === 'solved')) {
-    earned.add('temiz-tur');
+  if (allDone) {
+    if (state.completed.every((item) => item.outcome === 'solved')) earned.add('temiz-tur');
     if (!state.hintUsedEver) earned.add('ipucusuz');
   }
 
@@ -2850,6 +2912,7 @@ const CONCEPT_ICONS = [
   'i-loop', 'i-array', 'i-type', 'i-logic', 'i-return',
   'i-object', 'i-arrow', 'i-case', 'i-nested', 'i-sort',
   'i-template', 'i-filter', 'i-parse', 'i-nullish', 'i-empty',
+  'i-async', 'i-reduce', 'i-entries', 'i-date', 'i-error',
   'i-class', 'i-map', 'i-set', 'i-storage', 'i-bind',
 ];
 
@@ -3122,6 +3185,10 @@ function isTypedInput(node) {
   return node === dom.typedInput;
 }
 
+function isClassInput(node) {
+  return node === dom.classInput;
+}
+
 function reportNameValue() {
   return dom.reportName.value;
 }
@@ -3184,13 +3251,26 @@ function renderIntro(state, view) {
   dom.passCount.textContent = `${state.levels.length} görev`;
   dom.passList.textContent = '';
 
-  state.levels.forEach((level, index) => {
-    const row = document.createElement('li');
-    row.append(
-      el('span', null, String(index + 1).padStart(2, '0')),
-      document.createTextNode(level.title),
-    );
-    dom.passList.append(row);
+  const half = Math.ceil(state.levels.length / 2);
+  const columns = [state.levels.slice(0, half), state.levels.slice(half)];
+
+  columns.forEach((items, columnIndex) => {
+    if (items.length === 0) return;
+
+    const list = document.createElement('ol');
+    list.className = 'pass__col';
+    if (columnIndex > 0) list.start = half + 1;
+
+    items.forEach((level, index) => {
+      const row = document.createElement('li');
+      row.append(
+        el('span', null, String(half * columnIndex + index + 1).padStart(2, '0')),
+        document.createTextNode(level.title),
+      );
+      list.append(row);
+    });
+
+    dom.passList.append(list);
   });
 
   const free = view.mode === 'free';
@@ -3264,7 +3344,7 @@ function renderLevel(state) {
   dom.keys.hidden = typedMode;
   if (typedMode) {
     dom.typedInput.value = state.predictionTyped ?? '';
-    dom.typedInput.disabled = answered;
+    dom.typedInput.readOnly = answered;
   }
 
   const predictionMarks = {};
@@ -4075,7 +4155,7 @@ function run(action) {
       state = next;
       view.hasResume = false;
       clearHints();
-      clearProgress();
+      if (view.mode === 'guided') clearProgress();
       if (view.mode === 'free') announce('Serbest mod başladı. Görevler karışık.');
       break;
     }
@@ -4144,7 +4224,7 @@ function run(action) {
       state = next;
       view.shareNote = '';
       clearHints();
-      clearProgress();
+      if (state.mode === 'guided') clearProgress();
       setReportNote('Bağlantı yalnızca sonuçları taşır; sunucuya hiçbir şey gönderilmez.');
       announce('Baştan başlıyorsun.');
       break;
@@ -4318,6 +4398,14 @@ document.addEventListener('keydown', (event) => {
   if (isTypedInput(event.target)) {
     event.preventDefault();
     run('predict-submit');
+    return;
+  }
+
+  if (event.ctrlKey || event.metaKey) {
+    if (isClassInput(event.target)) {
+      event.preventDefault();
+      run('class-add');
+    }
     return;
   }
 

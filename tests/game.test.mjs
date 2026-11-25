@@ -179,16 +179,28 @@ test('İlk düzeltmede "İlk adım" rozeti gelir', () => {
   assert.equal(solved.predictionsCorrect, 1);
 });
 
-test('Sekiz doğru tahminde "Keskin göz" açılır', () => {
+test('On beş doğru tahminde "Keskin göz" açılır', () => {
   let state = started();
-  for (let index = 0; index < 8; index += 1) {
+  for (let index = 0; index < 15; index += 1) {
     const level = state.levels[state.levelIndex];
     state = reduce(state, { type: 'SUBMIT_PREDICTION', choiceId: level.prediction.answerId });
     state = reduce(state, { type: 'SUBMIT_FIX', choiceId: level.fix.answerId });
     state = reduce(state, { type: 'NEXT_LEVEL' });
   }
-  assert.equal(state.predictionsCorrect, 8);
+  assert.equal(state.predictionsCorrect, 15);
   assert.ok(state.achievements.includes('keskin-goz'));
+});
+
+test('On dört doğru tahmin "Keskin göz" için yetmez', () => {
+  let state = started();
+  for (let index = 0; index < 14; index += 1) {
+    const level = state.levels[state.levelIndex];
+    state = reduce(state, { type: 'SUBMIT_PREDICTION', choiceId: level.prediction.answerId });
+    state = reduce(state, { type: 'SUBMIT_FIX', choiceId: level.fix.answerId });
+    state = reduce(state, { type: 'NEXT_LEVEL' });
+  }
+  assert.equal(state.predictionsCorrect, 14);
+  assert.equal(state.achievements.includes('keskin-goz'), false);
 });
 
 test('Dosya LEVEL_COUNT kadar bölüm içerir', () => {
@@ -234,6 +246,30 @@ test('İpucu kullanılan turda "ipucusuz" rozeti verilmez', () => {
 
   assert.ok(state.achievements.includes('temiz-tur'));
   assert.equal(state.achievements.includes('ipucusuz'), false);
+});
+
+test('Çözüm gösterilen turda "temiz tur" gelmez, ipucu yoksa "ipucusuz" gelir', () => {
+  let state = started();
+
+  for (let index = 0; index < levels.length; index += 1) {
+    const level = state.levels[state.levelIndex];
+    state = reduce(state, { type: 'SUBMIT_PREDICTION', choiceId: level.prediction.answerId });
+
+    if (index === 0) {
+      const wrong = level.fix.choices.filter((choice) => choice.id !== level.fix.answerId);
+      state = reduce(state, { type: 'SUBMIT_FIX', choiceId: wrong[0].id });
+      state = reduce(state, { type: 'SUBMIT_FIX', choiceId: wrong[1].id });
+      state = reduce(state, { type: 'SHOW_SOLUTION' });
+    } else {
+      state = reduce(state, { type: 'SUBMIT_FIX', choiceId: level.fix.answerId });
+    }
+
+    state = reduce(state, { type: 'NEXT_LEVEL' });
+  }
+
+  assert.equal(state.phase, 'summary');
+  assert.equal(state.achievements.includes('temiz-tur'), false);
+  assert.equal(state.achievements.includes('ipucusuz'), true);
 });
 
 test('RESUME kaydedilen bölümden devam eder', () => {

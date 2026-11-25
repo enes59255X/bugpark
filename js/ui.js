@@ -11,6 +11,7 @@ const CONCEPT_ICONS = [
   'i-loop', 'i-array', 'i-type', 'i-logic', 'i-return',
   'i-object', 'i-arrow', 'i-case', 'i-nested', 'i-sort',
   'i-template', 'i-filter', 'i-parse', 'i-nullish', 'i-empty',
+  'i-async', 'i-reduce', 'i-entries', 'i-date', 'i-error',
   'i-class', 'i-map', 'i-set', 'i-storage', 'i-bind',
 ];
 
@@ -283,6 +284,10 @@ export function isTypedInput(node) {
   return node === dom.typedInput;
 }
 
+export function isClassInput(node) {
+  return node === dom.classInput;
+}
+
 export function reportNameValue() {
   return dom.reportName.value;
 }
@@ -345,13 +350,26 @@ function renderIntro(state, view) {
   dom.passCount.textContent = `${state.levels.length} görev`;
   dom.passList.textContent = '';
 
-  state.levels.forEach((level, index) => {
-    const row = document.createElement('li');
-    row.append(
-      el('span', null, String(index + 1).padStart(2, '0')),
-      document.createTextNode(level.title),
-    );
-    dom.passList.append(row);
+  const half = Math.ceil(state.levels.length / 2);
+  const columns = [state.levels.slice(0, half), state.levels.slice(half)];
+
+  columns.forEach((items, columnIndex) => {
+    if (items.length === 0) return;
+
+    const list = document.createElement('ol');
+    list.className = 'pass__col';
+    if (columnIndex > 0) list.start = half + 1;
+
+    items.forEach((level, index) => {
+      const row = document.createElement('li');
+      row.append(
+        el('span', null, String(half * columnIndex + index + 1).padStart(2, '0')),
+        document.createTextNode(level.title),
+      );
+      list.append(row);
+    });
+
+    dom.passList.append(list);
   });
 
   const free = view.mode === 'free';
@@ -425,7 +443,7 @@ function renderLevel(state) {
   dom.keys.hidden = typedMode;
   if (typedMode) {
     dom.typedInput.value = state.predictionTyped ?? '';
-    dom.typedInput.disabled = answered;
+    dom.typedInput.readOnly = answered;
   }
 
   const predictionMarks = {};

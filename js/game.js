@@ -5,9 +5,12 @@
 
 export const LEVEL_COUNT = 25;
 
+/** "Keskin göz" için gereken doğru tahmin sayısı (25 görevin %60'ı). */
+const SHARP_EYE_MIN = 15;
+
 export const ACHIEVEMENTS = [
   { id: 'ilk-adim', title: 'İlk adım', description: 'İlk hatayı düzelttin.', icon: 'bolt' },
-  { id: 'keskin-goz', title: 'Keskin göz', description: 'Sekiz tahminin doğru çıktı.', icon: 'eye' },
+  { id: 'keskin-goz', title: 'Keskin göz', description: 'On beş tahminin doğru çıktı.', icon: 'eye' },
   { id: 'temiz-tur', title: 'Temiz tur', description: 'Tüm görevleri çözüm göstermeden bitirdin.', icon: 'shield' },
   { id: 'ipucusuz', title: 'İpucusuz', description: 'Hiç ipucu kullanmadın.', icon: 'star' },
 ];
@@ -182,11 +185,11 @@ function withAchievements(state) {
 
   const earned = new Set(state.achievements);
   if (state.completed.length >= 1) earned.add('ilk-adim');
-  if (state.predictionsCorrect >= 8) earned.add('keskin-goz');
+  if (state.predictionsCorrect >= SHARP_EYE_MIN) earned.add('keskin-goz');
 
   const allDone = state.levels.length > 0 && state.completed.length === state.levels.length;
-  if (allDone && state.completed.every((item) => item.outcome === 'solved')) {
-    earned.add('temiz-tur');
+  if (allDone) {
+    if (state.completed.every((item) => item.outcome === 'solved')) earned.add('temiz-tur');
     if (!state.hintUsedEver) earned.add('ipucusuz');
   }
 

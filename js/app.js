@@ -20,6 +20,7 @@ import {
   closeGlossary,
   isGlossaryOpen,
   isTypedInput,
+  isClassInput,
   openGlossary,
   render,
   reportNameValue,
@@ -378,7 +379,7 @@ function run(action) {
       state = next;
       view.hasResume = false;
       clearHints();
-      clearProgress();
+      if (view.mode === 'guided') clearProgress();
       if (view.mode === 'free') announce('Serbest mod başladı. Görevler karışık.');
       break;
     }
@@ -447,7 +448,7 @@ function run(action) {
       state = next;
       view.shareNote = '';
       clearHints();
-      clearProgress();
+      if (state.mode === 'guided') clearProgress();
       setReportNote('Bağlantı yalnızca sonuçları taşır; sunucuya hiçbir şey gönderilmez.');
       announce('Baştan başlıyorsun.');
       break;
@@ -621,6 +622,14 @@ document.addEventListener('keydown', (event) => {
   if (isTypedInput(event.target)) {
     event.preventDefault();
     run('predict-submit');
+    return;
+  }
+
+  if (event.ctrlKey || event.metaKey) {
+    if (isClassInput(event.target)) {
+      event.preventDefault();
+      run('class-add');
+    }
     return;
   }
 

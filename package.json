@@ -1,6 +1,6 @@
 {
   "name": "bugpark",
-  "version": "1.1.0",
+  "version": "1.1.1",
   "private": true,
   "type": "module",
   "description": "Türkçe, tarayıcıda çalışan JavaScript hata avı oyunu",

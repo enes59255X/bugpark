@@ -1346,8 +1346,6 @@ kbd {
 
 .pass__list {
   display: grid;
-  grid-auto-flow: column;
-  grid-template-rows: repeat(8, auto);
   grid-template-columns: 1fr 1fr;
   background-image: linear-gradient(
     to right,
@@ -1356,6 +1354,16 @@ kbd {
     var(--line) calc(50% + 0.5px),
     transparent calc(50% + 0.5px)
   );
+}
+
+.pass__col {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.pass__col:only-child {
+  grid-column: 1 / -1;
 }
 
 .pass__list li {
@@ -1377,8 +1385,6 @@ kbd {
 }
 
 /* 20 bölüm: bilet iki sütun, on satır */
-.pass__list { grid-template-rows: repeat(13, auto); }
-
 /* Mod seçimi */
 .steps { margin-block: var(--s7) var(--s5); }
 
@@ -1443,7 +1449,8 @@ kbd {
 
 .typed__input::placeholder { color: var(--ink-mute); }
 
-.typed__input:disabled {
+.typed__input:disabled,
+.typed__input[readonly] {
   background: var(--surface-2);
   color: var(--ink-soft);
   cursor: default;
@@ -1580,6 +1587,18 @@ kbd {
   gap: var(--s2);
 }
 
+@media (max-width: 560px) {
+  .class-input__row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .class-input__row .btn--primary,
+  .class-input__row .share-note {
+    grid-column: 1 / -1;
+  }
+}
+
 .table-wrap {
   margin-top: var(--s4);
   overflow-x: auto;
@@ -1640,4 +1659,39 @@ kbd {
   font-size: .8125rem;
   color: var(--ink-soft);
   white-space: nowrap;
+}
+
+/* Yazdırma: rapor ve sınıf tablosu kâğıda dökülebilsin. */
+@media print {
+  .topbar,
+  .skip-link,
+  .actionbar,
+  .class-input,
+  .report-box {
+    display: none !important;
+  }
+
+  body,
+  .screen {
+    background: #fff;
+    color: #000;
+  }
+
+  .report-stats li,
+  .table-wrap,
+  .results li,
+  .class-table tbody tr:nth-child(even) {
+    background: none !important;
+    box-shadow: none !important;
+  }
+
+  .table-wrap {
+    overflow: visible;
+    border: 0;
+  }
+
+  .results li,
+  .class-table tr {
+    break-inside: avoid;
+  }
 }

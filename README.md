@@ -11,7 +11,7 @@ nedenini okursun.
   <a href="https://github.com/enes59255X/bugpark/releases/latest/download/BugPark.html"><img alt="Tek dosya indir" src="https://img.shields.io/badge/%C4%B0ND%C4%B0R-tek%20dosya%20%C2%B7%20%C3%A7evrimd%C4%B1%C3%A7%C4%B1-0F6B45?style=for-the-badge"></a>
 </p>
 
-[![testler](https://img.shields.io/badge/testler-57%20ge%C3%A7ti-0F6B45?style=flat-square&labelColor=14161A)](tests/)
+[![testler](https://img.shields.io/badge/testler-59%20ge%C3%A7ti-0F6B45?style=flat-square&labelColor=14161A)](tests/)
 [![axe-core](https://img.shields.io/badge/axe--core-12%20durumda%200%20ihlal-0F6B45?style=flat-square&labelColor=14161A)](#erişilebilirlik)
 [![görev](https://img.shields.io/badge/g%C3%B6rev-25-14161A?style=flat-square)](data/levels.json)
 [![lisans](https://img.shields.io/badge/lisans-MIT-14161A?style=flat-square)](LICENSE)
@@ -155,7 +155,7 @@ Hesap, sunucu, veri toplama yok.
 git clone https://github.com/enes59255X/bugpark.git
 cd bugpark
 python -m http.server 8000      # ya da npx serve
-npm test                        # 57 birim testi (durum makinesi, rapor, sınıf, derleme)
+npm test                        # 59 birim testi (durum makinesi, rapor, sınıf, derleme)
 npm run check                   # levels.json şema doğrulaması
 npm run build                   # tek dosyalık BugPark.html üretir
 ```
